@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#1a1a2e;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1.3fr 1.9fr;grid-template-columns:1fr 1fr;gap:10px;padding:10px 10px 44px;transition:background 2s ease}
+body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#1a1a2e;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto 1.4fr 2fr;grid-template-columns:1fr 1fr;gap:10px;padding:10px 10px 44px;transition:background 2s ease}
 .top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:8px 20px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .clock{font-size:clamp(2.4rem,5vw,3.6rem);font-weight:700;letter-spacing:-1px;color:#1a1a2e}
 .date-info{text-align:right}
@@ -77,16 +77,18 @@ body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#1a1a2e;height:100v
 </head>
 <body>
 
-<div class="top-bar">
-  <div style="display:flex;align-items:baseline;gap:10px"><div class="clock" id="clock">00:00</div><div id="clock-ampm" style="font-size:clamp(1.1rem,2.4vw,1.7rem);font-weight:600;color:#4f46e5">AM</div></div>
+<div class="top-bar" style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;">
+  <div style="display:flex;align-items:baseline;gap:8px;">
+    <div class="clock" id="clock">00:00</div>
+    <div id="clock-ampm" style="font-size:clamp(1.1rem,2.4vw,1.7rem);font-weight:600;color:#4f46e5">AM</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-size:clamp(1rem,1.8vw,1.4rem);font-weight:700;color:#4f46e5;letter-spacing:0.5px;white-space:nowrap;">Morrissey Family Daily Dashboard</div>
+  </div>
   <div class="date-info">
     <div class="day-name" id="day-name">&mdash;</div>
     <div class="full-date" id="full-date">&mdash;</div>
   </div>
-</div>
-
-<div style="grid-column:1/-1;text-align:center;padding:1px 0;">
-  <div style="font-size:clamp(1.1rem,2vw,1.5rem);font-weight:700;color:#4f46e5;letter-spacing:0.5px;">Morrissey Family Daily Dashboard</div>
 </div>
 
 <div class="card">
@@ -214,7 +216,7 @@ function setWeatherBg(condition, sunrise, sunset, now) {
 }
 
 function buildDial(lo, hi, current) {
-  const W = 150, H = 92, cx = W/2, cy = H - 5, r = 62;
+  const W = 130, H = 78, cx = W/2, cy = H - 4, r = 52;
   const toRad = d => d * Math.PI / 180;
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
@@ -244,11 +246,11 @@ function buildDial(lo, hi, current) {
     const a1 = toRad(a1deg), a2 = toRad(a2deg);
     const x1 = cx + r * Math.cos(a1), y1 = cy - r * Math.sin(a1);
     const x2 = cx + r * Math.cos(a2), y2 = cy - r * Math.sin(a2);
-    segments += '<path d="M'+x1+','+y1+' A'+r+','+r+' 0 0 1 '+x2+','+y2+'" stroke="'+color+'" stroke-width="38" fill="none" stroke-linecap="butt"/>';
+    segments += '<path d="M'+x1+','+y1+' A'+r+','+r+' 0 0 1 '+x2+','+y2+'" stroke="'+color+'" stroke-width="28" fill="none" stroke-linecap="butt"/>';
   }
 
   // Inner white mask to make ring
-  const ir = r - 40;
+  const ir = r - 30;
   const mask = '<path d="M'+(cx-r-2)+','+cy+' A'+(r+2)+','+(r+2)+' 0 0 1 '+(cx+r+2)+','+cy+' L'+(cx+ir)+','+cy+' A'+ir+','+ir+' 0 0 0 '+(cx-ir)+','+cy+' Z" fill="white"/>';
   // bottom fill
   const bottomMask = '<rect x="'+(cx-r-4)+'" y="'+(cy-2)+'" width="'+(2*r+8)+'" height="30" fill="white"/>';
@@ -270,14 +272,14 @@ function buildDial(lo, hi, current) {
   const tipX = cx + needleLen * Math.cos(needleRad);
   const tipY = cy - needleLen * Math.sin(needleRad);
   const perpA1 = needleRad + Math.PI/2, perpA2 = needleRad - Math.PI/2;
-  const bw = 7;
+  const bw = 5;
   const b1x = cx + bw*Math.cos(perpA1), b1y = cy - bw*Math.sin(perpA1);
   const b2x = cx + bw*Math.cos(perpA2), b2y = cy - bw*Math.sin(perpA2);
   // tail
   const tailX = cx - 14*Math.cos(needleRad), tailY = cy + 14*Math.sin(needleRad);
   const needle = '<polygon points="'+tipX+','+tipY+' '+b1x+','+b1y+' '+tailX+','+tailY+' '+b2x+','+b2y+'" fill="#1e293b" opacity="0.9"/>';
-  const hubOuter = '<circle cx="'+cx+'" cy="'+cy+'" r="12" fill="#1e293b"/>';
-  const hubInner = '<circle cx="'+cx+'" cy="'+cy+'" r="5" fill="white"/>';
+  const hubOuter = '<circle cx="'+cx+'" cy="'+cy+'" r="8" fill="#1e293b"/>';
+  const hubInner = '<circle cx="'+cx+'" cy="'+cy+'" r="3" fill="white"/>';
 
   // Lo/Hi labels at base of dial
   const loLbl = '<text x="'+(cx-r+2)+'" y="'+(cy+16)+'" font-size="12" fill="#6b7280" font-family="Inter,sans-serif" font-weight="700" text-anchor="middle">'+lo+'°</text>';

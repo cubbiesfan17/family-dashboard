@@ -361,27 +361,26 @@ async function loadWX() {
     else if (temp <= 65) dressTip = '👕 Light layer recommended!';
     else if (temp <= 75) dressTip = '👕 Comfortable outside!';
     else dressTip = '😎 T-shirt weather!';
-    if (precipChance >= 40) dressTip += (precipType === 'snow' ? ' ❄️ Bring snow gear!' : ' ☂️ Bring a raincoat!');
+    if (precipType === 'snow' && precipChance >= 40) dressTip += ' ❄️ Bring snow gear!';
+    else if (precipType === 'rain' && precipChance >= 40 && parseFloat(totalRainIn) >= 0.1) dressTip += ' ☂️ Bring a raincoat!';
 
     el.innerHTML =
+      '<div style="display:flex;gap:14px;flex:1;">' +
+      '<div style="display:flex;flex-direction:column;gap:6px;flex:1;justify-content:center;">' +
       '<div class="weather-main"><span class="weather-icon">' + ic + '</span>' +
-      '<div><span class="weather-temp">' + temp + '&deg;F</span>' +
-      '<span class="weather-desc">' + d.weather[0].description + '</span></div></div>' +
-      '<div style="display:flex;flex:1;gap:12px;margin-top:4px;align-items:center">' +
-      // Left: all weather details stacked
-      '<div style="display:flex;flex-direction:column;gap:5px;flex:1;justify-content:space-between">' +
-      '<div style="font-size:.88rem;color:#6b7280">Feels <strong style="color:#1a1a2e">' + Math.round(d.main.feels_like) + '&deg;F</strong></div>' +
-      '<div style="font-size:.88rem;color:#6b7280">&#127783; ' + precipChance + '% ' + precipType + precipTiming +
-        (hasSnow && totalSnowIn > 0 ? ' &bull; ' + totalSnowIn + '&Prime;' :
-         !hasSnow && totalRainIn > 0 ? ' &bull; ' + totalRainIn + '&Prime;' : '') + '</div>' +
-      '<div style="font-size:.88rem;color:#6b7280">&#128168; ' + Math.round(d.wind.speed) + ' mph</div>' +
-      '<div style="padding:5px 8px;border-radius:8px;background:rgba(79,70,229,0.08);font-size:.85rem;font-weight:600;color:#4f46e5;">' + dressTip + '</div>' +
+      '<span class="weather-temp">' + temp + '&deg;F</span>' +
+      '<span class="weather-desc">' + d.weather[0].description + '</span></div>' +
+      '<div style="font-size:.9rem;color:#6b7280;">Feels <strong style="color:#1a1a2e">' + Math.round(d.main.feels_like) + '&deg;F</strong></div>' +
+      '<div style="font-size:.9rem;color:#6b7280;">&#127783; ' + precipChance + '% ' + precipType + precipTiming +
+        (hasSnow && parseFloat(totalSnowIn) > 0 ? ' &bull; ' + totalSnowIn + '&Prime; snow' :
+         !hasSnow && parseFloat(totalRainIn) > 0 ? ' &bull; ' + totalRainIn + '&Prime; rain' : '') + '</div>' +
+      '<div style="padding:6px 10px;border-radius:8px;background:rgba(79,70,229,0.08);font-size:.88rem;font-weight:600;color:#4f46e5;">' + dressTip + '</div>' +
+      '<div style="font-size:.75rem;color:#9ca3af;margin-top:2px;">&#128205; ' + d.name + '</div>' +
       '</div>' +
-      // Right: dial centered
-      '<div style="flex-shrink:0;display:flex;align-items:center;justify-content:center">' + buildDial(Math.round(lo), Math.round(hi), Math.round(temp)) + '</div>' +
+      '<div style="display:flex;align-items:center;justify-content:center;flex-shrink:0;">' +
+      buildDial(Math.round(lo), Math.round(hi), Math.round(temp)) +
       '</div>' +
-
-      '<div class="weather-location">&#128205; ' + d.name + '</div>';
+      '</div>';
   } catch(e) { el.innerHTML = '<div class="err">' + e.message + '</div>'; }
 }
 
@@ -557,12 +556,12 @@ function init() {
 }
 // Pre-populated settings — change here if needed
 (function() {
-  if (!localStorage.getItem('owm_key')) localStorage.setItem('owm_key', '0a8a6459b1878ca1ae03d67760014d85');
-  if (!localStorage.getItem('owm_city')) localStorage.setItem('owm_city', 'Algonquin,US');
-  if (!localStorage.getItem('ics_0')) localStorage.setItem('ics_0', 'https://calendar.google.com/calendar/ical/b1rcrcikhdi84ojq3glkbbiinmp733oc%40import.calendar.google.com/public/basic.ics');
-  if (!localStorage.getItem('ics_1')) localStorage.setItem('ics_1', '');
-  if (!localStorage.getItem('ics_2')) localStorage.setItem('ics_2', 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f120c7-6715-b03e-9571-92d13fd9be2b&v=1775395850915');
-  if (!localStorage.getItem('ics_3')) localStorage.setItem('ics_3', 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f12aaf-7ff7-d162-9387-b24078612aeb&v=1774796141241');
+  localStorage.setItem('owm_key', '0a8a6459b1878ca1ae03d67760014d85');
+  localStorage.setItem('owm_city', 'Algonquin,US');
+  localStorage.setItem('ics_0', 'https://calendar.google.com/calendar/ical/b1rcrcikhdi84ojq3glkbbiinmp733oc%40import.calendar.google.com/public/basic.ics');
+  localStorage.setItem('ics_1', '');
+  localStorage.setItem('ics_2', 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f120c7-6715-b03e-9571-92d13fd9be2b&v=1775395850915');
+  localStorage.setItem('ics_3', 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f12aaf-7ff7-d162-9387-b24078612aeb&v=1774796141241');
 })();
 init();
 setInterval(loadWX, 600000);

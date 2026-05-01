@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#1a1a2e;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1.2fr 2fr;grid-template-columns:1fr 1fr;gap:10px;padding:10px 10px 44px;transition:background 2s ease}
+body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#1a1a2e;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1.3fr 1.9fr;grid-template-columns:1fr 1fr;gap:10px;padding:10px 10px 44px;transition:background 2s ease}
 .top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:14px;padding:8px 20px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
 .clock{font-size:clamp(2.4rem,5vw,3.6rem);font-weight:700;letter-spacing:-1px;color:#1a1a2e}
 .date-info{text-align:right}
@@ -16,9 +16,9 @@ body{font-family:'Inter',sans-serif;background:#f7f8fa;color:#1a1a2e;height:100v
 .full-date{font-size:clamp(.85rem,1.4vw,1.05rem);color:#6b7280;margin-top:2px}
 .card{background:#fff;border-radius:14px;padding:12px 16px;box-shadow:0 2px 10px rgba(0,0,0,.06);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
 .card-title{font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1.1px;color:#9ca3af;margin-bottom:8px}
-.weather-main{display:flex;align-items:center;gap:10px;margin-bottom:6px}
-.weather-icon{font-size:clamp(2rem,3.5vw,2.8rem);line-height:1}
-.weather-temp{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;color:#1a1a2e}
+.weather-main{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.weather-icon{font-size:clamp(1.8rem,3vw,2.4rem);line-height:1}
+.weather-temp{font-size:clamp(1.6rem,3vw,2.4rem);font-weight:700;color:#1a1a2e}
 .weather-desc{font-size:clamp(.9rem,1.5vw,1.1rem);color:#6b7280;text-transform:capitalize;margin-left:6px}
 .weather-details{display:flex;gap:10px;font-size:.9rem;color:#6b7280;flex-wrap:wrap;margin-top:4px}
 .weather-location{font-size:.8rem;color:#9ca3af;margin-top:4px}
@@ -214,7 +214,7 @@ function setWeatherBg(condition, sunrise, sunset, now) {
 }
 
 function buildDial(lo, hi, current) {
-  const W = 170, H = 105, cx = W/2, cy = H - 6, r = 70;
+  const W = 150, H = 92, cx = W/2, cy = H - 5, r = 62;
   const toRad = d => d * Math.PI / 180;
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
 
@@ -367,19 +367,18 @@ async function loadWX() {
       '<div class="weather-main"><span class="weather-icon">' + ic + '</span>' +
       '<div><span class="weather-temp">' + temp + '&deg;F</span>' +
       '<span class="weather-desc">' + d.weather[0].description + '</span></div></div>' +
-      '<div style="display:flex;align-items:center;justify-content:space-between;flex:1;gap:8px;margin-top:6px">' +
-      '<div style="display:flex;flex-direction:column;gap:10px;flex:1">' +
-      '<div class="weather-details" style="flex-direction:column;gap:8px">' +
-      '<span style="font-size:1.1rem">Feels ' + Math.round(d.main.feels_like) + '&deg;F</span>' +
-      '<span style="font-size:1.1rem">&#127783; ' + precipChance + '% ' + precipType + precipTiming +
-        (hasSnow && totalSnowIn > 0 ? ' &bull; ' + totalSnowIn + '&Prime; snow' :
-         !hasSnow && totalRainIn > 0 ? ' &bull; ' + totalRainIn + '&Prime; rain' : '') +
-        '</span>' +
-      '<span style="font-size:1.1rem">&#128168; ' + Math.round(d.wind.speed) + ' mph</span>' +
+      '<div style="display:flex;flex:1;gap:12px;margin-top:4px;align-items:center">' +
+      // Left: all weather details stacked
+      '<div style="display:flex;flex-direction:column;gap:5px;flex:1;justify-content:space-between">' +
+      '<div style="font-size:.88rem;color:#6b7280">Feels <strong style="color:#1a1a2e">' + Math.round(d.main.feels_like) + '&deg;F</strong></div>' +
+      '<div style="font-size:.88rem;color:#6b7280">&#127783; ' + precipChance + '% ' + precipType + precipTiming +
+        (hasSnow && totalSnowIn > 0 ? ' &bull; ' + totalSnowIn + '&Prime;' :
+         !hasSnow && totalRainIn > 0 ? ' &bull; ' + totalRainIn + '&Prime;' : '') + '</div>' +
+      '<div style="font-size:.88rem;color:#6b7280">&#128168; ' + Math.round(d.wind.speed) + ' mph</div>' +
+      '<div style="padding:5px 8px;border-radius:8px;background:rgba(79,70,229,0.08);font-size:.85rem;font-weight:600;color:#4f46e5;">' + dressTip + '</div>' +
       '</div>' +
-      '<div style="padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.05);font-size:.88rem;font-weight:600;color:#374151;">' + dressTip + '</div>' +
-      '</div>' +
-      '<div style="flex-shrink:0">' + buildDial(Math.round(lo), Math.round(hi), Math.round(temp)) + '</div>' +
+      // Right: dial centered
+      '<div style="flex-shrink:0;display:flex;align-items:center;justify-content:center">' + buildDial(Math.round(lo), Math.round(hi), Math.round(temp)) + '</div>' +
       '</div>' +
 
       '<div class="weather-location">&#128205; ' + d.name + '</div>';

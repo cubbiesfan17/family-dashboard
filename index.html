@@ -8,14 +8,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto auto 1fr auto;grid-template-columns:1fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
+body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:1fr 1fr;gap:10px;padding:10px 10px 10px;transition:background 2s ease}
 .top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.10);border-radius:14px;padding:8px 20px;box-shadow:none;border:1px solid rgba(255,255,255,0.15)}
 .clock{font-size:clamp(2.8rem,5.5vw,4.2rem);font-weight:700;letter-spacing:-2px;color:#FFFFFF}
 .date-info{text-align:right}
 .day-name{font-size:clamp(1.1rem,2.2vw,1.6rem);font-weight:600;color:#FFFFFF}
 .full-date{font-size:clamp(.85rem,1.4vw,1.05rem);color:#7BAFC4;margin-top:2px}
 .card{background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 16px;box-shadow:none;border:1px solid rgba(255,255,255,0.18);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
-.card-title{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#7BAFC4;margin-bottom:3px}
+.card-title{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#7BAFC4;margin-bottom:5px}
 .weather-main{display:flex;align-items:center;gap:8px;margin-bottom:3px}
 .weather-icon{font-size:clamp(2.4rem,4vw,3.2rem);line-height:1}
 .weather-temp{font-size:clamp(2.8rem,5vw,4rem);font-weight:800;color:#FFFFFF}
@@ -27,10 +27,10 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .cal-setup-box{background:#f0fdf4;border-radius:10px;padding:12px 16px;font-size:.82rem;color:#166534;line-height:1.7}
 .cal-setup-box ol{margin-left:18px;margin-top:6px}
 .quote-card{justify-content:center}
-.quote-text{font-size:clamp(.8rem,1.3vw,1rem);font-style:italic;line-height:1.3;color:#FFFFFF;word-wrap:break-word;overflow-wrap:break-word;display:inline}
-.quote-text::before{content:''}
-.quote-text::after{content:''}
-.quote-author{margin-top:0;margin-left:8px;font-size:.8rem;font-weight:600;color:#7ECFED;display:inline}
+.quote-text{font-size:clamp(1rem,1.7vw,1.25rem);font-style:italic;line-height:1.55;color:#FFFFFF;word-wrap:break-word;overflow-wrap:break-word}
+.quote-text::before{content:'\201C';font-size:2rem;color:#2A5A73;line-height:0;vertical-align:-.5rem;margin-right:4px}
+.quote-text::after{content:'\201D';font-size:2rem;color:#2A5A73;line-height:0;vertical-align:-.5rem;margin-left:4px}
+.quote-author{margin-top:6px;font-size:.9rem;font-weight:600;color:#7ECFED}
 .calendar-card{grid-column:1/-1}
 .events-list{display:flex;flex-direction:column;gap:8px}
 .event-item{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:#f9fafb;border-left:4px solid #4f46e5}
@@ -40,8 +40,12 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .event-title{font-size:clamp(.82rem,1.6vw,.95rem);font-weight:500;color:#1a1a2e;flex:1}
 .event-tag{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;background:#e0e7ff;color:#4338ca}
 .no-events{font-size:.9rem;color:#7BAFC4;padding:6px 0}#cal{display:flex;flex-direction:column;flex:1}
-.cal-columns{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1;min-height:0;overflow:hidden;align-items:start}
-.cal-col{overflow-y:scroll;max-height:100%;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain;}.cal-col::-webkit-scrollbar{display:none;}
+.cal-columns{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1;min-height:0;overflow:hidden;align-items:stretch}
+.cal-col{overflow-y:scroll;height:100%;max-height:160px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain;flex:1;}
+.cal-col::-webkit-scrollbar{display:none;}
+.cal-col-wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+.scroll-hint{position:absolute;bottom:0;left:0;right:0;height:40px;background:linear-gradient(transparent,rgba(13,31,45,0.95));border-radius:0 0 8px 8px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;pointer-events:none;opacity:0;visibility:hidden;transition:opacity 0.2s;z-index:20;}
+.scroll-hint::after{content:'↓ more';color:#4A9EBF;font-size:.8rem;font-weight:700;letter-spacing:.5px;}
 .cal-header-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:5px;flex-shrink:0}
 .cal-col-header{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:5px 8px;border-radius:8px;margin-bottom:0;text-align:center}
 .col-family{background:rgba(74,158,191,0.25);color:#7ECFED}
@@ -97,12 +101,10 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
   <div id="wx"><span class="sp"></span></div>
 </div>
 
-<div class="card quote-card" style="padding:6px 14px;">
-  <div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:6px;line-height:1.4;">
-    <span style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#7BAFC4;flex-shrink:0;">&#10024; Quote:</span>
-    <span id="qt" class="quote-text" style="font-size:.88rem;font-style:italic;color:#FFFFFF;"></span>
-    <span id="qa" class="quote-author" style="font-size:.8rem;color:#7ECFED;white-space:nowrap;"></span>
-  </div>
+<div class="card quote-card">
+  <div class="card-title">&#10024; Motivation of the Day</div>
+  <div id="qt" class="quote-text"><span class="sp"></span></div>
+  <div id="qa" class="quote-author"></div>
 </div>
 
 <div class="card calendar-card" style="display:flex;flex-direction:column;">
@@ -356,6 +358,29 @@ async function loadWX() {
       const uvR = await fetch('https://api.openweathermap.org/data/2.5/uvi?lat=' + d.coord.lat + '&lon=' + d.coord.lon + '&appid=' + key);
       if (uvR.ok) { const uvD = await uvR.json(); uvIndex = uvD.value; }
     } catch {}
+
+    // Fetch pollen data from pollen.com via our Vercel proxy
+    let pollenTip = '';
+    try {
+      const pollenUrl = 'https://www.pollen.com/api/forecast/current/pollen/60102';
+      const pR = await fetch('/api/proxy?url=' + encodeURIComponent(pollenUrl), { signal: AbortSignal.timeout(6000) });
+      if (pR.ok) {
+        const pD = await pR.json();
+        // pollen.com returns Location.periods[] with Index and Triggers
+        const periods = pD.Location && pD.Location.periods ? pD.Location.periods : [];
+        const today = periods.find(p => p.Type === 'Today') || periods[0];
+        if (today) {
+          const idx = today.Index; // 0-12 scale
+          const triggers = today.Triggers ? today.Triggers.map(t => t.Name).join(', ') : '';
+          if (idx >= 9.7)       pollenTip = ' 🤧 Take Zyrtec!';
+          else if (idx >= 7.3)  pollenTip = ' 🤧 Take Zyrtec!';
+          else if (idx >= 4.9)  pollenTip = ' 🌿 High pollen — consider Zyrtec';
+          else if (idx >= 2.5)  pollenTip = ' 🌿 Mod. pollen';
+          // Low (< 2.5): no tip
+          // Don't show trigger names - keep it short
+        }
+      }
+    } catch {}
     setWeatherBg(d.weather[0].main, d.sys.sunrise, d.sys.sunset, d.dt);
     const wtitle = document.getElementById('wx-title'); if(wtitle) wtitle.textContent = '✦ WEATHER IN ' + d.name.toUpperCase();
     const ic = WI[d.weather[0].main] || '&#127777;';
@@ -438,12 +463,13 @@ async function loadWX() {
     else if (temp <= 65) dressTip = '👕 Light layer recommended!';
     else if (temp <= 75) dressTip = '👕 Comfortable outside!';
     else dressTip = '😎 T-shirt weather!';
-    if (precipType === 'snow' && precipChance >= 40) dressTip += ' ❄️ Bring snow gear!';
-    else if (precipType === 'rain' && precipChance >= 40 && parseFloat(totalRainIn) >= 0.1) dressTip += ' ☂️ Bring a raincoat!';
+    if (precipType === 'snow' && precipChance >= 40) dressTip += ' ❄️ Snow gear!';
+    else if (precipType === 'rain' && precipChance >= 40 && parseFloat(totalRainIn) >= 0.1) dressTip += ' ☂️ Raincoat!';
     if (uvIndex !== null && uvIndex >= 6) {
-      if (uvIndex >= 8) dressTip += ' 🌞 SPF 50+!';
-      else dressTip += ' 🌞 SPF 30+!';
+      if (uvIndex >= 8) dressTip += ' 🌞 SPF 50+';
+      else dressTip += ' 🌞 SPF 30+';
     }
+    dressTip += pollenTip;
 
     el.innerHTML =
       '<div style="display:flex;gap:14px;flex:1;">' +
@@ -451,7 +477,8 @@ async function loadWX() {
       '<div class="weather-main"><span class="weather-icon">' + ic + '</span>' +
       '<span class="weather-temp">' + temp + '&deg;F</span>' +
       '<span class="weather-desc">' + d.weather[0].description + '</span></div>' +
-      '<div style="font-size:.88rem;color:#A8CCE0;margin-top:2px;">Feels <span style="color:#FFFFFF">' + Math.round(d.main.feels_like) + '&deg;F</span> &nbsp;&#183;&nbsp; &#127783; ' + precipChance + '% ' + precipType + precipTiming +
+      '<div style="font-size:.95rem;color:#FFFFFF;">Feels <span style="color:#FFFFFF">' + Math.round(d.main.feels_like) + '&deg;F</span></div>' +
+      '<div style="font-size:.95rem;color:#A8CCE0;">&#127783; ' + precipChance + '% ' + precipType + precipTiming +
         (hasSnow && parseFloat(totalSnowIn) > 0 ? ' &bull; ' + totalSnowIn + '&Prime; snow' :
          !hasSnow && parseFloat(totalRainIn) > 0 ? ' &bull; ' + totalRainIn + '&Prime; rain' : '') + '</div>' +
       '<div style="padding:6px 10px;border-radius:10px;background:rgba(74,158,191,0.2);font-size:.9rem;font-weight:700;color:#FFFFFF;border:1px solid rgba(74,158,191,0.3);">' + dressTip + '</div>' +
@@ -509,15 +536,13 @@ async function loadQuote() {
   const storedQ = localStorage.getItem('quote_q');
   const storedA = localStorage.getItem('quote_a');
 
-  // Clear cache if it's a new day
-  if (storedDate && storedDate !== today) {
+  // Always clear if it's a new day (handles page reloads, Kiosk restarts etc)
+  if (storedDate !== today) {
     localStorage.removeItem('quote_date');
     localStorage.removeItem('quote_q');
     localStorage.removeItem('quote_a');
-  }
-
-  // If we already fetched today's quote, use it
-  if (storedDate === today && storedQ) {
+  } else if (storedQ) {
+    // Same day and we have a quote - just show it and return
     document.getElementById('qt').textContent = '\u201C' + storedQ + '\u201D';
     document.getElementById('qa').textContent = storedA ? '\u2014 ' + storedA : '';
     return;
@@ -664,12 +689,32 @@ async function loadCal() {
       '<div class="cal-col-header ' + c.cls + '">' + c.label + '</div>'
     ).join('') + '</div>';
     const contentRow = '<div class="cal-columns">' + cols.map((c, i) =>
-      '<div class="cal-col">' + renderCol(results[i], c.cls) + '</div>'
+      '<div class="cal-col-wrap"><div class="cal-col" id="cal-col-' + i + '">' + renderCol(results[i], c.cls) + '</div><div class="scroll-hint" id="scroll-hint-' + i + '"></div></div>'
     ).join('') + '</div>';
     el.style.display = 'flex';
     el.style.flexDirection = 'column';
     el.style.flex = '1';
     el.style.minHeight = '0';
+    // Set up scroll hints after render
+    setTimeout(() => {
+      for (let i = 0; i < 4; i++) {
+        const col = document.getElementById('cal-col-' + i);
+        const hint = document.getElementById('scroll-hint-' + i);
+        if (!col || !hint) continue;
+        const update = () => {
+          const hasMore = col.scrollHeight > col.clientHeight + 4;
+          const atBottom = col.scrollHeight - col.scrollTop <= col.clientHeight + 4;
+          const show = hasMore && !atBottom;
+          hint.style.opacity = show ? '1' : '0';
+          hint.style.visibility = show ? 'visible' : 'hidden';
+        };
+        // Force layout recalc
+        requestAnimationFrame(() => { requestAnimationFrame(update); });
+        col.addEventListener('scroll', update);
+        // Re-check on resize
+        window.addEventListener('resize', update);
+      }
+    }, 500);
     el.innerHTML = headerRow + contentRow;
   } catch(e) {
     el.innerHTML = '<div class="err">Could not load calendar: ' + e.message + '</div>';
@@ -971,6 +1016,24 @@ async function loadSports() {
     } catch(e) { return null; }
   }
 
+  // Attach probable pitchers to Cubs games (must be after cubsGames is defined)
+  if (cubsPitchers && cubsPitchers.dates) {
+    cubsPitchers.dates.forEach(dateObj => {
+      dateObj.games.forEach(g => {
+        const gameDay = g.gameDate.slice(0, 10);
+        const match = cubsGames.find(cg => {
+          const cgDay = new Date(cg.start_time).toLocaleDateString('en-CA', {timeZone:'America/Chicago'});
+          return cgDay === gameDay;
+        });
+        if (match) {
+          match.pitchers = {
+            home: g.teams && g.teams.home && g.teams.home.probablePitcher ? g.teams.home.probablePitcher.fullName : 'TBD',
+            away: g.teams && g.teams.away && g.teams.away.probablePitcher ? g.teams.away.probablePitcher.fullName : 'TBD',
+          };
+        }
+      });
+    });
+  }
   const cubsStandings = getMLBStandings(cubsTeam, 112);
   const bearsStandings = getTeamStandings(bearsTeam);
 
@@ -1184,6 +1247,17 @@ async function loadSports() {
 function init() {
   loadWX(); loadQuote(); loadCal(); loadSports();
 }
+// Version-based cache buster - increment CACHE_VER to force clear localStorage
+(function() {
+  const CACHE_VER = '2';
+  if (localStorage.getItem('cache_ver') !== CACHE_VER) {
+    localStorage.removeItem('quote_date');
+    localStorage.removeItem('quote_q');
+    localStorage.removeItem('quote_a');
+    localStorage.setItem('cache_ver', CACHE_VER);
+  }
+})();
+
 // Pre-populated settings — change here if needed
 (function() {
   localStorage.setItem('owm_key', '0a8a6459b1878ca1ae03d67760014d85');

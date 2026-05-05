@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:2.5fr 1.5fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
+body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 2fr auto;grid-template-columns:2.5fr 1.5fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
 .top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.10);border-radius:14px;padding:8px 20px;box-shadow:none;border:1px solid rgba(255,255,255,0.15)}
 .clock{font-size:clamp(2.8rem,5.5vw,4.2rem);font-weight:700;letter-spacing:-2px;color:#FFFFFF}
 .date-info{text-align:right}
@@ -420,7 +420,13 @@ async function loadWX() {
         todaySlots.forEach(s => {
           if (s.rain && s.rain['3h']) totalRainMm += s.rain['3h'];
           if (s.snow && s.snow['3h']) totalSnowMm += s.snow['3h'];
+          // Track true 24hr high/low from forecast
+          if (s.main.temp_max > hi) hi = s.main.temp_max;
+          if (s.main.temp_min < lo) lo = s.main.temp_min;
         });
+        // Also compare against current actual temp
+        if (d.main.temp < lo) lo = d.main.temp;
+        if (d.main.temp > hi) hi = d.main.temp;
         totalRainIn = (totalRainMm / 25.4).toFixed(2);
         totalSnowIn = (totalSnowMm / 25.4).toFixed(1);
 

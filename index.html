@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 2fr auto;grid-template-columns:2.5fr 1.5fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
+body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 3fr auto;grid-template-columns:2.5fr 1.5fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
 .top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.10);border-radius:14px;padding:8px 20px;box-shadow:none;border:1px solid rgba(255,255,255,0.15)}
 .clock{font-size:clamp(2.8rem,5.5vw,4.2rem);font-weight:700;letter-spacing:-2px;color:#FFFFFF}
 .date-info{text-align:right}
@@ -17,7 +17,7 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .card{background:rgba(255,255,255,0.12);border-radius:14px;padding:12px 16px;box-shadow:none;border:1px solid rgba(255,255,255,0.18);overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
 .card-title{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#7BAFC4;margin-bottom:5px}
 .weather-main{display:flex;align-items:center;gap:8px;margin-bottom:3px}
-.weather-icon{font-size:clamp(2.4rem,4vw,3.2rem);line-height:1}
+.weather-icon{font-size:clamp(2rem,3.5vw,2.8rem);line-height:1}
 .weather-temp{font-size:clamp(2.8rem,5vw,4rem);font-weight:800;color:#FFFFFF}
 .weather-desc{font-size:clamp(.9rem,1.5vw,1.1rem);color:#7BAFC4;text-transform:capitalize;margin-left:6px}
 .weather-details{display:flex;gap:10px;font-size:.95rem;color:#A8CCE0;flex-wrap:wrap;margin-top:4px}
@@ -258,12 +258,12 @@ function buildDial(lo, hi, current, next2Lo, next2Hi) {
   if (next2Lo === undefined) next2Lo = current;
   if (next2Hi === undefined) next2Hi = current;
   // Thermometer design
-  const W = 70, H = 155;
+  const W = 70, H = 130;
   const cx = W / 2;
-  const bulbR = 12;
+  const bulbR = 11;
   const tubeW = 10;
-  const tubeTop = 12;
-  const tubeBottom = H - bulbR - 14;
+  const tubeTop = 10;
+  const tubeBottom = H - bulbR - 12;
   const tubeHeight = tubeBottom - tubeTop;
 
   // Clamp current between lo and hi

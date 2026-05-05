@@ -9,7 +9,7 @@
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 3fr auto;grid-template-columns:2.5fr 1.5fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
-.top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.10);border-radius:14px;padding:8px 20px;box-shadow:none;border:1px solid rgba(255,255,255,0.15)}
+.top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:rgba(13,25,45,0.80);border-radius:14px;padding:8px 20px;box-shadow:none;border:1px solid rgba(255,255,255,0.2)}
 .clock{font-size:clamp(2.8rem,5.5vw,4.2rem);font-weight:700;letter-spacing:-2px;color:#FFFFFF}
 .date-info{text-align:right}
 .day-name{font-size:clamp(1.1rem,2.2vw,1.6rem);font-weight:600;color:#FFFFFF}
@@ -53,7 +53,7 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .col-millie{background:rgba(236,72,153,0.25);color:#F9A8D4}
 .col-nolan{background:rgba(234,179,8,0.25);color:#FDE047}
 .events-list{display:flex;flex-direction:column;gap:3px}
-.event-item{display:flex;flex-direction:column;gap:1px;padding:4px 8px;border-radius:8px;background:rgba(255,255,255,0.10);border-left:3px solid #4A9EBF}
+.event-item{display:flex;flex-direction:column;gap:1px;padding:4px 8px;border-radius:8px;background:rgba(13,25,45,0.60);border-left:3px solid #4A9EBF}
 .event-item.past{opacity:.4;border-left-color:#d1d5db}
 .event-item.next{background:rgba(74,158,191,0.15);border-left:3px solid #4A9EBF;box-shadow:0 0 8px rgba(74,158,191,0.5),inset 0 0 0 1px rgba(74,158,191,0.3)}
 .event-time{font-size:.72rem;font-weight:500;color:#7BAFC4}
@@ -112,7 +112,7 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
   <div id="cal"><span class="sp"></span></div>
 </div>
 
-<div id="sports-ticker" style="grid-column:1/-1;background:#162d3d;border-radius:12px;padding:0;overflow:hidden;display:flex;align-items:center;height:48px;line-height:48px;">
+<div id="sports-ticker" style="grid-column:1/-1;background:rgba(13,25,45,0.90);border-radius:12px;padding:0;overflow:hidden;display:flex;align-items:center;height:48px;line-height:48px;">
   <div style="background:#0f1e28;color:#E8F4F8;font-size:.78rem;font-weight:700;padding:0 16px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:1.5px;flex-shrink:0;">🏆 SCORES</div>
   <div style="overflow:hidden;flex:1;position:relative;height:100%;">
     <div id="sports-ticker-inner" style="display:flex;align-items:center;height:100%;white-space:nowrap;will-change:transform;line-height:1;">
@@ -258,7 +258,7 @@ function setWeatherBg(condition, sunrise, sunset, now) {
 
   // Darker overlay for bright daytime photos so text stays legible
   const isDaytime = ['sunrise','morning','midday','sunset'].includes(timeOfDay);
-  const overlay = isDaytime ? 'rgba(10,20,35,0.52)' : 'rgba(10,20,35,0.40)';
+  const overlay = isDaytime ? 'rgba(5,12,25,0.68)' : 'rgba(5,12,25,0.55)';
 
   document.body.style.backgroundImage =
     'linear-gradient(' + overlay + ', ' + overlay + '), url(' + url + ')';

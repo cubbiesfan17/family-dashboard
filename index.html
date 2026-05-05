@@ -8,7 +8,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 html{height:100%;width:100%;overflow:hidden}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:1fr 1fr;gap:10px;padding:10px 10px 10px;transition:background 2s ease}
+body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100vh;width:100%;max-width:100%;overflow:hidden;display:grid;grid-template-rows:auto auto 1fr auto;grid-template-columns:2.5fr 1.5fr;gap:8px;padding:8px 10px 8px;transition:background 2s ease}
 .top-bar{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.10);border-radius:14px;padding:8px 20px;box-shadow:none;border:1px solid rgba(255,255,255,0.15)}
 .clock{font-size:clamp(2.8rem,5.5vw,4.2rem);font-weight:700;letter-spacing:-2px;color:#FFFFFF}
 .date-info{text-align:right}
@@ -102,7 +102,7 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 </div>
 
 <div class="card quote-card">
-  <div class="card-title">&#10024; Motivation of the Day</div>
+  <div class="card-title">&#10024; MOTIVATION OF THE DAY</div>
   <div id="qt" class="quote-text"><span class="sp"></span></div>
   <div id="qa" class="quote-author"></div>
 </div>
@@ -112,10 +112,10 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
   <div id="cal"><span class="sp"></span></div>
 </div>
 
-<div id="sports-ticker" style="grid-column:1/-1;background:#162d3d;border-radius:12px;padding:0;overflow:hidden;display:flex;align-items:center;height:48px;">
+<div id="sports-ticker" style="grid-column:1/-1;background:#162d3d;border-radius:12px;padding:0;overflow:hidden;display:flex;align-items:center;height:48px;line-height:48px;">
   <div style="background:#0f1e28;color:#E8F4F8;font-size:.78rem;font-weight:700;padding:0 16px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:1.5px;flex-shrink:0;">🏆 SCORES</div>
   <div style="overflow:hidden;flex:1;position:relative;height:100%;">
-    <div id="sports-ticker-inner" style="display:flex;align-items:center;height:100%;white-space:nowrap;will-change:transform;">
+    <div id="sports-ticker-inner" style="display:flex;align-items:center;height:100%;white-space:nowrap;will-change:transform;line-height:1;">
       <span style="color:#c7d2fe;font-size:.82rem;padding:0 20px;">Loading...</span>
     </div>
   </div>
@@ -188,8 +188,18 @@ function saveM() {
   init();
 }
 
+let _lastDate = new Date().toDateString();
 function tick() {
   const n = new Date();
+  // Auto-refresh quote when day changes (works even if Kiosk doesn't reload at midnight)
+  const today = n.toDateString();
+  if (today !== _lastDate) {
+    _lastDate = today;
+    localStorage.removeItem('quote_date');
+    localStorage.removeItem('quote_q');
+    localStorage.removeItem('quote_a');
+    loadQuote();
+  }
   const h = n.getHours(), m = String(n.getMinutes()).padStart(2,'0');
   const h12 = (h % 12) || 12, ampm = h < 12 ? 'AM' : 'PM';
   document.getElementById('clock').textContent = h12 + ':' + m;
@@ -1078,7 +1088,7 @@ async function loadSports() {
       const tied = myScore === oppScore;
       const color = winning ? '#4CAF82' : tied ? '#E8A838' : '#E05C5C';
       const situation = live.situation || 'In Progress';
-      parts.push('<span style="color:#FFFFFF;font-weight:800;font-size:.95rem;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;">' + logo + ' ' + name.toUpperCase() + '</span>');
+      parts.push('<span style="color:#FFFFFF;font-weight:800;font-size:.95rem;letter-spacing:.5px;display:inline-flex;align-items:center;gap:5px;vertical-align:middle;">' + logo + ' ' + name.toUpperCase() + '</span>');
       parts.push(
         '<span style="color:#3A7A9C;margin:0 8px;font-weight:300;">|</span>' +
         '<span style="color:#E8A838;font-weight:700;animation:none;">🔴 LIVE</span>' +
@@ -1093,7 +1103,7 @@ async function loadSports() {
     const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     // Team name + logo
-    parts.push('<span style="color:#FFFFFF;font-weight:800;font-size:.95rem;letter-spacing:.5px;display:inline-flex;align-items:center;gap:6px;">' + logo + ' ' + name.toUpperCase() + '</span>');
+    parts.push('<span style="color:#FFFFFF;font-weight:800;font-size:.95rem;letter-spacing:.5px;display:inline-flex;align-items:center;gap:5px;vertical-align:middle;">' + logo + ' ' + name.toUpperCase() + '</span>');
 
     // Latest score within 3 days
     const recent = games.filter(g => {
@@ -1189,8 +1199,8 @@ async function loadSports() {
   }
 
   const items = [
-    buildTeamTicker('Cubs', '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:22px;width:22px;vertical-align:middle;border-radius:50%;">', cubsGames, 'CHC', cubsStandings),
-    buildTeamTicker('Bears', '<img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="height:22px;width:22px;vertical-align:middle;border-radius:50%;">', bearsGames, 'CHI', bearsStandings),
+    buildTeamTicker('Cubs', '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:22px;width:22px;vertical-align:middle;border-radius:50%;display:inline-block;flex-shrink:0;position:relative;top:-1px;">', cubsGames, 'CHC', cubsStandings),
+    buildTeamTicker('Bears', '<img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="height:22px;width:22px;vertical-align:middle;border-radius:50%;display:inline-block;flex-shrink:0;position:relative;top:-1px;">', bearsGames, 'CHI', bearsStandings),
   ].filter(Boolean);
 
   if (!items.length) {
@@ -1244,6 +1254,15 @@ async function loadSports() {
 }
 
 function init() {
+  // Set card grid positions
+  const wCard = document.getElementById('weather-card');
+  const qCard = document.getElementById('quote-card');
+  const calCard = document.querySelector('.calendar-card');
+  const ticker = document.getElementById('sports-ticker');
+  if (wCard) { wCard.style.gridColumn = '1 / 2'; wCard.style.gridRow = '2'; }
+  if (qCard) { qCard.style.gridColumn = '2 / 3'; qCard.style.gridRow = '2'; }
+  if (calCard) { calCard.style.gridColumn = '1 / -1'; calCard.style.gridRow = '3'; }
+  if (ticker) { ticker.style.gridColumn = '1 / -1'; ticker.style.gridRow = '4'; }
   loadWX(); loadQuote(); loadCal(); loadSports();
 }
 // Version-based cache buster - increment CACHE_VER to force clear localStorage

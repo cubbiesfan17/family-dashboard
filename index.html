@@ -214,44 +214,60 @@ setInterval(tick, 1000); tick();
 function setWeatherBg(condition, sunrise, sunset, now) {
   const isDay = now > sunrise && now < sunset;
   const hour = new Date(now * 1000).getHours();
-
-  // Time of day buckets
-  let timeOfDay;
   const sunriseHr = new Date(sunrise * 1000).getHours();
   const sunsetHr  = new Date(sunset  * 1000).getHours();
 
-  if (!isDay) {
-    timeOfDay = 'night';
-  } else if (hour < sunriseHr + 1) {
-    timeOfDay = 'sunrise';
-  } else if (hour < 11) {
-    timeOfDay = 'morning';
-  } else if (hour < 15) {
-    timeOfDay = 'midday';
-  } else if (hour < sunsetHr + 1) {
-    timeOfDay = 'sunset';
-  } else {
-    timeOfDay = 'night';
-  }
+  // Determine time of day
+  let timeOfDay;
+  if (!isDay && hour >= 20) timeOfDay = 'night';
+  else if (!isDay) timeOfDay = 'night';
+  else if (hour <= sunriseHr + 1) timeOfDay = 'sunrise';
+  else if (hour < 12) timeOfDay = 'morning';
+  else if (hour < 16) timeOfDay = 'midday';
+  else if (hour <= sunsetHr + 1) timeOfDay = 'sunset';
+  else timeOfDay = 'night';
 
-  // Map weather condition to photo set
+  // Map weather condition to photo category
   let weatherType;
-  if (['Thunderstorm','Drizzle','Rain'].includes(condition)) weatherType = 'rainy';
-  else if (['Snow'].includes(condition))                       weatherType = 'snowy';
-  else if (['Mist','Fog','Haze','Smoke','Dust'].includes(condition)) weatherType = 'foggy';
+  if (['Thunderstorm','Drizzle','Rain'].includes(condition)) weatherType = 'cloudy';
+  else if (['Snow'].includes(condition))                      weatherType = 'cloudy';
+  else if (['Mist','Fog','Haze','Smoke','Dust'].includes(condition)) weatherType = 'cloudy';
   else if (['Clouds'].includes(condition))                    weatherType = 'cloudy';
   else                                                         weatherType = 'sunny';
 
-  const filename = weatherType + '-' + timeOfDay + '.jpg';
-  const url = 'https://raw.githubusercontent.com/cubbiesfan17/family-dashboard/main/photos/' + filename;
+  // Build filename — fall back gracefully if photo doesn't exist
+  // Available: sunny-sunrise, sunny-midday, sunny-sunset
+  //            cloudy-morning, cloudy-midday, cloudy-sunset, cloudy-night, clear-night
+  const photoMap = {
+    'sunny-sunrise': 'sunny-sunrise.png',
+    'sunny-morning': 'sunny-midday.png',   // fallback to midday
+    'sunny-midday':  'sunny-midday.png',
+    'sunny-sunset':  'sunny-sunset.png',
+    'sunny-night':   'clear-night.png',
+    'cloudy-sunrise':'cloudy-morning.png', // fallback to morning
+    'cloudy-morning':'cloudy-morning.png',
+    'cloudy-midday': 'cloudy-midday.png',
+    'cloudy-sunset': 'cloudy-sunset.png',
+    'cloudy-night':  'cloudy-night.png',
+  };
+
+  const key = weatherType + '-' + timeOfDay;
+  const filename = photoMap[key] || (timeOfDay === 'night' ? 'clear-night.png' : 'sunny-midday.png');
+  const base = 'https://raw.githubusercontent.com/cubbiesfan17/family-dashboard/main/photos/';
+  const url = base + filename;
+
+  // Darker overlay for bright daytime photos so text stays legible
+  const isDaytime = ['sunrise','morning','midday','sunset'].includes(timeOfDay);
+  const overlay = isDaytime ? 'rgba(10,20,35,0.52)' : 'rgba(10,20,35,0.40)';
 
   document.body.style.backgroundImage =
-    'linear-gradient(rgba(10,20,35,0.50), rgba(10,20,35,0.50)), url(' + url + ')';
+    'linear-gradient(' + overlay + ', ' + overlay + '), url(' + url + ')';
   document.body.style.backgroundSize = 'cover';
   document.body.style.backgroundPosition = 'center';
   document.body.style.backgroundRepeat = 'no-repeat';
   document.body.style.backgroundColor = '#0d1f2d';
 }
+
 
 function buildDial(lo, hi, current, next2Lo, next2Hi) {
   // next2Lo/next2Hi default to current if not provided

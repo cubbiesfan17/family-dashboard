@@ -239,20 +239,20 @@ function setWeatherBg(condition, sunrise, sunset, now) {
   // Available: sunny-sunrise, sunny-midday, sunny-sunset
   //            cloudy-morning, cloudy-midday, cloudy-sunset, cloudy-night, clear-night
   const photoMap = {
-    'sunny-sunrise': 'sunny-sunrise.png',
-    'sunny-morning': 'sunny-midday.png',   // fallback to midday
-    'sunny-midday':  'sunny-midday.png',
-    'sunny-sunset':  'sunny-sunset.png',
-    'sunny-night':   'clear-night.png',
-    'cloudy-sunrise':'cloudy-morning.png', // fallback to morning
-    'cloudy-morning':'cloudy-morning.png',
-    'cloudy-midday': 'cloudy-midday.png',
-    'cloudy-sunset': 'cloudy-sunset.png',
-    'cloudy-night':  'cloudy-night.png',
+    'sunny-sunrise': 'Sunny-sunrise.png',
+    'sunny-morning': 'Sunny-midday.png',   // fallback to midday
+    'sunny-midday':  'Sunny-midday.png',
+    'sunny-sunset':  'Sunny-sunset.png',
+    'sunny-night':   'Clear-night.png',
+    'cloudy-sunrise':'Cloudy-morning.png', // fallback to morning
+    'cloudy-morning':'Cloudy-morning.png',
+    'cloudy-midday': 'Cloudy-midday.png',
+    'cloudy-sunset': 'Cloudy-sunset.png',
+    'cloudy-night':  'Cloudy-night.png',
   };
 
   const key = weatherType + '-' + timeOfDay;
-  const filename = photoMap[key] || (timeOfDay === 'night' ? 'clear-night.png' : 'sunny-midday.png');
+  const filename = photoMap[key] || (timeOfDay === 'night' ? 'Clear-night.png' : 'Sunny-midday.png');
   const base = 'https://raw.githubusercontent.com/cubbiesfan17/family-dashboard/main/photos/';
   const url = base + filename;
 

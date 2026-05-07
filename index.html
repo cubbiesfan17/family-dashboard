@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Family Dashboard</title>
 <style>
@@ -39,7 +42,7 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .event-time{font-size:.78rem;font-weight:600;color:#6b7280;min-width:70px}
 .event-title{font-size:clamp(.82rem,1.6vw,.95rem);font-weight:500;color:#1a1a2e;flex:1}
 .event-tag{font-size:.7rem;font-weight:600;padding:2px 8px;border-radius:999px;background:#e0e7ff;color:#4338ca}
-.no-events{font-size:.9rem;color:#7BAFC4;padding:6px 0}#cal{display:flex;flex-direction:column;flex:1}
+.no-events{font-size:.9rem;color:#A8CCE0;padding:6px 0;font-weight:500}#cal{display:flex;flex-direction:column;flex:1}
 .cal-columns{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;flex:1;min-height:0;overflow:hidden;align-items:stretch}
 .cal-col{overflow-y:scroll;height:100%;max-height:160px;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain;flex:1;}
 .cal-col::-webkit-scrollbar{display:none;}
@@ -48,12 +51,12 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .scroll-hint::after{content:'↓ more';color:#4A9EBF;font-size:.8rem;font-weight:700;letter-spacing:.5px;}
 .cal-header-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:5px;flex-shrink:0}
 .cal-col-header{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:5px 8px;border-radius:8px;margin-bottom:0;text-align:center}
-.col-family{background:rgba(74,158,191,0.25);color:#7ECFED}
-.col-finn{background:rgba(59,130,246,0.25);color:#93C5FD}
-.col-millie{background:rgba(236,72,153,0.25);color:#F9A8D4}
-.col-nolan{background:rgba(234,179,8,0.25);color:#FDE047}
+.col-family{background:rgba(74,158,191,0.55);color:#FFFFFF}
+.col-finn{background:rgba(59,130,246,0.55);color:#FFFFFF}
+.col-millie{background:rgba(236,72,153,0.55);color:#FFFFFF}
+.col-nolan{background:rgba(234,179,8,0.55);color:#FFFFFF}
 .events-list{display:flex;flex-direction:column;gap:3px}
-.event-item{display:flex;flex-direction:column;gap:1px;padding:4px 8px;border-radius:8px;background:rgba(13,25,45,0.60);border-left:3px solid #4A9EBF}
+.event-item{display:flex;flex-direction:column;gap:1px;padding:4px 8px;border-radius:8px;background:rgba(13,25,45,0.85);border-left:3px solid #4A9EBF}
 .event-item.past{opacity:.4;border-left-color:#d1d5db}
 .event-item.next{background:rgba(74,158,191,0.15);border-left:3px solid #4A9EBF;box-shadow:0 0 8px rgba(74,158,191,0.5),inset 0 0 0 1px rgba(74,158,191,0.3)}
 .event-time{font-size:.72rem;font-weight:500;color:#7BAFC4}
@@ -191,14 +194,12 @@ function saveM() {
 let _lastDate = new Date().toDateString();
 function tick() {
   const n = new Date();
-  // Auto-refresh quote when day changes (works even if Kiosk doesn't reload at midnight)
+  // At midnight: hard reload the page to bust cache and get fresh quote
   const today = n.toDateString();
   if (today !== _lastDate) {
     _lastDate = today;
-    localStorage.removeItem('quote_date');
-    localStorage.removeItem('quote_q');
-    localStorage.removeItem('quote_a');
-    loadQuote();
+    // Hard reload clears cache and starts fresh
+    window.location.reload(true);
   }
   const h = n.getHours(), m = String(n.getMinutes()).padStart(2,'0');
   const h12 = (h % 12) || 12, ampm = h < 12 ? 'AM' : 'PM';

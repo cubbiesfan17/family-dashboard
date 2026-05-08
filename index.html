@@ -194,12 +194,11 @@ function saveM() {
 let _lastDate = new Date().toDateString();
 function tick() {
   const n = new Date();
-  // At midnight: hard reload the page to bust cache and get fresh quote
+  // At midnight: reload quote (pure day-of-year, no cache needed)
   const today = n.toDateString();
   if (today !== _lastDate) {
     _lastDate = today;
-    // Hard reload clears cache and starts fresh
-    window.location.reload(true);
+    loadQuote();
   }
   const h = n.getHours(), m = String(n.getMinutes()).padStart(2,'0');
   const h12 = (h % 12) || 12, ampm = h < 12 ? 'AM' : 'PM';
@@ -562,47 +561,15 @@ const FB = [
   {q:"Curiosity about life in all of its aspects, I think, is still the secret of great creative people.",a:"Leo Burnett"},
   {q:"Life is not measured by the number of breaths we take, but by the moments that take our breath away.",a:"Maya Angelou"},
 ];
-async function loadQuote() {
-  const today = new Date().toDateString();
-  const storedDate = localStorage.getItem('quote_date');
-  const storedQ = localStorage.getItem('quote_q');
-  const storedA = localStorage.getItem('quote_a');
-
-  // Always clear if it's a new day (handles page reloads, Kiosk restarts etc)
-  if (storedDate !== today) {
-    localStorage.removeItem('quote_date');
-    localStorage.removeItem('quote_q');
-    localStorage.removeItem('quote_a');
-  } else if (storedQ) {
-    // Same day and we have a quote - just show it and return
-    document.getElementById('qt').textContent = '\u201C' + storedQ + '\u201D';
-    document.getElementById('qa').textContent = storedA ? '\u2014 ' + storedA : '';
-    return;
-  }
-
-  // Pick from built-in list based on day of year
-  const doy = Math.floor((new Date() - new Date(new Date().getFullYear(),0,0)) / 86400000);
+function loadQuote() {
+  // No localStorage, no API, no caching issues.
+  // Pick quote purely by day-of-year — always correct, always updates at midnight.
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const doy = Math.floor((now - start) / 86400000);
   const fb = FB[doy % FB.length];
   document.getElementById('qt').textContent = '\u201C' + fb.q + '\u201D';
   document.getElementById('qa').textContent = fb.a ? '\u2014 ' + fb.a : '';
-
-  // Try API for a fresh quote
-  try {
-    const r = await fetch('https://api.quotable.io/random?tags=inspirational|motivational&maxLength=140', { signal: AbortSignal.timeout(5000) });
-    if (!r.ok) throw 0;
-    const d = await r.json();
-    document.getElementById('qt').textContent = '\u201C' + d.content + '\u201D';
-    document.getElementById('qa').textContent = '\u2014 ' + d.author;
-    // Save for the rest of the day
-    localStorage.setItem('quote_date', today);
-    localStorage.setItem('quote_q', d.content);
-    localStorage.setItem('quote_a', d.author);
-  } catch {
-    // Save fallback so it's consistent all day
-    localStorage.setItem('quote_date', today);
-    localStorage.setItem('quote_q', fb.q);
-    localStorage.setItem('quote_a', fb.a || '');
-  }
 }
 
 function parseICS(txt) {
@@ -1319,9 +1286,6 @@ function scheduleQuoteMidnight() {
   midnight.setHours(24,0,0,0);
   const msUntilMidnight = midnight - now;
   setTimeout(() => {
-    localStorage.removeItem('quote_date');
-    localStorage.removeItem('quote_q');
-    localStorage.removeItem('quote_a');
     loadQuote();
     scheduleQuoteMidnight(); // reschedule for next midnight
   }, msUntilMidnight);

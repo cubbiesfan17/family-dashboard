@@ -211,7 +211,7 @@ function tick() {
 }
 setInterval(tick, 1000); tick();
 
-function setWeatherBg(condition, sunrise, sunset, now) {
+function setWeatherBg(condition, description, sunrise, sunset, now) {
   const isDay = now > sunrise && now < sunset;
   const hour = new Date(now * 1000).getHours();
   const sunriseHr = new Date(sunrise * 1000).getHours();
@@ -227,31 +227,55 @@ function setWeatherBg(condition, sunrise, sunset, now) {
   else if (hour <= sunsetHr + 1) timeOfDay = 'sunset';
   else timeOfDay = 'night';
 
-  // Map weather condition to photo category
-  let weatherType;
-  if (['Thunderstorm','Drizzle','Rain'].includes(condition)) weatherType = 'cloudy';
-  else if (['Snow'].includes(condition))                      weatherType = 'cloudy';
-  else if (['Mist','Fog','Haze','Smoke','Dust'].includes(condition)) weatherType = 'cloudy';
-  else if (['Clouds'].includes(condition))                    weatherType = 'cloudy';
-  else                                                         weatherType = 'sunny';
+  // Map OpenWeatherMap condition to photo prefix
+  // "Clouds" with few/scattered = Partly Cloudy; broken/overcast = fully Cloudy
+  const partlyCloudy = condition === 'Clouds' &&
+    ['few clouds','scattered clouds'].includes((description||'').toLowerCase());
+  let prefix;
+  if (['Thunderstorm','Drizzle','Rain'].includes(condition))        prefix = 'Rainy';
+  else if (['Snow'].includes(condition))                             prefix = 'Snowing';
+  else if (['Mist','Fog','Haze','Smoke','Dust'].includes(condition))prefix = 'Foggy';
+  else if (partlyCloudy)                                             prefix = 'PartlyCloudy';
+  else if (condition === 'Clouds')                                   prefix = 'Cloudy';
+  else                                                               prefix = 'Sunny';
 
-  // Build filename — fall back gracefully if photo doesn't exist
-  // Available: sunny-sunrise, sunny-midday, sunny-sunset
-  //            cloudy-morning, cloudy-midday, cloudy-sunset, cloudy-night, clear-night
+  // Full photo map — exact filenames as uploaded to GitHub
+  // Partly Cloudy has mixed casing in the repo — matched exactly here
   const photoMap = {
-    'sunny-sunrise': 'Sunny-sunrise.png',
-    'sunny-morning': 'Sunny-midday.png',   // fallback to midday
-    'sunny-midday':  'Sunny-midday.png',
-    'sunny-sunset':  'Sunny-sunset.png',
-    'sunny-night':   'Clear-night.png',
-    'cloudy-sunrise':'Cloudy-morning.png', // fallback to morning
-    'cloudy-morning':'Cloudy-morning.png',
-    'cloudy-midday': 'Cloudy-midday.png',
-    'cloudy-sunset': 'Cloudy-sunset.png',
-    'cloudy-night':  'Cloudy-night.png',
+    'Sunny-sunrise':          'Sunny-sunrise.png',
+    'Sunny-morning':          'Sunny-morning.png',
+    'Sunny-midday':           'Sunny-midday.png',
+    'Sunny-sunset':           'Sunny-sunset.png',
+    'Sunny-night':            'Clear-night.png',        // no Sunny-night, use Clear-night
+    'Cloudy-sunrise':         'Cloudy-sunrise.png',
+    'Cloudy-morning':         'Cloudy-morning.png',
+    'Cloudy-midday':          'Cloudy-midday.png',
+    'Cloudy-sunset':          'Cloudy-sunset.png',
+    'Cloudy-night':           'Cloudy-night.png',
+    'Rainy-sunrise':          'Rainy-sunrise.png',
+    'Rainy-morning':          'Rainy-morning.png',
+    'Rainy-midday':           'Rainy-midday.png',
+    'Rainy-sunset':           'Rainy-sunset.png',
+    'Rainy-night':            'Rainy-night.png',
+    'Snowing-sunrise':        'Snowing-sunrise.png',
+    'Snowing-morning':        'Snowing-morning.png',
+    'Snowing-midday':         'Snowing-midday.png',
+    'Snowing-sunset':         'Snowing-sunset.png',
+    'Snowing-night':          'Snowing-night.png',
+    'Foggy-sunrise':          'Foggy-sunrise.png',
+    'Foggy-morning':          'Foggy-morning.png',
+    'Foggy-midday':           'Foggy-midday.png',
+    'Foggy-sunset':           'Foggy-sunset.png',
+    'Foggy-night':            'Foggy-night.png',
+    // Partly Cloudy — exact mixed casing from GitHub
+    'PartlyCloudy-sunrise':   'Partly cloudy-sunrise.png',
+    'PartlyCloudy-morning':   'Partly Cloudy-morning.png',
+    'PartlyCloudy-midday':    'Partly cloudy-midday.png',
+    'PartlyCloudy-sunset':    'Partly cloudy-sunset.png',
+    'PartlyCloudy-night':     'Partly cloudy-night.png',
   };
 
-  const key = weatherType + '-' + timeOfDay;
+  const key = prefix + '-' + timeOfDay;
   const filename = photoMap[key] || (timeOfDay === 'night' ? 'Clear-night.png' : 'Sunny-midday.png');
   const base = 'https://raw.githubusercontent.com/cubbiesfan17/family-dashboard/main/photos/';
   const url = base + filename;
@@ -407,7 +431,7 @@ async function loadWX() {
         }
       }
     } catch {}
-    setWeatherBg(d.weather[0].main, d.sys.sunrise, d.sys.sunset, d.dt);
+    setWeatherBg(d.weather[0].main, d.weather[0].description, d.sys.sunrise, d.sys.sunset, d.dt);
     const wtitle = document.getElementById('wx-title'); if(wtitle) wtitle.textContent = '✦ WEATHER IN ' + d.name.toUpperCase();
     const ic = WI[d.weather[0].main] || '&#127777;';
 

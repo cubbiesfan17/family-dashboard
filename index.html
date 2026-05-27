@@ -652,7 +652,7 @@ function parseICS(txt) {
 
   // How far ahead to expand recurrences (covers month view + some buffer)
   const NOW = new Date();
-  const EXPAND_FROM = new Date(NOW); EXPAND_FROM.setDate(EXPAND_FROM.getDate() - 1);
+  const EXPAND_FROM = new Date(NOW); EXPAND_FROM.setHours(0,0,0,0);
   const EXPAND_TO   = new Date(NOW); EXPAND_TO.setDate(EXPAND_TO.getDate() + 45);
 
   // Expand a recurring event into individual occurrences within [EXPAND_FROM, EXPAND_TO]
@@ -784,8 +784,10 @@ function parseICS(txt) {
         }
       }
     } else {
-      // Non-recurring — just add it
-      evts.push({ sm, start: baseStart, end: baseEnd, allDay });
+      // Non-recurring — only add if on or after today
+      if (baseStart && baseStart >= EXPAND_FROM) {
+        evts.push({ sm, start: baseStart, end: baseEnd, allDay });
+      }
     }
   });
 
@@ -867,17 +869,12 @@ const MONTH_NAMES = ['January','February','March','April','May','June','July','A
 function getDayRange(view) {
   const now = new Date();
   const start = new Date(now); start.setHours(0,0,0,0);
-  const end = new Date(now);
+  const end = new Date(start);
   if (view === 'week') {
-    // Mon–Sun of current week
-    const dow = start.getDay(); // 0=Sun
-    const diffToMon = (dow === 0) ? -6 : 1 - dow;
-    start.setDate(start.getDate() + diffToMon);
     end.setDate(start.getDate() + 6);
     end.setHours(23,59,59,999);
   } else if (view === 'month') {
-    start.setDate(1);
-    end.setFullYear(now.getFullYear(), now.getMonth() + 1, 0);
+    end.setDate(start.getDate() + 29);
     end.setHours(23,59,59,999);
   } else {
     end.setHours(23,59,59,999);
@@ -908,7 +905,7 @@ function renderColMultiDay(evts, view) {
   });
 
   if (!evtsInRange.length) {
-    const label = view === 'week' ? 'this week' : 'this month';
+    const label = view === 'week' ? 'in the next 7 days' : 'in the next 30 days';
     return '<div class="wm-empty">No events ' + label + '</div>';
   }
 
@@ -950,7 +947,7 @@ function switchCalView(view) {
     if (btn) btn.classList.toggle('active', v === view);
   });
   // Update title
-  const titles = { today: "📅 Today's Activities", week: '📅 This Week', month: '📅 This Month' };
+  const titles = { today: "📅 Today's Activities", week: '📅 Next 7 Days', month: '📅 Next 30 Days' };
   const titleEl = document.getElementById('cal-title');
   if (titleEl) titleEl.textContent = titles[view] || "📅 Today's Activities";
 
@@ -980,7 +977,7 @@ function renderCalView(view) {
     el.innerHTML = headerRow + contentRow;
   } else {
     const contentRow = '<div class="cal-columns">' + _CAL_COLS.map((c, i) =>
-      '<div class="cal-col-wrap"><div class="cal-col wm-col" id="cal-col-' + i + '">' + renderColMultiDay(_calResults[i], view) + '</div></div>'
+      '<div class="cal-col-wrap"><div class="cal-col wm-col" id="cal-col-' + i + '">' + renderColMultiDay(_calResults[i], view) + '</div><div class="scroll-hint" id="scroll-hint-' + i + '"></div></div>'
     ).join('') + '</div>';
     el.innerHTML = headerRow + contentRow;
   }
@@ -990,25 +987,24 @@ function renderCalView(view) {
   el.style.flex = '1';
   el.style.minHeight = '0';
 
-  if (view === 'today') {
-    setTimeout(() => {
-      for (let i = 0; i < 4; i++) {
-        const col = document.getElementById('cal-col-' + i);
-        const hint = document.getElementById('scroll-hint-' + i);
-        if (!col || !hint) continue;
-        const update = () => {
-          const hasMore = col.scrollHeight > col.clientHeight + 4;
-          const atBottom = col.scrollHeight - col.scrollTop <= col.clientHeight + 4;
-          const show = hasMore && !atBottom;
-          hint.style.opacity = show ? '1' : '0';
-          hint.style.visibility = show ? 'visible' : 'hidden';
-        };
-        requestAnimationFrame(() => { requestAnimationFrame(update); });
-        col.addEventListener('scroll', update);
-        window.addEventListener('resize', update);
-      }
-    }, 500);
-  }
+  // Attach scroll hints for all views
+  setTimeout(() => {
+    for (let i = 0; i < 4; i++) {
+      const col = document.getElementById('cal-col-' + i);
+      const hint = document.getElementById('scroll-hint-' + i);
+      if (!col || !hint) continue;
+      const update = () => {
+        const hasMore = col.scrollHeight > col.clientHeight + 4;
+        const atBottom = col.scrollHeight - col.scrollTop <= col.clientHeight + 4;
+        const show = hasMore && !atBottom;
+        hint.style.opacity = show ? '1' : '0';
+        hint.style.visibility = show ? 'visible' : 'hidden';
+      };
+      requestAnimationFrame(() => { requestAnimationFrame(update); });
+      col.addEventListener('scroll', update);
+      window.addEventListener('resize', update);
+    }
+  }, 500);
 }
 
 async function loadCal() {

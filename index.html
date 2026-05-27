@@ -97,6 +97,26 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 /* In week/month mode make columns scrollable with more height */
 .wm-col{overflow-y:auto;max-height:200px;scrollbar-width:none}
 .wm-col::-webkit-scrollbar{display:none}
+
+/* Holiday events */
+.event-item.holiday { opacity: 1; }
+.event-item.holiday .event-time { color: #f0a500; font-size:.72rem; letter-spacing:.3px; }
+.event-item.holiday .event-title { color: #f0d080; font-style: italic; }
+
+/* Today holiday badge in card title */
+.today-holiday-badge {
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: 700;
+  background: rgba(240,165,0,0.18);
+  color: #f0c040;
+  border: 1px solid rgba(240,165,0,0.35);
+  border-radius: 20px;
+  padding: 2px 9px;
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: .3px;
+}
 </style>
 </head>
 <body>
@@ -833,6 +853,90 @@ async function loadColEvents(icsRaw) {
   return parseICS(allText);
 }
 
+
+// Holiday Engine
+function getNthWeekday(year, month, nth, dow) {
+  if (nth === -1) {
+    const last = new Date(year, month + 1, 0);
+    const diff = (last.getDay() - dow + 7) % 7;
+    return new Date(year, month, last.getDate() - diff);
+  }
+  const first = new Date(year, month, 1);
+  const diff = (dow - first.getDay() + 7) % 7;
+  return new Date(year, month, 1 + diff + (nth - 1) * 7);
+}
+
+function getEaster(year) {
+  const a = year % 19, b = Math.floor(year / 100), c = year % 100;
+  const d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25);
+  const g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+  const day = ((h + l - 7 * m + 114) % 31) + 1;
+  return new Date(year, month, day);
+}
+
+function getHolidaysForYear(year) {
+  const h = (m, d, name, icon) => ({ sm: icon + ' ' + name, start: new Date(year, m, d), end: null, allDay: true, isHoliday: true, icon, holidayName: name });
+  const wd = (m, nth, dow, name, icon) => { const dt = getNthWeekday(year, m, nth, dow); return { sm: icon + ' ' + name, start: dt, end: null, allDay: true, isHoliday: true, icon, holidayName: name }; };
+  const easter = getEaster(year);
+  const thanksgiving = getNthWeekday(year, 10, 4, 4);
+  const blackFriday = new Date(year, 10, thanksgiving.getDate() + 1);
+  return [
+    h(0,  1,  "New Year's Day",      '\uD83C\uDF86'),
+    wd(0, 3,  1, 'MLK Day',          '\uD83C\uDDFA\uD83C\uDDF8'),
+    wd(1, 3,  1, "Presidents' Day",  '\uD83C\uDDFA\uD83C\uDDF8'),
+    h(1,  14, "Valentine's Day",     '\uD83D\uDC9D'),
+    h(2,  17, "St. Patrick's Day",   '\uD83C\uDF40'),
+    h(2,  20, 'First Day of Spring', '\uD83C\uDF38'),
+    { sm: '\uD83D\uDC23 Easter', start: easter, end: null, allDay: true, isHoliday: true, icon: '\uD83D\uDC23', holidayName: 'Easter' },
+    wd(4, 2,  0, "Mother's Day",     '\uD83C\uDF37'),
+    wd(4, -1, 1, 'Memorial Day',     '\uD83C\uDDFA\uD83C\uDDF8'),
+    h(5,  19, 'Juneteenth',          '\uD83C\uDDFA\uD83C\uDDF8'),
+    h(5,  21, 'First Day of Summer', '\uD83C\uDF1E'),
+    wd(5, 3,  0, "Father's Day",     '\uD83D\uDC68'),
+    h(6,  4,  'Independence Day',    '\uD83C\uDDFA\uD83C\uDDF8'),
+    wd(8, 1,  1, 'Labor Day',        '\uD83C\uDDFA\uD83C\uDDF8'),
+    h(8,  22, 'First Day of Fall',   '\uD83C\uDF42'),
+    wd(9, 2,  1, 'Columbus Day',     '\uD83C\uDDFA\uD83C\uDDF8'),
+    h(9,  31, 'Halloween',           '\uD83D\uDC7B'),
+    h(10, 11, 'Veterans Day',        '\uD83C\uDDFA\uD83C\uDDF8'),
+    { sm: '\uD83E\uDD83 Thanksgiving', start: thanksgiving, end: null, allDay: true, isHoliday: true, icon: '\uD83E\uDD83', holidayName: 'Thanksgiving' },
+    { sm: '\uD83E\uDD83 Black Friday', start: blackFriday, end: null, allDay: true, isHoliday: true, icon: '\uD83E\uDD83', holidayName: 'Black Friday' },
+    h(11, 21, 'First Day of Winter', '\u2744\uFE0F'),
+    h(11, 24, 'Christmas Eve',       '\uD83C\uDF84'),
+    h(11, 25, 'Christmas Day',       '\uD83C\uDF84'),
+    h(11, 31, "New Year's Eve",      '\uD83C\uDF86'),
+  ];
+}
+
+function getHolidays() {
+  const year = new Date().getFullYear();
+  return [...getHolidaysForYear(year), ...getHolidaysForYear(year + 1)];
+}
+
+function getTodayHolidays() {
+  const todayStr = new Date().toDateString();
+  return getHolidays().filter(hol => hol.start.toDateString() === todayStr);
+}
+
+function updateTodayHolidayBadge() {
+  const titleEl = document.getElementById('cal-title');
+  if (!titleEl) return;
+  const todays = getTodayHolidays();
+  const base = '&#128197; Today\'s Activities';
+  if (todays.length) {
+    const icons = todays.map(hol => hol.icon).join(' ');
+    const names = todays.map(hol => hol.holidayName).join(' & ');
+    titleEl.innerHTML = base + ' <span class="today-holiday-badge">' + icons + ' ' + names + '</span>';
+  } else {
+    titleEl.innerHTML = base;
+  }
+}
+// End Holiday Engine
+
 function renderCol(evts, colorClass) {
   if (evts === null) return '<div class="err" style="font-size:.75rem">Could not load</div>';
   const today = new Date().toDateString();
@@ -852,7 +956,7 @@ function renderCol(evts, colorClass) {
       const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
       ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
     }
-    return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + '">' +
+    return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
       '<span class="event-time">' + ts + '</span>' +
       '<span class="event-title">' + ev.sm + '</span>' +
       '' + '</div>';
@@ -929,7 +1033,7 @@ function renderColMultiDay(evts, view) {
         const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
         ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
       }
-      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + '">' +
+      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
         '<span class="event-time">' + ts + '</span>' +
         '<span class="event-title">' + ev.sm + '</span>' +
         '</div>';
@@ -952,6 +1056,12 @@ function switchCalView(view) {
   if (titleEl) titleEl.textContent = titles[view] || "📅 Today's Activities";
 
   if (!_calResults) return; // not loaded yet
+  if (view === 'today') updateTodayHolidayBadge();
+  else {
+    const titleEl = document.getElementById('cal-title');
+    const titleMap = { today: "Today's Activities", week: 'Next 7 Days', month: 'Next 30 Days' };
+    if (titleEl) titleEl.innerHTML = '&#128197; ' + (titleMap[view] || "Today's Activities");
+  }
   renderCalView(view);
 }
 
@@ -1017,7 +1127,16 @@ async function loadCal() {
   // Don't show spinner - update silently in background
   try {
     const results = await Promise.all(_CAL_COLS.map(c => loadColEvents(cfg.get(c.key))));
+    // Inject holidays into Family column (index 0)
+    const holidays = getHolidays();
+    if (Array.isArray(results[0])) {
+      const existingDates = new Set(results[0].filter(e => e.isHoliday).map(e => e.start.toDateString()));
+      holidays.forEach(hol => { if (!existingDates.has(hol.start.toDateString())) results[0].push(hol); });
+    } else {
+      results[0] = holidays;
+    }
     _calResults = results;
+    updateTodayHolidayBadge();
     renderCalView(_calView);
   } catch(e) {
     el.innerHTML = '<div class="err">Could not load calendar: ' + e.message + '</div>';

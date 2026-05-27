@@ -81,6 +81,22 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .sp{display:inline-block;width:18px;height:18px;border:2px solid #1A3D52;border-top-color:#4A9EBF;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle}
 .err{color:#ef4444;font-size:.85rem;line-height:1.5}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+/* View toggle */
+.view-toggle{display:flex;gap:5px;margin-left:auto}
+.view-btn{font-size:.68rem;font-weight:700;padding:4px 10px;border-radius:20px;border:1.5px solid rgba(74,158,191,0.4);background:transparent;color:#7BAFC4;cursor:pointer;letter-spacing:.5px;transition:all .18s}
+.view-btn.active{background:#4A9EBF;color:#fff;border-color:#4A9EBF}
+.view-btn:hover:not(.active){background:rgba(74,158,191,0.18);color:#FFFFFF}
+
+/* Week/Month view day group */
+.wm-day-group{margin-bottom:10px}
+.wm-day-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#4A9EBF;padding:3px 0 4px;border-bottom:1px solid rgba(74,158,191,0.2);margin-bottom:4px}
+.wm-day-label.today-label{color:#7ECFED}
+.wm-empty{font-size:.82rem;color:#4A7A95;padding:8px 0;text-align:center}
+
+/* In week/month mode make columns scrollable with more height */
+.wm-col{overflow-y:auto;max-height:200px;scrollbar-width:none}
+.wm-col::-webkit-scrollbar{display:none}
 </style>
 </head>
 <body>
@@ -111,7 +127,14 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 </div>
 
 <div class="card calendar-card" style="display:flex;flex-direction:column;">
-  <div class="card-title">&#128197; Today's Activities</div>
+  <div style="display:flex;align-items:center;margin-bottom:5px;flex-shrink:0;">
+    <div class="card-title" id="cal-title" style="margin-bottom:0;">&#128197; Today's Activities</div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="vbtn-today" onclick="switchCalView('today')">TODAY</button>
+      <button class="view-btn" id="vbtn-week" onclick="switchCalView('week')">WEEK</button>
+      <button class="view-btn" id="vbtn-month" onclick="switchCalView('month')">MONTH</button>
+    </div>
+  </div>
   <div id="cal"><span class="sp"></span></div>
 </div>
 
@@ -597,35 +620,178 @@ function loadQuote() {
 }
 
 function parseICS(txt) {
+  // --- date parser (unchanged) ---
+  const pd = (v) => {
+    if (!v) return null;
+    const c = v.replace(/[TZ]/g,'');
+    if (c.length === 8) return new Date(c.slice(0,4), c.slice(4,6)-1, c.slice(6,8));
+    if (v.endsWith('Z')) {
+      return new Date(Date.UTC(+c.slice(0,4), c.slice(4,6)-1, +c.slice(6,8), +c.slice(8,10)||0, +c.slice(10,12)||0));
+    }
+    const isoStr = c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6,8)+'T'+(c.slice(8,10)||'00')+':'+(c.slice(10,12)||'00')+':00';
+    try {
+      const chicagoDate = new Date(new Date(isoStr).toLocaleString('en-US', {timeZone:'America/Chicago'}));
+      const offset = new Date(isoStr) - chicagoDate;
+      return new Date(new Date(isoStr).getTime() + offset);
+    } catch { return new Date(isoStr); }
+  };
+
+  // Parse RRULE string into an object
+  const parseRRule = (rrStr) => {
+    if (!rrStr) return null;
+    const r = {};
+    rrStr.split(';').forEach(part => {
+      const [k,v] = part.split('=');
+      r[k.trim()] = v ? v.trim() : '';
+    });
+    return r;
+  };
+
+  // Day-of-week map for BYDAY
+  const DOW = {SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+
+  // How far ahead to expand recurrences (covers month view + some buffer)
+  const NOW = new Date();
+  const EXPAND_FROM = new Date(NOW); EXPAND_FROM.setDate(EXPAND_FROM.getDate() - 1);
+  const EXPAND_TO   = new Date(NOW); EXPAND_TO.setDate(EXPAND_TO.getDate() + 45);
+
+  // Expand a recurring event into individual occurrences within [EXPAND_FROM, EXPAND_TO]
+  function expandRecurrence(baseStart, baseEnd, rrule, exdates, sm, allDay) {
+    const rr = parseRRule(rrule);
+    if (!rr || !rr.FREQ) return [];
+
+    const freq    = rr.FREQ;
+    const interval= parseInt(rr.INTERVAL || '1', 10);
+    const count   = rr.COUNT ? parseInt(rr.COUNT, 10) : null;
+    const until   = rr.UNTIL ? pd(rr.UNTIL) : null;
+    const byDay   = rr.BYDAY ? rr.BYDAY.split(',').map(s => s.trim()) : null;
+    const byMonth = rr.BYMONTH ? rr.BYMONTH.split(',').map(Number) : null;
+    const byMonthDay = rr.BYMONTHDAY ? rr.BYMONTHDAY.split(',').map(Number) : null;
+
+    // Duration of the event in ms
+    const durMs = (baseEnd && baseStart) ? (baseEnd - baseStart) : 0;
+
+    const exSet = new Set((exdates || []).map(d => {
+      const x = pd(d);
+      return x ? x.toDateString() : null;
+    }).filter(Boolean));
+
+    const results = [];
+    let cur = new Date(baseStart);
+    let n = 0;
+    const MAX_ITER = 5000; // safety cap
+    let iter = 0;
+
+    while (iter++ < MAX_ITER) {
+      // Stop conditions
+      if (until && cur > until) break;
+      if (count !== null && n >= count) break;
+      if (cur > EXPAND_TO) break;
+
+      const curDateStr = cur.toDateString();
+      const inWindow = cur >= EXPAND_FROM && cur <= EXPAND_TO;
+
+      if (inWindow && !exSet.has(curDateStr)) {
+        const evtEnd = durMs > 0 ? new Date(cur.getTime() + durMs) : null;
+        results.push({ sm, start: new Date(cur), end: evtEnd, allDay });
+      }
+      n++;
+
+      // Advance by frequency
+      if (freq === 'DAILY') {
+        cur = new Date(cur);
+        cur.setDate(cur.getDate() + interval);
+      } else if (freq === 'WEEKLY') {
+        if (byDay && byDay.length > 0) {
+          // Expand all matching days in current week, then jump interval weeks
+          // Find all days in the current week that match BYDAY
+          const weekStart = new Date(cur);
+          // Collect matching days of THIS week starting from cur's week start
+          const wd = cur.getDay();
+          // Find the Monday (or any anchor) of this week
+          const days = byDay.map(bd => DOW[bd.replace(/[+-\d]/g,'').toUpperCase()]).filter(d => d !== undefined);
+          // We iterate day by day within a week-interval window
+          cur = new Date(cur);
+          cur.setDate(cur.getDate() + 1);
+          // Find next matching day
+          let found = false;
+          for (let d = 0; d < 7 * interval; d++) {
+            if (days.includes(cur.getDay())) {
+              found = true;
+              break;
+            }
+            cur.setDate(cur.getDate() + 1);
+          }
+          if (!found) break;
+        } else {
+          cur = new Date(cur);
+          cur.setDate(cur.getDate() + 7 * interval);
+        }
+      } else if (freq === 'MONTHLY') {
+        cur = new Date(cur);
+        cur.setMonth(cur.getMonth() + interval);
+      } else if (freq === 'YEARLY') {
+        cur = new Date(cur);
+        cur.setFullYear(cur.getFullYear() + interval);
+      } else {
+        break; // unsupported freq
+      }
+    }
+    return results;
+  }
+
+  // --- main parse loop ---
   const evts = [];
+  // Unfold long lines (RFC 5545 line folding: CRLF + whitespace = continuation)
+  txt = txt.replace(/\r\n[ \t]/g, '').replace(/\r/g, '');
+
   txt.split('BEGIN:VEVENT').slice(1).forEach(b => {
-    const gv = k => { const m = b.match(new RegExp(k + '[^:]*:([^\\r\\n]+)')); return m ? m[1].trim() : ''; };
-    const sm = gv('SUMMARY'), ds = gv('DTSTART'), de = gv('DTEND');
-    if (!sm) return;
-    const pd = (v, tzid) => {
-      if (!v) return null;
-      const c = v.replace(/[TZ]/g,'');
-      if (c.length === 8) return new Date(c.slice(0,4), c.slice(4,6)-1, c.slice(6,8));
-      // If explicitly UTC (Z suffix)
-      if (v.endsWith('Z')) {
-        return new Date(Date.UTC(+c.slice(0,4), c.slice(4,6)-1, +c.slice(6,8), +c.slice(8,10)||0, +c.slice(10,12)||0));
-      }
-      // Floating time with TZID or no timezone - treat as America/Chicago
-      const isoStr = c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6,8)+'T'+(c.slice(8,10)||'00')+':'+(c.slice(10,12)||'00')+':00';
-      // Convert Chicago time to UTC by creating date in Chicago tz
-      try {
-        const chicagoDate = new Date(new Date(isoStr).toLocaleString('en-US', {timeZone:'America/Chicago'}));
-        const offset = new Date(isoStr) - chicagoDate;
-        return new Date(new Date(isoStr).getTime() + offset);
-      } catch {
-        return new Date(isoStr);
-      }
+    const gv = k => {
+      const m = b.match(new RegExp('(?:^|\\n)' + k + '[^:\\n]*:([^\\n]+)', ''));
+      return m ? m[1].trim() : '';
     };
-    const dsTzid = (b.match(/DTSTART;TZID=([^:]+):/) || [])[1] || '';
-    evts.push({ sm, start: pd(ds, dsTzid), end: pd(de, dsTzid), allDay: ds.replace(/[^0-9]/g,'').length === 8 });
+    // Multi-line safe getter (handles folded lines already unfolded above)
+    const sm = gv('SUMMARY');
+    const ds = gv('DTSTART');
+    const de = gv('DTEND');
+    if (!sm) return;
+
+    const allDay = ds.replace(/[^0-9]/g,'').length === 8;
+    const baseStart = pd(ds);
+    const baseEnd   = pd(de);
+
+    // Collect EXDATEs (may be multiple lines)
+    const exdates = [];
+    const exRe = /(?:^|\n)EXDATE[^\n]*:([^\n]+)/g;
+    let exMatch;
+    while ((exMatch = exRe.exec(b)) !== null) {
+      exMatch[1].split(',').forEach(v => exdates.push(v.trim()));
+    }
+
+    // Get RRULE
+    const rruleRaw = gv('RRULE');
+
+    if (rruleRaw) {
+      // Recurring event — expand occurrences
+      const occurrences = expandRecurrence(baseStart, baseEnd, rruleRaw, exdates, sm, allDay);
+      occurrences.forEach(o => evts.push(o));
+      // Also always include the base event if it falls in window (some servers omit it from expansions)
+      if (baseStart && baseStart >= EXPAND_FROM && baseStart <= EXPAND_TO) {
+        const baseDateStr = baseStart.toDateString();
+        const exSet = new Set(exdates.map(d => { const x = pd(d); return x ? x.toDateString() : null; }).filter(Boolean));
+        if (!exSet.has(baseDateStr) && !occurrences.some(o => o.start.toDateString() === baseDateStr)) {
+          evts.push({ sm, start: baseStart, end: baseEnd, allDay });
+        }
+      }
+    } else {
+      // Non-recurring — just add it
+      evts.push({ sm, start: baseStart, end: baseEnd, allDay });
+    }
   });
+
   return evts;
 }
+
 async function fetchICS(rawUrl) {
   const url = rawUrl.trim().replace(/^webcal:\/\//i, 'https://');
 
@@ -691,34 +857,140 @@ function renderCol(evts, colorClass) {
   }).join('') + '</div>';
 }
 
-async function loadCal() {
-  const el = document.getElementById('cal');
-  const cols = [
-    { key: 'ics_0', label: 'Family',  cls: 'col-family' },
-    { key: 'ics_1', label: 'Finn',    cls: 'col-finn' },
-    { key: 'ics_2', label: 'Millie',  cls: 'col-millie' },
-    { key: 'ics_3', label: 'Nolan',   cls: 'col-nolan' },
-  ];
-  const anyConfigured = cols.some(c => cfg.get(c.key));
-  if (!anyConfigured) {
-    el.innerHTML = '<div class="cal-setup-box"><strong>Setup needed:</strong> tap <strong>Configure</strong> and assign calendar URLs to each family member.</div>';
-    return;
+// Stores all loaded events for reuse across views
+let _calResults = null;
+let _calView = 'today'; // 'today' | 'week' | 'month'
+
+const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function getDayRange(view) {
+  const now = new Date();
+  const start = new Date(now); start.setHours(0,0,0,0);
+  const end = new Date(now);
+  if (view === 'week') {
+    // Mon–Sun of current week
+    const dow = start.getDay(); // 0=Sun
+    const diffToMon = (dow === 0) ? -6 : 1 - dow;
+    start.setDate(start.getDate() + diffToMon);
+    end.setDate(start.getDate() + 6);
+    end.setHours(23,59,59,999);
+  } else if (view === 'month') {
+    start.setDate(1);
+    end.setFullYear(now.getFullYear(), now.getMonth() + 1, 0);
+    end.setHours(23,59,59,999);
+  } else {
+    end.setHours(23,59,59,999);
   }
-  // Don't show spinner - update silently in background
-  try {
-    const results = await Promise.all(cols.map(c => loadColEvents(cfg.get(c.key))));
-    // Header row pinned to top, content fills remaining space
-    const headerRow = '<div class="cal-header-row">' + cols.map(c =>
-      '<div class="cal-col-header ' + c.cls + '">' + c.label + '</div>'
+  return { start, end };
+}
+
+function getDaysInRange(start, end) {
+  const days = [];
+  const cur = new Date(start); cur.setHours(0,0,0,0);
+  while (cur <= end) {
+    days.push(new Date(cur));
+    cur.setDate(cur.getDate() + 1);
+  }
+  return days;
+}
+
+function renderColMultiDay(evts, view) {
+  if (evts === null) return '<div class="err" style="font-size:.75rem">Could not load</div>';
+  const { start, end } = getDayRange(view);
+  const now = new Date();
+  const todayStr = now.toDateString();
+  const days = getDaysInRange(start, end);
+  const evtsInRange = (evts || []).filter(e => {
+    if (!e.start) return false;
+    const eDate = new Date(e.start); eDate.setHours(0,0,0,0);
+    return eDate >= start && eDate <= end;
+  });
+
+  if (!evtsInRange.length) {
+    const label = view === 'week' ? 'this week' : 'this month';
+    return '<div class="wm-empty">No events ' + label + '</div>';
+  }
+
+  let html = '';
+  for (const day of days) {
+    const dayStr = day.toDateString();
+    const dayEvts = evtsInRange.filter(e => e.start && e.start.toDateString() === dayStr)
+      .sort((a,b) => a.start - b.start);
+    if (!dayEvts.length) continue;
+    const isToday = dayStr === todayStr;
+    const labelText = isToday
+      ? 'Today — ' + DAY_NAMES[day.getDay()] + ' ' + MONTH_NAMES[day.getMonth()] + ' ' + day.getDate()
+      : DAY_NAMES[day.getDay()] + ', ' + MONTH_NAMES[day.getMonth()] + ' ' + day.getDate();
+    html += '<div class="wm-day-group">';
+    html += '<div class="wm-day-label' + (isToday ? ' today-label' : '') + '">' + labelText + '</div>';
+    html += '<div class="events-list">';
+    dayEvts.forEach(ev => {
+      const isPast = (ev.end ? ev.end : ev.start) < now;
+      let ts = 'All day';
+      if (!ev.allDay && ev.start) {
+        const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
+        ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
+      }
+      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + '">' +
+        '<span class="event-time">' + ts + '</span>' +
+        '<span class="event-title">' + ev.sm + '</span>' +
+        '</div>';
+    });
+    html += '</div></div>';
+  }
+  return html || '<div class="wm-empty">No events</div>';
+}
+
+function switchCalView(view) {
+  _calView = view;
+  // Update button styles
+  ['today','week','month'].forEach(v => {
+    const btn = document.getElementById('vbtn-' + v);
+    if (btn) btn.classList.toggle('active', v === view);
+  });
+  // Update title
+  const titles = { today: "📅 Today's Activities", week: '📅 This Week', month: '📅 This Month' };
+  const titleEl = document.getElementById('cal-title');
+  if (titleEl) titleEl.textContent = titles[view] || "📅 Today's Activities";
+
+  if (!_calResults) return; // not loaded yet
+  renderCalView(view);
+}
+
+const _CAL_COLS = [
+  { key: 'ics_0', label: 'Family',  cls: 'col-family' },
+  { key: 'ics_1', label: 'Finn',    cls: 'col-finn' },
+  { key: 'ics_2', label: 'Millie',  cls: 'col-millie' },
+  { key: 'ics_3', label: 'Nolan',   cls: 'col-nolan' },
+];
+
+function renderCalView(view) {
+  const el = document.getElementById('cal');
+  if (!el || !_calResults) return;
+
+  const headerRow = '<div class="cal-header-row">' + _CAL_COLS.map(c =>
+    '<div class="cal-col-header ' + c.cls + '">' + c.label + '</div>'
+  ).join('') + '</div>';
+
+  if (view === 'today') {
+    const contentRow = '<div class="cal-columns">' + _CAL_COLS.map((c, i) =>
+      '<div class="cal-col-wrap"><div class="cal-col" id="cal-col-' + i + '">' + renderCol(_calResults[i], c.cls) + '</div><div class="scroll-hint" id="scroll-hint-' + i + '"></div></div>'
     ).join('') + '</div>';
-    const contentRow = '<div class="cal-columns">' + cols.map((c, i) =>
-      '<div class="cal-col-wrap"><div class="cal-col" id="cal-col-' + i + '">' + renderCol(results[i], c.cls) + '</div><div class="scroll-hint" id="scroll-hint-' + i + '"></div></div>'
+    el.innerHTML = headerRow + contentRow;
+  } else {
+    const contentRow = '<div class="cal-columns">' + _CAL_COLS.map((c, i) =>
+      '<div class="cal-col-wrap"><div class="cal-col wm-col" id="cal-col-' + i + '">' + renderColMultiDay(_calResults[i], view) + '</div></div>'
     ).join('') + '</div>';
-    el.style.display = 'flex';
-    el.style.flexDirection = 'column';
-    el.style.flex = '1';
-    el.style.minHeight = '0';
-    // Set up scroll hints after render
+    el.innerHTML = headerRow + contentRow;
+  }
+
+  el.style.display = 'flex';
+  el.style.flexDirection = 'column';
+  el.style.flex = '1';
+  el.style.minHeight = '0';
+
+  if (view === 'today') {
     setTimeout(() => {
       for (let i = 0; i < 4; i++) {
         const col = document.getElementById('cal-col-' + i);
@@ -731,14 +1003,26 @@ async function loadCal() {
           hint.style.opacity = show ? '1' : '0';
           hint.style.visibility = show ? 'visible' : 'hidden';
         };
-        // Force layout recalc
         requestAnimationFrame(() => { requestAnimationFrame(update); });
         col.addEventListener('scroll', update);
-        // Re-check on resize
         window.addEventListener('resize', update);
       }
     }, 500);
-    el.innerHTML = headerRow + contentRow;
+  }
+}
+
+async function loadCal() {
+  const el = document.getElementById('cal');
+  const anyConfigured = _CAL_COLS.some(c => cfg.get(c.key));
+  if (!anyConfigured) {
+    el.innerHTML = '<div class="cal-setup-box"><strong>Setup needed:</strong> tap <strong>Configure</strong> and assign calendar URLs to each family member.</div>';
+    return;
+  }
+  // Don't show spinner - update silently in background
+  try {
+    const results = await Promise.all(_CAL_COLS.map(c => loadColEvents(cfg.get(c.key))));
+    _calResults = results;
+    renderCalView(_calView);
   } catch(e) {
     el.innerHTML = '<div class="err">Could not load calendar: ' + e.message + '</div>';
   }

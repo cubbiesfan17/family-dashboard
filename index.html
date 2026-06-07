@@ -441,7 +441,7 @@ async function loadWX() {
   try {
     const [r, rf] = await Promise.all([
       fetch('https://api.openweathermap.org/data/2.5/weather?q=' + encodeURIComponent(city) + '&appid=' + key + '&units=imperial'),
-      fetch('https://api.openweathermap.org/data/2.5/forecast?q=' + encodeURIComponent(city) + '&appid=' + key + '&units=imperial&cnt=10')
+      fetch('https://api.openweathermap.org/data/2.5/forecast?q=' + encodeURIComponent(city) + '&appid=' + key + '&units=imperial&cnt=16')
     ]);
     if (!r.ok) throw new Error('API error ' + r.status + (r.status===401 ? ' — check your key (new keys take ~15 min to activate)' : ''));
     const d = await r.json();
@@ -564,9 +564,12 @@ async function loadWX() {
     else dressTip = '😎 T-shirt weather!';
     if (precipType === 'snow' && precipChance >= 40) dressTip += ' ❄️ Snow gear!';
     else if (precipType === 'rain' && precipChance >= 40 && parseFloat(totalRainIn) >= 0.1) dressTip += ' ☂️ Raincoat!';
+    const humidity = d.main.humidity || 0;
     if (uvIndex !== null && uvIndex >= 6) {
       if (uvIndex >= 8) dressTip += ' 🌞 SPF 50+';
       else dressTip += ' 🌞 SPF 30+';
+      if (temp >= 80 && humidity >= 60) dressTip += ' 🥵 Hot & humid!';
+      else if (temp >= 75 && humidity >= 70) dressTip += ' 🥵 Muggy out!';
     }
     dressTip += pollenTip;
 

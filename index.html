@@ -98,6 +98,10 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .wm-col{overflow-y:auto;max-height:200px;scrollbar-width:none}
 .wm-col::-webkit-scrollbar{display:none}
 
+/* Currently occurring activities */
+.event-item.current .event-title { color: #FFD54F; }
+.event-item.current .event-time { color: #FFD54F; }
+
 /* Holiday events */
 .event-item.holiday { opacity: 1; }
 .event-item.holiday .event-time { color: #f0a500; font-size:.72rem; letter-spacing:.3px; }
@@ -986,12 +990,13 @@ function renderCol(evts, colorClass) {
   return '<div class="events-list">' + te.map(ev => {
     const past = ev.end ? ev.end < now : ev.start < now;
     const next = ev === nx;
+    const current = !ev.allDay && ev.start <= now && ev.end && ev.end >= now;
     let ts = 'All day';
     if (!ev.allDay && ev.start) {
       const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
       ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
     }
-    return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
+    return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + (current ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
       '<span class="event-time">' + ts + '</span>' +
       '<span class="event-title">' + ev.sm + '</span>' +
       '' + '</div>';
@@ -1063,12 +1068,13 @@ function renderColMultiDay(evts, view) {
     html += '<div class="events-list">';
     dayEvts.forEach(ev => {
       const isPast = (ev.end ? ev.end : ev.start) < now;
+      const isCurrent = isToday && !ev.allDay && ev.start <= now && ev.end && ev.end >= now;
       let ts = 'All day';
       if (!ev.allDay && ev.start) {
         const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
         ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
       }
-      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
+      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + (isCurrent ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
         '<span class="event-time">' + ts + '</span>' +
         '<span class="event-title">' + ev.sm + '</span>' +
         '</div>';

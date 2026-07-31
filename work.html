@@ -1110,7 +1110,13 @@ async function loadHeadlines(){
     container.innerHTML='';
     items.forEach(item=>{
       const title=(item.querySelector('title')?.textContent||'').trim();
-      const link=(item.querySelector('link')?.textContent||'').trim();
+      let link=(item.querySelector('link')?.textContent||'').trim();
+      // Google News RSS wraps links in a redirect. Extract the real article URL from the description.
+      const desc=(item.querySelector('description')?.textContent||'');
+      const realUrlMatch=desc.match(/<a[^>]+href=["']([^"']+)["']/i);
+      if(realUrlMatch&&realUrlMatch[1]&&!realUrlMatch[1].includes('news.google.com')){
+        link=realUrlMatch[1];
+      }
       // Google News titles include " - Source" at the end; split it out
       const dashIdx=title.lastIndexOf(' - ');
       const hed=dashIdx>0?title.slice(0,dashIdx):title;
@@ -1345,7 +1351,12 @@ function openReader(url,title){
   loading.classList.remove('hide');
   iframe.style.display='block';
   overlay.classList.add('open');
-  // Load iframe with timeout — if it doesn't load in 4s, show fallback
+  // Known iframe-blockers: skip iframe, go straight to fallback with browser button
+  const knownBlockers=['news.google.com/rss','nytimes.com','wsj.com','ft.com','bloomberg.com','washingtonpost.com'];
+  if(knownBlockers.some(dom=>url.includes(dom))){
+    showReaderFallback();
+    return;
+  }
   iframe.onload=function(){loading.classList.add('hide');clearTimeout(_readerTimeout);};
   iframe.onerror=function(){showReaderFallback();};
   _readerTimeout=setTimeout(showReaderFallback,4000);

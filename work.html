@@ -16,7 +16,7 @@ body {
   height: 100vh;
   width: 100vw;
   display: grid;
-  grid-template-rows: 85px 1fr 28px;
+  grid-template-rows: 95px 1fr 28px;
   gap: 5px;
   font-size: 14px;
 }
@@ -75,7 +75,7 @@ body {
 }
 .card-news    { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; }
 .card-weather { grid-column: 2; grid-row: 1; }
-.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; align-self: start; }
+.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; }
 .card-music   { grid-column: 2 / span 2; grid-row: 2; }
 
 /* Weather */
@@ -110,7 +110,7 @@ body {
 .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
 .cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .58rem; color: #7BAFC4; }
 .cal-legend-bar { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.cal-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; scrollbar-width: none; max-height: 155px; }
+.cal-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; scrollbar-width: none; flex: 1; min-height: 0; }
 .cal-list::-webkit-scrollbar { display: none; }
 .cal-event { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
 .cal-event.past { opacity: .4; }
@@ -401,104 +401,6 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-pregame-countdown { font-size: .95rem; color: #fbbf24; font-weight: 700; margin-top: 4px; }
 
 
-/* ═══ Article reader overlay ═══ */
-.reader-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  background: #0d1f2d;
-  flex-direction: column;
-}
-.reader-overlay.open { display: flex; }
-.reader-topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
-  background: #0f1e28;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  flex-shrink: 0;
-  height: 48px;
-}
-.reader-back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #4A9EBF;
-  color: #fff;
-  font-size: .95rem;
-  font-weight: 700;
-  padding: 8px 18px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.reader-back:hover { background: #3a8ba8; }
-.reader-title {
-  font-size: .8rem;
-  color: #7BAFC4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 60%;
-  margin: 0 12px;
-}
-.reader-external {
-  background: transparent;
-  color: #7BAFC4;
-  font-size: .75rem;
-  padding: 6px 12px;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 6px;
-  cursor: pointer;
-  text-decoration: none;
-}
-.reader-external:hover { background: rgba(255,255,255,0.05); color: #fff; }
-.reader-body { flex: 1; position: relative; overflow: hidden; }
-.reader-body iframe { width: 100%; height: 100%; border: none; background: #fff; }
-.reader-fallback {
-  display: none;
-  position: absolute;
-  inset: 0;
-  background: #0d1f2d;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 30px;
-  text-align: center;
-}
-.reader-fallback.show { display: flex; }
-.reader-fallback-msg { color: #F0F4F7; font-size: 1rem; line-height: 1.5; max-width: 500px; }
-.reader-fallback-sub { color: #7BAFC4; font-size: .8rem; }
-.reader-fallback-btn {
-  background: #4A9EBF;
-  color: #fff;
-  font-size: 1rem;
-  font-weight: 700;
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-}
-.reader-fallback-btn:hover { background: #3a8ba8; }
-.reader-loading {
-  position: absolute;
-  inset: 0;
-  background: rgba(13, 31, 45, 0.9);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #7BAFC4;
-  font-size: .95rem;
-  gap: 10px;
-  z-index: 10;
-}
-.reader-loading.hide { display: none; }
-
 /* EOD banner (only shows near 5pm) */
 #eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
 </style>
@@ -619,25 +521,6 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 <div id="eod-banner">⏰ Almost 5pm — wrap up, write your done list!</div>
 
 
-<!-- Article reader overlay -->
-<div class="reader-overlay" id="reader-overlay">
-  <div class="reader-topbar">
-    <button class="reader-back" onclick="closeReader()">
-      <span style="font-size:1.2rem;line-height:1;">←</span>
-      <span>Back to dashboard</span>
-    </button>
-    <div class="reader-title" id="reader-title"></div>
-    <a class="reader-external" id="reader-external" href="#" target="_blank" rel="noopener">Open in browser ↗</a>
-  </div>
-  <div class="reader-body">
-    <div class="reader-loading" id="reader-loading"><span class="sp"></span> Loading article…</div>
-    <iframe id="reader-iframe" src="about:blank"></iframe>
-    <div class="reader-fallback" id="reader-fallback">
-      <div class="reader-fallback-msg">This site blocks embedded viewing</div>
-      <div class="reader-fallback-sub">Many news sites (NYT, WSJ, etc.) don't allow their articles to be shown inside other apps. You can open it in your tablet's browser instead.</div>
-      <a class="reader-fallback-btn" id="reader-fallback-btn" href="#" target="_blank" rel="noopener">Open in browser</a>
-    </div>
-  </div>
 </div>
 
 <script src="shared-calendars.js"></script>
@@ -728,7 +611,7 @@ async function loadGameday(){
 
     // Show gameday view ONLY IF live OR within 45 min of first pitch
     const isLive=status==='Live';
-    const isWarmup=status==='Preview'&&minsUntilStart<=45&&minsUntilStart>=-5;
+    const isWarmup=status==='Preview'&&minsUntilStart<=20&&minsUntilStart>=-5;
 
     if(!isLive&&!isWarmup){showMusicMode();return;}
 
@@ -754,7 +637,7 @@ async function loadGameday(){
       const gt=new Date(game.gameDate);
       const minsLeft=Math.max(0,Math.round(minsUntilStart));
       document.getElementById('gameday-content').innerHTML=
-        '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+oppTeam.teamName+' · '+venue+'</span>'+
+        '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+' · '+venue+'</span>'+
         '<span class="gd-warmup-badge">🟡 WARMUPS</span></div>'+
         '<div class="gd-pregame">'+
           '<div style="display:flex;align-items:center;gap:20px;">'+
@@ -843,7 +726,7 @@ async function loadGameday(){
     // Away team is always on top of stacked scoreboard (baseball convention)
     const awayIsCubs=!homeIsCubs;
     const topRow={
-      name:awayIsCubs?'Cubs':oppTeam.teamName,
+      name:awayIsCubs?'Cubs':(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent'),
       logo:awayIsCubs?'chc':oppLogo,
       score:awayIsCubs?cubsScore:oppScore,
       rec:awayIsCubs?cubsRecStr:oppRecStr,
@@ -851,7 +734,7 @@ async function loadGameday(){
       batting:inningHalf==='Top',
     };
     const botRow={
-      name:homeIsCubs?'Cubs':oppTeam.teamName,
+      name:homeIsCubs?'Cubs':(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent'),
       logo:homeIsCubs?'chc':oppLogo,
       score:homeIsCubs?cubsScore:oppScore,
       rec:homeIsCubs?cubsRecStr:oppRecStr,
@@ -877,7 +760,7 @@ async function loadGameday(){
     }
 
     document.getElementById('gameday-content').innerHTML=
-      '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+oppTeam.teamName+' · '+venue+'</span>'+
+      '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+' · '+venue+'</span>'+
       '<span class="gd-live-badge">🔴 LIVE</span></div>'+
       '<div class="gd-body">'+
         '<div class="gd-scoreboard-stacked">'+
@@ -1123,8 +1006,9 @@ async function loadHeadlines(){
       const src=dashIdx>0?title.slice(dashIdx+3):'';
       const d=document.createElement('a');
       d.className='news-item';
-      d.href='#';
-      d.onclick=(function(url,title){return function(e){e.preventDefault();openReader(url,title);return false;};})(link,hed);
+      d.href=link;
+      d.target='_blank';
+      d.rel='noopener';
       d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
       d.innerHTML='<div class="news-hed">'+hed+'</div><div class="news-src">'+src+'</div>';
       container.appendChild(d);
@@ -1334,60 +1218,7 @@ loadSports();setInterval(loadSports,300000);
 
 
 
-// ── Article reader overlay ──
-let _readerTimeout=null;
-function openReader(url,title){
-  const overlay=document.getElementById('reader-overlay');
-  const iframe=document.getElementById('reader-iframe');
-  const loading=document.getElementById('reader-loading');
-  const fallback=document.getElementById('reader-fallback');
-  const titleEl=document.getElementById('reader-title');
-  const externalBtn=document.getElementById('reader-external');
-  const fallbackBtn=document.getElementById('reader-fallback-btn');
-  titleEl.textContent=title||'';
-  externalBtn.href=url;
-  fallbackBtn.href=url;
-  fallback.classList.remove('show');
-  loading.classList.remove('hide');
-  loading.innerHTML='<span class="sp"></span> Loading article…';
-  iframe.style.display='block';
-  overlay.classList.add('open');
-  // Only truly-blocked sites: skip iframe, jump to fallback immediately
-  const knownBlockers=['news.google.com/rss','nytimes.com','wsj.com','ft.com','bloomberg.com','washingtonpost.com'];
-  if(knownBlockers.some(dom=>url.includes(dom))){
-    showReaderFallback();
-    return;
-  }
-  let loaded=false;
-  iframe.onload=function(){loaded=true;loading.classList.add('hide');clearTimeout(_readerTimeout);clearTimeout(_readerSlowTimeout);};
-  iframe.onerror=function(){showReaderFallback();};
-  // Show "still loading" message after 6 seconds — but don't give up
-  window._readerSlowTimeout=setTimeout(function(){
-    if(!loaded){
-      loading.innerHTML='<div style="text-align:center;padding:20px;"><div style="font-size:1rem;color:#F0F4F7;margin-bottom:12px;">Still loading… this article is slow.</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button onclick="loading.style.display=\'none\';" style="background:transparent;color:#7BAFC4;border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:6px;font-size:.85rem;cursor:pointer;">Keep waiting</button><a href="'+url+'" target="_blank" rel="noopener" style="background:#4A9EBF;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:.85rem;font-weight:700;">Open in browser instead</a></div></div>';
-    }
-  },6000);
-  // Hard fallback after 15 seconds — the page really didn't load
-  _readerTimeout=setTimeout(function(){if(!loaded)showReaderFallback();},15000);
-  try{iframe.src=url;}catch(e){showReaderFallback();}
-}
-function showReaderFallback(){
-  clearTimeout(_readerTimeout);
-  document.getElementById('reader-iframe').style.display='none';
-  document.getElementById('reader-loading').classList.add('hide');
-  document.getElementById('reader-fallback').classList.add('show');
-}
-function closeReader(){
-  const overlay=document.getElementById('reader-overlay');
-  const iframe=document.getElementById('reader-iframe');
-  clearTimeout(_readerTimeout);
-  clearTimeout(window._readerSlowTimeout);
-  overlay.classList.remove('open');
-  // Clear iframe to stop any playing media / requests
-  setTimeout(()=>{iframe.src='about:blank';},300);
-}
-// ESC key closes reader (useful for keyboard testing)
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeReader();});
+
 
 </script>
 </body>

@@ -216,6 +216,190 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .card-music #spotify-embed { flex: 1; min-height: 0; overflow: hidden; }
 .card-music .spotify-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; }
 
+
+/* ═══ Gameday view (v2 - MLB app style) ═══ */
+.card-gameday { background: linear-gradient(135deg, rgba(14,51,134,0.85), rgba(14,51,134,0.55)); border-color: rgba(14,51,134,0.9); }
+.gd-header {
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.gd-live-badge {
+  background: #e11d48;
+  color: #fff;
+  font-size: .58rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  animation: gd-pulse 2s infinite;
+}
+.gd-warmup-badge {
+  background: #fbbf24;
+  color: #1a1a1a;
+  font-size: .58rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+}
+@keyframes gd-pulse { 0%,100% { opacity:1; } 50% { opacity: .55; } }
+
+.gd-body {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* Left stacked scoreboard */
+.gd-scoreboard-stacked { display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+.gd-team-row {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 9px;
+  align-items: center;
+  padding: 5px 10px;
+  background: rgba(0,0,0,0.22);
+  border-radius: 7px;
+  border-left: 3px solid transparent;
+}
+.gd-team-row.winning { border-left-color: #22c55e; }
+.gd-team-row.batting { border-left-color: #fbbf24; }
+.gd-team-logo { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 2px; }
+.gd-team-details { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.gd-team-name { font-size: .78rem; font-weight: 800; line-height: 1; color: #fff; }
+.gd-team-rec { font-size: .55rem; color: rgba(255,255,255,0.55); }
+.gd-team-score { font-size: 1.9rem; font-weight: 900; line-height: 1; letter-spacing: -1.5px; color: #fff; }
+.gd-team-score.winning { color: #22c55e; }
+
+.gd-inning-strip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: .6rem;
+  color: rgba(255,255,255,0.55);
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  border-bottom: 1px dashed rgba(255,255,255,0.1);
+  margin: 2px 0;
+}
+.gd-inning-arrow { color: #fbbf24; font-size: .75rem; font-weight: 800; }
+.gd-inning-num { color: #fff; font-weight: 800; font-size: .75rem; }
+
+/* Right game state */
+.gd-game-state {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 9px 12px;
+  background: rgba(0,0,0,0.28);
+  border-radius: 8px;
+}
+
+/* Base diamond */
+.gd-diamond {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+.gd-base {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: transparent;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-radius: 3px;
+}
+.gd-base.occupied { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 10px rgba(251,191,36,0.5); }
+.gd-base.first { bottom: 0; right: 0; }
+.gd-base.second { top: 0; right: 0; }
+.gd-base.third { top: 0; left: 0; }
+.gd-base.home {
+  bottom: 0; left: 0;
+  opacity: .3;
+  border-radius: 50% 50% 50% 0 / 50% 50% 50% 0;
+}
+
+/* Count section */
+.gd-count-big { display: flex; flex-direction: column; gap: 6px; }
+.gd-count-row { display: flex; align-items: center; gap: 10px; }
+.gd-count-label {
+  font-size: .68rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.55);
+  letter-spacing: 1px;
+  min-width: 42px;
+}
+.gd-count-dots { display: flex; gap: 5px; }
+.gd-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.28);
+}
+.gd-dot.on { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.4); }
+.gd-dot.strike.on { background: #e11d48; border-color: #e11d48; box-shadow: 0 0 6px rgba(225,29,72,0.5); }
+.gd-dot.out.on { background: #ef4444; border-color: #ef4444; }
+
+/* Batter/Pitcher matchup */
+.gd-matchup {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 7px;
+}
+.gd-mp-cell { display: flex; flex-direction: column; gap: 1px; }
+.gd-mp-role {
+  font-size: .52rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.gd-mp-name { font-size: .85rem; font-weight: 800; color: #fff; }
+.gd-mp-stats { font-size: .58rem; color: rgba(255,255,255,0.6); }
+
+/* Last play strip */
+.gd-last-play {
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(251,191,36,0.1);
+  border-radius: 6px;
+  font-size: .7rem;
+  color: rgba(255,255,255,0.9);
+  border-left: 3px solid #fbbf24;
+  line-height: 1.35;
+}
+.gd-last-play strong { color: #fbbf24; margin-right: 8px; font-size: .55rem; letter-spacing: 1px; font-weight: 800; }
+
+/* Warmup mode: hide game-state, show pregame view */
+.gd-pregame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #fff;
+  text-align: center;
+  gap: 8px;
+}
+.gd-pregame-vs { font-size: 1.1rem; font-weight: 700; }
+.gd-pregame-time { font-size: .85rem; color: rgba(255,255,255,0.65); }
+.gd-pregame-countdown { font-size: .95rem; color: #fbbf24; font-weight: 700; margin-top: 4px; }
+
 /* EOD banner (only shows near 5pm) */
 #eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
 </style>
@@ -381,61 +565,232 @@ setInterval(tick,1000);tick();
 
 
 
-// ── Cubs Gameday: only show during warmups (~45min pre-game) or LIVE ──
+// ── Cubs Gameday (MLB-app style): fetch live game data and render rich view ──
 function showMusicMode(){
   document.getElementById('gameday-card').style.display='none';
   document.getElementById('music-card').style.display='block';
-  document.getElementById('media-label').textContent='🎵 Music & audio';
 }
 function showGamedayMode(){
-  document.getElementById('gameday-card').style.display='block';
+  document.getElementById('gameday-card').style.display='flex';
+  document.getElementById('gameday-card').style.flexDirection='column';
   document.getElementById('music-card').style.display='none';
-  document.getElementById('media-label').textContent='⚾ Cubs Gameday';
 }
+
+// Fetch detailed game state from MLB Stats API (has bases, count, outs, batter, pitcher)
+async function fetchMLBLive(gamePk){
+  try{
+    const r=await fetch('https://statsapi.mlb.com/api/v1.1/game/'+gamePk+'/feed/live',{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return null;
+    return await r.json();
+  }catch{return null;}
+}
+
 async function loadGameday(){
   try{
-    const today=new Date();const todayStr=today.getFullYear()+String(today.getMonth()+1).padStart(2,'0')+String(today.getDate()).padStart(2,'0');
-    const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates='+todayStr);
-    if(!r.ok)throw new Error();
-    const d=await r.json();
-    const games=(d.events||[]).filter(e=>{const comp=e.competitions[0];return comp.competitors.some(c=>c.team.abbreviation==='CHC');});
+    const today=new Date();
+    const todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    // Get today's Cubs game via MLB schedule (teamId 112 = Cubs)
+    const schedR=await fetch('https://statsapi.mlb.com/api/v1/schedule?teamId=112&sportId=1&date='+todayStr);
+    if(!schedR.ok)throw new Error('schedule fetch failed');
+    const sched=await schedR.json();
+    const games=(sched.dates&&sched.dates[0]&&sched.dates[0].games)||[];
     if(!games.length){showMusicMode();return;}
-    const g=games[0],comp=g.competitions[0];
-    const status=g.status.type;
-    const gameTime=new Date(g.date);
+
+    const game=games[0];
+    const gameTime=new Date(game.gameDate);
     const now=new Date();
     const minsUntilStart=(gameTime-now)/60000;
-    // Show gameday view ONLY IF:
-    //   - game is LIVE ('in' state), OR
-    //   - game is 'pre' AND within 45 min of first pitch (warmups)
-    const isLive=status.state==='in';
-    const isWarmup=status.state==='pre'&&minsUntilStart<=45&&minsUntilStart>=-5;
+    const status=game.status.abstractGameState; // 'Preview', 'Live', 'Final'
+    const detailedState=game.status.detailedState;
+
+    // Show gameday view ONLY IF live OR within 45 min of first pitch
+    const isLive=status==='Live';
+    const isWarmup=status==='Preview'&&minsUntilStart<=45&&minsUntilStart>=-5;
+
     if(!isLive&&!isWarmup){showMusicMode();return;}
-    const cubs=comp.competitors.find(c=>c.team.abbreviation==='CHC');
-    const opp=comp.competitors.find(c=>c.team.abbreviation!=='CHC');
-    const isHome=cubs.homeAway==='home';
-    let statusLine='',scoreLine='';
+
+    // Determine who's home/away
+    const homeTeam=game.teams.home.team;
+    const awayTeam=game.teams.away.team;
+    const homeIsCubs=homeTeam.id===112;
+    const oppTeam=homeIsCubs?awayTeam:homeTeam;
+    const oppAbbrMap={
+      'Arizona Diamondbacks':'ari','Atlanta Braves':'atl','Baltimore Orioles':'bal','Boston Red Sox':'bos',
+      'Chicago White Sox':'cws','Cincinnati Reds':'cin','Cleveland Guardians':'cle','Colorado Rockies':'col',
+      'Detroit Tigers':'det','Houston Astros':'hou','Kansas City Royals':'kc','Los Angeles Angels':'laa',
+      'Los Angeles Dodgers':'lad','Miami Marlins':'mia','Milwaukee Brewers':'mil','Minnesota Twins':'min',
+      'New York Mets':'nym','New York Yankees':'nyy','Oakland Athletics':'oak','Philadelphia Phillies':'phi',
+      'Pittsburgh Pirates':'pit','San Diego Padres':'sd','Seattle Mariners':'sea','San Francisco Giants':'sf',
+      'St. Louis Cardinals':'stl','Tampa Bay Rays':'tb','Texas Rangers':'tex','Toronto Blue Jays':'tor',
+      'Washington Nationals':'wsh'
+    };
+    const oppLogo=oppAbbrMap[oppTeam.name]||oppTeam.name.toLowerCase().replace(/\s/g,'').slice(0,3);
+    const venue=game.venue.name;
+
     if(isWarmup){
-      const gt=new Date(g.date);const minsLeft=Math.max(0,Math.round(minsUntilStart));
-      statusLine='🟡 Warmups · First pitch '+gt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'})+' CT'+(minsLeft>0?' ('+minsLeft+' min)':'')+' · '+comp.venue.fullName;
-      scoreLine='';
-    } else {
-      statusLine='🔴 LIVE · '+status.shortDetail;
-      scoreLine='<span style="color:#7BAFC4;">Cubs</span> '+cubs.score+' — '+opp.score+' <span style="color:#7BAFC4;">'+opp.team.abbreviation+'</span>';
+      const gt=new Date(game.gameDate);
+      const minsLeft=Math.max(0,Math.round(minsUntilStart));
+      document.getElementById('gameday-content').innerHTML=
+        '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+oppTeam.teamName+' · '+venue+'</span>'+
+        '<span class="gd-warmup-badge">🟡 WARMUPS</span></div>'+
+        '<div class="gd-pregame">'+
+          '<div style="display:flex;align-items:center;gap:20px;">'+
+            '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:60px;height:60px;border-radius:50%;background:#fff;padding:4px;"/>'+
+            '<div style="font-size:1.6rem;font-weight:900;">VS</div>'+
+            '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/'+oppLogo+'.png" style="width:60px;height:60px;border-radius:50%;background:#fff;padding:4px;"/>'+
+          '</div>'+
+          '<div class="gd-pregame-time">First pitch '+gt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'})+' CT</div>'+
+          (minsLeft>0?'<div class="gd-pregame-countdown">⏱ '+minsLeft+' min to first pitch</div>':'')+
+        '</div>';
+      showGamedayMode();
+      return;
     }
-    document.getElementById('gameday-content').innerHTML=
-      '<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">'+
-        '<div style="display:flex;align-items:center;gap:14px;">'+
-          '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:56px;width:56px;border-radius:50%;background:#fff;padding:3px;"/>'+
-          '<div><div style="font-size:1.3rem;font-weight:700;color:#fff;">Cubs '+(isHome?'vs.':'@')+' '+opp.team.shortDisplayName+'</div>'+
-          '<div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:2px;">'+statusLine+'</div></div>'+
-        '</div>'+
-        (scoreLine?'<div style="font-size:1.6rem;font-weight:800;color:#fff;margin-left:auto;">'+scoreLine+'</div>':'')+
+
+    // LIVE — get detailed feed
+    const live=await fetchMLBLive(game.gamePk);
+    const linescore=live&&live.liveData&&live.liveData.linescore;
+    const plays=live&&live.liveData&&live.liveData.plays;
+    const currentPlay=plays&&plays.currentPlay;
+
+    const cubsScore=homeIsCubs?(linescore?linescore.teams.home.runs:0):(linescore?linescore.teams.away.runs:0);
+    const oppScore=homeIsCubs?(linescore?linescore.teams.away.runs:0):(linescore?linescore.teams.home.runs:0);
+    const cubsWinning=cubsScore>oppScore;
+    const oppWinning=oppScore>cubsScore;
+
+    // Inning info
+    const inning=linescore?linescore.currentInning:1;
+    const inningHalf=linescore?linescore.inningHalf:'Top';
+    const inningOrdinal=linescore?linescore.currentInningOrdinal:(inning+'th');
+    const cubsBatting=(homeIsCubs&&inningHalf==='Bottom')||(!homeIsCubs&&inningHalf==='Top');
+
+    // Bases (from linescore.offense — 1B/2B/3B objects present if runners on)
+    const offense=linescore&&linescore.offense;
+    const on1=!!(offense&&offense.first);
+    const on2=!!(offense&&offense.second);
+    const on3=!!(offense&&offense.third);
+
+    // Count + outs
+    const balls=(linescore&&linescore.balls)||0;
+    const strikes=(linescore&&linescore.strikes)||0;
+    const outs=(linescore&&linescore.outs)||0;
+
+    // Batter + Pitcher
+    let batterName='',batterStats='',pitcherName='',pitcherStats='';
+    if(currentPlay&&currentPlay.matchup){
+      const b=currentPlay.matchup.batter,p=currentPlay.matchup.pitcher;
+      if(b)batterName=b.fullName.split(' ').slice(-1)[0]; // last name
+      if(p)pitcherName=p.fullName.split(' ').slice(-1)[0];
+      // Stats from boxscore if available
+      const bs=live.liveData.boxscore;
+      if(b&&bs){
+        const bteam=cubsBatting?(homeIsCubs?bs.teams.home:bs.teams.away):(homeIsCubs?bs.teams.away:bs.teams.home);
+        const bplayer=bteam&&bteam.players&&bteam.players['ID'+b.id];
+        if(bplayer&&bplayer.seasonStats&&bplayer.seasonStats.batting){
+          const bat=bplayer.seasonStats.batting;
+          batterStats=(bat.avg||'.---')+' · '+(bat.homeRuns||0)+' HR';
+        }
+      }
+      if(p&&bs){
+        const pteam=cubsBatting?(homeIsCubs?bs.teams.away:bs.teams.home):(homeIsCubs?bs.teams.home:bs.teams.away);
+        const pplayer=pteam&&pteam.players&&pteam.players['ID'+p.id];
+        if(pplayer&&pplayer.seasonStats&&pplayer.seasonStats.pitching){
+          const pit=pplayer.seasonStats.pitching;
+          pitcherStats=(pit.era||'-.--')+' ERA';
+        }
+      }
+    }
+
+    // Last play description
+    let lastPlay='';
+    if(plays&&plays.allPlays&&plays.allPlays.length){
+      const completed=plays.allPlays.filter(p=>p.result&&p.result.description);
+      if(completed.length){lastPlay=completed[completed.length-1].result.description;}
+    }
+
+    // Team records
+    const cubsRec=(homeIsCubs?game.teams.home.leagueRecord:game.teams.away.leagueRecord);
+    const oppRec=(homeIsCubs?game.teams.away.leagueRecord:game.teams.home.leagueRecord);
+    const cubsRecStr=cubsRec?cubsRec.wins+'-'+cubsRec.losses:'';
+    const oppRecStr=oppRec?oppRec.wins+'-'+oppRec.losses:'';
+
+    // Build inning arrow
+    const inningArrow=inningHalf==='Top'?'▲':'▼';
+    const inningLabel=inningHalf==='Top'?'Top of the inning':'Bottom of the inning';
+
+    // Away team is always on top of stacked scoreboard (baseball convention)
+    const awayIsCubs=!homeIsCubs;
+    const topRow={
+      name:awayIsCubs?'Cubs':oppTeam.teamName,
+      logo:awayIsCubs?'chc':oppLogo,
+      score:awayIsCubs?cubsScore:oppScore,
+      rec:awayIsCubs?cubsRecStr:oppRecStr,
+      winning:awayIsCubs?cubsWinning:oppWinning,
+      batting:inningHalf==='Top',
+    };
+    const botRow={
+      name:homeIsCubs?'Cubs':oppTeam.teamName,
+      logo:homeIsCubs?'chc':oppLogo,
+      score:homeIsCubs?cubsScore:oppScore,
+      rec:homeIsCubs?cubsRecStr:oppRecStr,
+      winning:homeIsCubs?cubsWinning:oppWinning,
+      batting:inningHalf==='Bottom',
+    };
+
+    function scoreRow(t){
+      const classes=['gd-team-row'];
+      if(t.winning)classes.push('winning');
+      if(t.batting)classes.push('batting');
+      return '<div class="'+classes.join(' ')+'">'+
+        '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/'+t.logo+'.png" class="gd-team-logo"/>'+
+        '<div class="gd-team-details"><div class="gd-team-name">'+t.name+'</div><div class="gd-team-rec">'+t.rec+'</div></div>'+
+        '<div class="gd-team-score'+(t.winning?' winning':'')+'">'+t.score+'</div>'+
       '</div>';
+    }
+
+    function dots(count,max,extraClass){
+      let s='';
+      for(let i=0;i<max;i++){s+='<div class="gd-dot '+(extraClass||'')+' '+(i<count?'on':'')+'"></div>';}
+      return s;
+    }
+
+    document.getElementById('gameday-content').innerHTML=
+      '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+oppTeam.teamName+' · '+venue+'</span>'+
+      '<span class="gd-live-badge">🔴 LIVE</span></div>'+
+      '<div class="gd-body">'+
+        '<div class="gd-scoreboard-stacked">'+
+          scoreRow(topRow)+
+          '<div class="gd-inning-strip"><span class="gd-inning-arrow">'+inningArrow+'</span><span class="gd-inning-num">'+inningOrdinal+'</span><span>'+inningLabel+'</span></div>'+
+          scoreRow(botRow)+
+        '</div>'+
+        '<div>'+
+          '<div class="gd-game-state">'+
+            '<div class="gd-diamond">'+
+              '<div class="gd-base second'+(on2?' occupied':'')+'"></div>'+
+              '<div class="gd-base third'+(on3?' occupied':'')+'"></div>'+
+              '<div class="gd-base first'+(on1?' occupied':'')+'"></div>'+
+              '<div class="gd-base home"></div>'+
+            '</div>'+
+            '<div class="gd-count-big">'+
+              '<div class="gd-count-row"><span class="gd-count-label">BALLS</span><div class="gd-count-dots">'+dots(balls,4,'')+'</div></div>'+
+              '<div class="gd-count-row"><span class="gd-count-label">STRIKES</span><div class="gd-count-dots">'+dots(strikes,3,'strike')+'</div></div>'+
+              '<div class="gd-count-row"><span class="gd-count-label">OUTS</span><div class="gd-count-dots">'+dots(outs,3,'out')+'</div></div>'+
+            '</div>'+
+          '</div>'+
+          (batterName||pitcherName?'<div class="gd-matchup">'+
+            '<div class="gd-mp-cell"><div class="gd-mp-role">⚾ At bat</div><div class="gd-mp-name">'+(batterName||'—')+'</div>'+(batterStats?'<div class="gd-mp-stats">'+batterStats+'</div>':'')+'</div>'+
+            '<div class="gd-mp-cell"><div class="gd-mp-role">🥎 Pitching</div><div class="gd-mp-name">'+(pitcherName||'—')+'</div>'+(pitcherStats?'<div class="gd-mp-stats">'+pitcherStats+'</div>':'')+'</div>'+
+          '</div>':'')+
+        '</div>'+
+      '</div>'+
+      (lastPlay?'<div class="gd-last-play"><strong>LAST PLAY</strong>'+lastPlay+'</div>':'');
+
     showGamedayMode();
-  }catch(e){showMusicMode();}
+  }catch(e){
+    console.error('Gameday error:',e);
+    showMusicMode();
+  }
 }
-loadGameday();setInterval(loadGameday,60000);
+loadGameday();setInterval(loadGameday,30000);
 
 // ── Weather (Open-Meteo) ──
 async function loadWeather(){

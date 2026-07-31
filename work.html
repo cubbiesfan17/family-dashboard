@@ -125,6 +125,84 @@ a.news-item:hover .news-hed{color:#7ECFED;}
 .sp-tile-sub{font-size:.58rem;color:#7BAFC4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .shortcut-pill.sp-tab.active{background:#1db954;border-color:#1db954;color:#fff;}
 .err{color:#ef4444;font-size:.78rem;line-height:1.5}
+
+/* ═══ Compact mode for Fire HD 8 landscape (and other tablets) ═══ */
+@media (max-width: 1300px) {
+  body { padding: 6px; }
+  .grid { gap: 6px !important; }
+  .card { padding: 8px 12px; border-radius: 10px; }
+  .card-label { font-size: .6rem; margin-bottom: 4px; letter-spacing: 1px; }
+  .section-label { font-size: .55rem; margin: 2px 2px 4px; letter-spacing: 1.5px; }
+
+  /* Top row: Quote + Clock — tighter */
+  .tier-top { grid-template-columns: 1.4fr 1fr !important; margin-bottom: 6px !important; }
+  .clock-time { font-size: 2.4rem !important; }
+  .clock-date { font-size: .75rem !important; margin-top: 2px; }
+  .progress-wrap { margin-top: 6px; height: 4px; }
+  .progress-label { font-size: .62rem; }
+  .quote-text { font-size: .88rem !important; line-height: 1.35 !important; }
+  .quote-author { font-size: .68rem !important; margin-top: 4px !important; }
+
+  /* Weather — compact */
+  .weather-icon { font-size: 1.9rem; }
+  .weather-temp { font-size: 2rem; letter-spacing: -1px; }
+  .weather-desc { font-size: .72rem; }
+  .weather-detail-line { font-size: .72rem; }
+  .weather-dress { padding: 4px 8px; font-size: .68rem; margin-top: 5px; border-radius: 8px; }
+  .forecast-strip { padding-top: 6px; margin-top: 6px; }
+  .fc-dow { font-size: .55rem; }
+  .fc-icon { font-size: .95rem; margin-bottom: 1px; }
+  .fc-high { font-size: .72rem; }
+  .fc-precip { font-size: .58rem; }
+
+  /* Calendar list */
+  .cal-legend { gap: 6px; margin-bottom: 5px; }
+  .cal-legend-item { font-size: .58rem; }
+  .cal-legend-bar { width: 8px; height: 8px; }
+  .cal-list { max-height: 200px; gap: 3px; }
+  .cal-event { padding: 4px 8px; border-left-width: 3px; }
+  .cal-ev-time { font-size: .62rem; min-width: 62px; }
+  .cal-ev-title { font-size: .72rem; }
+  .cal-ev-person { font-size: .55rem; }
+  .wm-day-label { font-size: .55rem; padding: 4px 0 2px; }
+  .view-btn { font-size: .52rem; padding: 2px 7px; }
+
+  /* Headlines */
+  .news-item { padding: 4px 3px; }
+  .news-hed { font-size: .68rem; line-height: 1.3; }
+  .news-src { font-size: .55rem; }
+
+  /* Media row (Music / Gameday) */
+  .tier-media { margin-bottom: 6px !important; }
+  .spotify-shortcuts { gap: 4px; margin-bottom: 6px; }
+  .shortcut-pill { font-size: .62rem; padding: 3px 8px; }
+  .spotify-search-row { margin-bottom: 6px; }
+  .spotify-search-row input { font-size: .72rem; padding: 5px 9px; }
+  .spotify-search-row button { padding: 5px 10px; font-size: .7rem; }
+  .spotify-placeholder { padding: 12px; }
+  .spotify-big-icon { font-size: 1.5rem; }
+  .spotify-placeholder p { font-size: .72rem; }
+  .sp-tile-name { font-size: .58rem; }
+  .sp-tile-sub { font-size: .52rem; }
+
+  /* Cubs gameday inside media row */
+  .gameday-vs { font-size: .95rem; }
+  .gameday-time { font-size: .7rem; }
+
+  /* Sports ticker */
+  #sports-ticker { height: 38px !important; margin-top: 6px !important; }
+  #sports-ticker > div:first-child { font-size: .65rem !important; padding: 0 12px !important; letter-spacing: 1px !important; }
+  #sports-ticker-inner { font-size: .78rem; }
+}
+
+/* ═══ Extra-compact for the Fire HD 8's exact resolution ═══ */
+@media (max-width: 830px) {
+  .clock-time { font-size: 2rem !important; }
+  .quote-text { font-size: .82rem !important; }
+  .weather-temp { font-size: 1.8rem; }
+  .cal-list { max-height: 170px; }
+  .card { padding: 7px 10px; }
+}
 </style>
 </head>
 <body>

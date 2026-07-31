@@ -1349,17 +1349,26 @@ function openReader(url,title){
   fallbackBtn.href=url;
   fallback.classList.remove('show');
   loading.classList.remove('hide');
+  loading.innerHTML='<span class="sp"></span> Loading article…';
   iframe.style.display='block';
   overlay.classList.add('open');
-  // Known iframe-blockers: skip iframe, go straight to fallback with browser button
+  // Only truly-blocked sites: skip iframe, jump to fallback immediately
   const knownBlockers=['news.google.com/rss','nytimes.com','wsj.com','ft.com','bloomberg.com','washingtonpost.com'];
   if(knownBlockers.some(dom=>url.includes(dom))){
     showReaderFallback();
     return;
   }
-  iframe.onload=function(){loading.classList.add('hide');clearTimeout(_readerTimeout);};
+  let loaded=false;
+  iframe.onload=function(){loaded=true;loading.classList.add('hide');clearTimeout(_readerTimeout);clearTimeout(_readerSlowTimeout);};
   iframe.onerror=function(){showReaderFallback();};
-  _readerTimeout=setTimeout(showReaderFallback,4000);
+  // Show "still loading" message after 6 seconds — but don't give up
+  window._readerSlowTimeout=setTimeout(function(){
+    if(!loaded){
+      loading.innerHTML='<div style="text-align:center;padding:20px;"><div style="font-size:1rem;color:#F0F4F7;margin-bottom:12px;">Still loading… this article is slow.</div><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;"><button onclick="loading.style.display=\'none\';" style="background:transparent;color:#7BAFC4;border:1px solid rgba(255,255,255,.2);padding:8px 16px;border-radius:6px;font-size:.85rem;cursor:pointer;">Keep waiting</button><a href="'+url+'" target="_blank" rel="noopener" style="background:#4A9EBF;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:.85rem;font-weight:700;">Open in browser instead</a></div></div>';
+    }
+  },6000);
+  // Hard fallback after 15 seconds — the page really didn't load
+  _readerTimeout=setTimeout(function(){if(!loaded)showReaderFallback();},15000);
   try{iframe.src=url;}catch(e){showReaderFallback();}
 }
 function showReaderFallback(){
@@ -1372,6 +1381,7 @@ function closeReader(){
   const overlay=document.getElementById('reader-overlay');
   const iframe=document.getElementById('reader-iframe');
   clearTimeout(_readerTimeout);
+  clearTimeout(window._readerSlowTimeout);
   overlay.classList.remove('open');
   // Clear iframe to stop any playing media / requests
   setTimeout(()=>{iframe.src='about:blank';},300);

@@ -13,23 +13,24 @@ body {
   background: #0d1f2d;
   color: #F0F4F7;
   padding: 6px;
+  height: 100vh;
+  width: 100vw;
   display: grid;
   grid-template-rows: 100px 1fr 32px;
   gap: 6px;
-  height: 100vh;
-  width: 100vw;
 }
 
-/* ───────── Global card styles ───────── */
+/* Card base */
 .card {
   background: rgba(255,255,255,0.10);
   border-radius: 10px;
   padding: 8px 12px;
   border: 1px solid rgba(255,255,255,0.15);
   overflow: hidden;
+  min-height: 0;
 }
 .card-label {
-  font-size: .58rem;
+  font-size: .6rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -43,47 +44,50 @@ body {
 .icon-btn:hover { color: #fff; }
 .status-msg { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
 
-/* ───────── Row 1: Top (Motivation + Clock) ───────── */
+/* ═══ Row 1: Motivation + Clock ═══ */
 .row-top {
   display: grid;
   grid-template-columns: 1.6fr 1fr;
   gap: 6px;
+  min-height: 0;
 }
 .card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
-.quote-text { font-size: .84rem; font-style: italic; color: #fff; line-height: 1.35; }
-.quote-author { font-size: .68rem; color: #7ECFED; margin-top: 4px; }
+.quote-text { font-size: .88rem; font-style: italic; color: #fff; line-height: 1.35; }
+.quote-author { font-size: .7rem; color: #7ECFED; margin-top: 4px; }
 .clock-time { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: #fff; }
-.clock-date { font-size: .72rem; color: #7BAFC4; margin-top: 2px; }
+.clock-date { font-size: .75rem; color: #7BAFC4; margin-top: 2px; }
 .progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 6px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 3px; background: #4A9EBF; transition: width 1s linear; }
-.progress-label { font-size: .6rem; color: #7BAFC4; margin-top: 3px; }
+.progress-label { font-size: .62rem; color: #7BAFC4; margin-top: 3px; }
 
-/* ───────── Row 2: Middle Grid (Weather+Music stacked | Calendar | Headlines) ───────── */
+/* ═══ Row 2: Main grid ═══
+   Column layout:
+     [Weather | Schedule | Headlines]   (row A)
+     [   Music/Gameday    | Headlines]  (row B — music spans weather+schedule, headlines continues)
+*/
 .row-main {
   display: grid;
   grid-template-columns: 1fr 1.5fr 1.1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 6px;
   min-height: 0;
 }
-.col-left {
-  display: grid;
-  grid-template-rows: 1fr auto;
-  gap: 6px;
-  min-height: 0;
-}
+.card-weather { grid-column: 1; grid-row: 1; }
+.card-cal     { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; }
+.card-news    { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-direction: column; }
+.card-music   { grid-column: 1 / span 2; grid-row: 2; }
 
 /* Weather */
-.card-weather { min-height: 0; overflow: hidden; }
 .weather-main { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .weather-icon { font-size: 1.8rem; line-height: 1; }
 .weather-temp { font-size: 1.9rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
-.weather-desc { font-size: .68rem; color: #7BAFC4; text-transform: capitalize; }
-.weather-detail-line { font-size: .68rem; color: #fff; margin-top: 2px; }
+.weather-desc { font-size: .7rem; color: #7BAFC4; text-transform: capitalize; }
+.weather-detail-line { font-size: .7rem; color: #fff; margin-top: 2px; }
 .weather-dress {
-  padding: 3px 7px;
+  padding: 3px 8px;
   border-radius: 7px;
   background: rgba(74,158,191,0.2);
-  font-size: .62rem;
+  font-size: .64rem;
   font-weight: 700;
   color: #fff;
   border: 1px solid rgba(74,158,191,0.3);
@@ -93,23 +97,53 @@ body {
 .forecast-strip { display: flex; border-top: 1px solid rgba(255,255,255,.1); padding-top: 6px; margin-top: 6px; }
 .forecast-day { flex: 1; text-align: center; padding: 0 2px; border-right: 1px solid rgba(255,255,255,.08); }
 .forecast-day:last-child { border-right: none; }
-.fc-dow { font-size: .5rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 2px; }
-.fc-icon { font-size: .9rem; margin-bottom: 1px; }
-.fc-high { font-size: .68rem; font-weight: 600; color: #fff; }
-.fc-precip { font-size: .55rem; color: #4A9EBF; }
+.fc-dow { font-size: .52rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 2px; }
+.fc-icon { font-size: .95rem; margin-bottom: 1px; }
+.fc-high { font-size: .7rem; font-weight: 600; color: #fff; }
+.fc-precip { font-size: .58rem; color: #4A9EBF; }
 
-/* Music (under weather) */
-.card-media { min-height: 0; overflow: hidden; padding: 7px 11px; }
+/* Calendar */
+.view-toggle { display: flex; gap: 3px; }
+.view-btn { font-size: .5rem; font-weight: 700; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(74,158,191,0.4); background: transparent; color: #7BAFC4; cursor: pointer; letter-spacing: .5px; }
+.view-btn.active { background: #4A9EBF; color: #fff; border-color: #4A9EBF; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .58rem; color: #7BAFC4; }
+.cal-legend-bar { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.cal-list { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+.cal-list::-webkit-scrollbar { display: none; }
+.cal-event { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
+.cal-event.past { opacity: .4; }
+.cal-event.next { background: rgba(74,158,191,0.15); box-shadow: 0 0 6px rgba(74,158,191,0.4); }
+.cal-event.holiday { border-left-color: #f0a500; }
+.cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
+.cal-ev-time { font-size: .62rem; font-weight: 600; color: #7BAFC4; min-width: 60px; flex-shrink: 0; }
+.cal-ev-title { font-size: .72rem; font-weight: 600; color: #fff; flex: 1; line-height: 1.2; }
+.cal-ev-person { font-size: .55rem; color: #7BAFC4; flex-shrink: 0; }
+.wm-day-label { font-size: .54rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4A9EBF; padding: 3px 0 2px; border-bottom: 1px solid rgba(74,158,191,0.2); margin-top: 3px; }
+.wm-day-label.today-label { color: #7ECFED; }
+.no-events { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
+
+/* Headlines - full height right column */
+#news-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
+#news-list::-webkit-scrollbar { display: none; }
+.news-item { padding: 5px 3px; border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 4px; display: block; text-decoration: none; }
+.news-item:last-of-type { border-bottom: none; }
+a.news-item:hover { background: rgba(74,158,191,0.12); }
+a.news-item:hover .news-hed { color: #7ECFED; }
+.news-hed { font-size: .68rem; color: #F0F4F7; line-height: 1.3; }
+.news-src { font-size: .55rem; color: #7BAFC4; margin-top: 1px; }
+
+/* Music / Gameday (spans below weather + schedule) */
+.card-music { display: flex; flex-direction: column; }
 .card-gameday { background: rgba(14,51,134,0.65); border-color: rgba(14,51,134,0.8); }
 .card-gameday .card-label { color: rgba(255,255,255,.55); }
-.gameday-vs { font-size: .95rem; font-weight: 700; color: #fff; margin: 2px 0 3px; }
-.gameday-time { font-size: .68rem; color: rgba(255,255,255,.65); margin-bottom: 6px; }
+.gameday-vs { font-size: 1rem; font-weight: 700; color: #fff; margin: 2px 0 3px; }
+.gameday-time { font-size: .72rem; color: rgba(255,255,255,.65); margin-bottom: 6px; }
 .no-game { font-size: .72rem; color: rgba(255,255,255,.6); line-height: 1.4; margin-top: 2px; }
-
-.spotify-shortcuts { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+.spotify-shortcuts { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
 .shortcut-pill {
-  font-size: .58rem;
-  padding: 2px 7px;
+  font-size: .62rem;
+  padding: 3px 9px;
   border-radius: 20px;
   background: rgba(255,255,255,0.07);
   border: 1px solid rgba(255,255,255,0.15);
@@ -118,91 +152,32 @@ body {
   white-space: nowrap;
 }
 .shortcut-pill:hover { background: rgba(255,255,255,0.15); }
-.spotify-search-row { display: flex; gap: 5px; margin-bottom: 5px; }
+.spotify-search-row { display: flex; gap: 6px; margin-bottom: 6px; }
 .spotify-search-row input {
   flex: 1;
-  font-size: .68rem;
-  padding: 4px 8px;
+  font-size: .72rem;
+  padding: 5px 9px;
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 6px;
   background: rgba(255,255,255,0.07);
   color: #fff;
   outline: none;
 }
-.spotify-search-row button {
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: none;
-  background: #1db954;
-  color: #fff;
-  font-size: .66rem;
-  cursor: pointer;
-}
-.spotify-placeholder {
-  background: rgba(255,255,255,0.05);
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 6px;
-  text-align: center;
-}
-.spotify-placeholder p { font-size: .62rem; color: #7BAFC4; }
-.spotify-big-icon { font-size: 1.1rem; color: #1db954; margin-bottom: 2px; }
-#sp-connect { font-size: .65rem; color: #7BAFC4; margin-bottom: 5px; }
-#sp-personal-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.spotify-search-row button { padding: 5px 12px; border-radius: 6px; border: none; background: #1db954; color: #fff; font-size: .7rem; cursor: pointer; }
+.spotify-placeholder { background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px; text-align: center; }
+.spotify-placeholder p { font-size: .68rem; color: #7BAFC4; }
+.spotify-big-icon { font-size: 1.3rem; color: #1db954; margin-bottom: 3px; }
+#sp-connect { font-size: .7rem; color: #7BAFC4; margin-bottom: 6px; }
+#sp-personal-list { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
 .sp-tile { background: rgba(255,255,255,0.05); border-radius: 5px; padding: 3px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
 .sp-tile:hover { background: rgba(255,255,255,0.12); }
 .sp-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 3px; }
-.sp-tile-name { font-size: .52rem; font-weight: 600; color: #fff; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.sp-tile-sub { font-size: .48rem; color: #7BAFC4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.sp-tab { font-size: .54rem !important; padding: 2px 7px !important; }
+.sp-tile-name { font-size: .54rem; font-weight: 600; color: #fff; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.sp-tile-sub { font-size: .5rem; color: #7BAFC4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tab { font-size: .56rem !important; padding: 2px 8px !important; }
 .sp-tab.active { background: #1db954 !important; border-color: #1db954 !important; color: #fff !important; }
 
-/* Calendar */
-.card-cal { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
-.view-toggle { display: flex; gap: 3px; }
-.view-btn {
-  font-size: .5rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 20px;
-  border: 1px solid rgba(74,158,191,0.4);
-  background: transparent;
-  color: #7BAFC4;
-  cursor: pointer;
-  letter-spacing: .5px;
-}
-.view-btn.active { background: #4A9EBF; color: #fff; border-color: #4A9EBF; }
-.cal-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
-.cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .55rem; color: #7BAFC4; }
-.cal-legend-bar { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
-.cal-list { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; scrollbar-width: none; min-height: 0; }
-.cal-list::-webkit-scrollbar { display: none; }
-.cal-event { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
-.cal-event.past { opacity: .4; }
-.cal-event.next { background: rgba(74,158,191,0.15); box-shadow: 0 0 6px rgba(74,158,191,0.4); }
-.cal-event.holiday { border-left-color: #f0a500; }
-.cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
-.cal-ev-time { font-size: .6rem; font-weight: 600; color: #7BAFC4; min-width: 56px; flex-shrink: 0; }
-.cal-ev-title { font-size: .7rem; font-weight: 600; color: #fff; flex: 1; line-height: 1.2; }
-.cal-ev-person { font-size: .52rem; color: #7BAFC4; flex-shrink: 0; }
-.cal-now-badge { font-size: .5rem; color: #7ECFED; font-weight: 700; margin-left: 5px; }
-.wm-day-label { font-size: .52rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4A9EBF; padding: 3px 0 2px; border-bottom: 1px solid rgba(74,158,191,0.2); margin-top: 3px; }
-.wm-day-label.today-label { color: #7ECFED; }
-.no-events { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
-
-/* Headlines */
-.card-news { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
-#news-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
-#news-list::-webkit-scrollbar { display: none; }
-#news-list .news-item:nth-child(n+4) { display: none; }
-.news-item { padding: 4px 3px; border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 4px; display: block; text-decoration: none; }
-.news-item:last-of-type { border-bottom: none; }
-a.news-item:hover { background: rgba(74,158,191,0.12); }
-a.news-item:hover .news-hed { color: #7ECFED; }
-.news-hed { font-size: .65rem; color: #F0F4F7; line-height: 1.3; }
-.news-src { font-size: .52rem; color: #7BAFC4; margin-top: 1px; }
-
-/* ───────── Row 3: Sports ticker ───────── */
+/* ═══ Row 3: Sports ticker (same style as home dashboard) ═══ */
 #sports-ticker {
   background: rgba(13,25,45,0.90);
   border-radius: 8px;
@@ -216,27 +191,29 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 #sports-ticker > div:first-child {
   background: #0f1e28;
   color: #E8F4F8;
-  font-size: .58rem;
+  font-size: .6rem;
   font-weight: 700;
-  padding: 0 10px;
+  padding: 0 12px;
   height: 100%;
   display: flex;
   align-items: center;
   white-space: nowrap;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
   flex-shrink: 0;
 }
-#sports-ticker-inner { display: flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; line-height: 1; font-size: .72rem; }
+#sports-ticker-inner { display: flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; line-height: 1; font-size: .75rem; }
 
-/* Spinner */
 .sp { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(74,158,191,0.3); border-top-color: #4A9EBF; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .err { color: #ef4444; font-size: .7rem; line-height: 1.4; }
+
+/* EOD banner (only shows near 5pm) */
+#eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
 </style>
 </head>
 <body>
 
-<!-- ───── Row 1: Motivation + Clock ───── -->
+<!-- ═══ Row 1: Motivation + Clock ═══ -->
 <div class="row-top">
   <div class="card card-work">
     <div class="card-label">✦ Motivation of the day</div>
@@ -256,57 +233,18 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   </div>
 </div>
 
-<!-- ───── Row 2: Weather+Music (stacked) | Calendar | Headlines ───── -->
+<!-- ═══ Row 2: Main grid — Weather + Schedule (top row) / Music (spans below) / Headlines (full height right) ═══ -->
 <div class="row-main">
-  <!-- Left column: Weather stacked above Music/Gameday -->
-  <div class="col-left">
-    <div class="card card-weather">
-      <div class="card-label">
-        <span>Weather — Algonquin</span>
-        <button class="icon-btn" onclick="loadWeather()" title="Refresh">↻</button>
-      </div>
-      <div id="weather-body"><span class="sp"></span> Loading…</div>
+  <!-- Weather (top-left) -->
+  <div class="card card-weather">
+    <div class="card-label">
+      <span>Weather — Algonquin</span>
+      <button class="icon-btn" onclick="loadWeather()" title="Refresh">↻</button>
     </div>
-
-    <!-- Music (or Cubs gameday when applicable) -->
-    <div class="card card-media" id="music-card">
-      <div class="card-label">
-        <span>Music</span>
-        <span id="sp-status" style="font-size:.55rem;color:#7BAFC4;"></span>
-      </div>
-      <div id="sp-personal" style="display:none;margin-bottom:6px;">
-        <div style="display:flex;gap:4px;margin-bottom:5px;">
-          <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recent</button>
-          <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top</button>
-          <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Playlists</button>
-        </div>
-        <div id="sp-personal-list"></div>
-      </div>
-      <div id="sp-connect" style="display:none;">
-        <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a>
-      </div>
-      <div class="spotify-shortcuts">
-        <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
-      </div>
-      <div class="spotify-search-row">
-        <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
-        <button onclick="spotifySearch()">Go</button>
-      </div>
-      <div id="spotify-embed">
-        <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut to load</p></div>
-      </div>
-    </div>
-
-    <div class="card card-media card-gameday" id="gameday-card" style="display:none;">
-      <div class="card-label">⚾ Cubs Gameday</div>
-      <div id="gameday-content"></div>
-    </div>
+    <div id="weather-body"><span class="sp"></span> Loading…</div>
   </div>
 
-  <!-- Calendar -->
+  <!-- Calendar (top-center) -->
   <div class="card card-cal">
     <div class="card-label">
       <span id="cal-title">📅 Today's schedule</span>
@@ -319,23 +257,62 @@ a.news-item:hover .news-hed { color: #7ECFED; }
         <button class="icon-btn" onclick="loadCal()" title="Refresh">↻</button>
       </span>
     </div>
-    <div class="cal-legend" id="cal-legend">
+    <div class="cal-legend">
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#2e9e5b"></div>Family</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#3b82f6"></div>Finn</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#ec4899"></div>Millie</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#eab308"></div>Nolan</div>
     </div>
-    <div id="cal" style="flex:1;overflow:hidden;min-height:0;"><span class="sp"></span></div>
+    <div id="cal" style="flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column;"><span class="sp"></span></div>
   </div>
 
-  <!-- Headlines -->
+  <!-- Headlines (full-height right column) -->
   <div class="card card-news">
     <div class="card-label">Headlines</div>
     <div id="news-list"></div>
   </div>
+
+  <!-- Music/Gameday (spans Weather+Schedule columns) -->
+  <div class="card card-music" id="music-card">
+    <div class="card-label">
+      <span>🎵 Music &amp; audio</span>
+      <span id="sp-status" style="font-size:.55rem;color:#7BAFC4;"></span>
+    </div>
+    <div id="sp-personal" style="display:none;margin-bottom:6px;">
+      <div style="display:flex;gap:5px;margin-bottom:5px;">
+        <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
+        <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
+        <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
+      </div>
+      <div id="sp-personal-list"></div>
+    </div>
+    <div id="sp-connect" style="display:none;">
+      <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a> to see your playlists and recently played
+    </div>
+    <div class="spotify-shortcuts">
+      <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('baseball podcast')">🎙 Podcast</button>
+    </div>
+    <div class="spotify-search-row">
+      <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
+      <button onclick="spotifySearch()">Search</button>
+    </div>
+    <div id="spotify-embed">
+      <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut or search to load</p></div>
+    </div>
+  </div>
+
+  <!-- Gameday card (hidden until game active — replaces music-card in same slot) -->
+  <div class="card card-music card-gameday" id="gameday-card" style="display:none;">
+    <div class="card-label">⚾ Cubs Gameday</div>
+    <div id="gameday-content"></div>
+  </div>
 </div>
 
-<!-- ───── Row 3: Sports ticker ───── -->
+<!-- ═══ Row 3: Sports ticker (same as home dashboard) ═══ -->
 <div id="sports-ticker">
   <div>🏆 SCORES</div>
   <div style="overflow:hidden;flex:1;position:relative;height:100%;">
@@ -345,8 +322,11 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   </div>
 </div>
 
+<div id="eod-banner">⏰ Almost 5pm — wrap up, write your done list!</div>
+
 <script src="shared-calendars.js"></script>
 <script>
+
 
 // ── Calendar config: read from shared-calendars.js (single source of truth) ──
 // Falls back to inline defaults if the shared file didn't load.
@@ -859,6 +839,7 @@ async function loadSports(){
   }
 }
 loadSports();setInterval(loadSports,300000);
+
 
 </script>
 </body>

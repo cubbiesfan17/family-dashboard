@@ -56,8 +56,8 @@ body {
 .quote-text { font-size: .82rem; font-style: italic; color: #fff; line-height: 1.35; }
 .quote-author { font-size: .7rem; color: #7ECFED; margin-top: 4px; }
 .clock-time { font-size: 2.6rem; font-weight: 800; letter-spacing: -2px; line-height: 1; color: #fff; }
-.clock-date { font-size: .9rem; color: #7BAFC4; margin-top: 3px; font-weight: 500; }
-.progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 4px; overflow: hidden; }
+.clock-date { font-size: 1rem; color: #7BAFC4; font-weight: 500; }
+.progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 8px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 3px; background: #4A9EBF; transition: width 1s linear; }
 .progress-label { font-size: .62rem; color: #7BAFC4; margin-top: 3px; }
 
@@ -518,8 +518,10 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   </div>
   <div class="card card-work">
     <div class="card-label">Time &amp; workday</div>
-    <div class="clock-time" id="clock">--:--</div>
-    <div class="clock-date" id="clock-date"></div>
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+      <div class="clock-time" id="clock">--:--</div>
+      <div class="clock-date" id="clock-date"></div>
+    </div>
     <div class="progress-wrap"><div class="progress-fill" id="day-bar" style="width:0%"></div></div>
     <div class="progress-label" id="day-pct">Workday progress</div>
   </div>

@@ -117,6 +117,8 @@ body {
 .cal-event.next { background: rgba(74,158,191,0.15); box-shadow: 0 0 6px rgba(74,158,191,0.4); }
 .cal-event.holiday { border-left-color: #f0a500; }
 .cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
+.cal-event.ongoing .cal-ev-title { color: #eab308; font-weight: 800; }
+.cal-event.ongoing .cal-ev-time { color: #eab308; }
 .cal-ev-time { font-size: .62rem; font-weight: 600; color: #7BAFC4; min-width: 60px; flex-shrink: 0; }
 .cal-ev-title { font-size: .72rem; font-weight: 600; color: #fff; flex: 1; line-height: 1.2; }
 .cal-ev-person { font-size: .55rem; color: #7BAFC4; flex-shrink: 0; }
@@ -218,7 +220,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 
 /* ═══ Gameday view (v2 - MLB app style) ═══ */
-.card-gameday { background: linear-gradient(135deg, rgba(14,51,134,0.85), rgba(14,51,134,0.55)); border-color: rgba(14,51,134,0.9); }
+.card-gameday { background: linear-gradient(135deg, rgba(14,51,134,0.85), rgba(14,51,134,0.55)); border-color: rgba(14,51,134,0.9); position: relative; }
 .gd-header {
   font-size: .62rem;
   font-weight: 800;
@@ -323,15 +325,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   transform: rotate(45deg);
 }
 .gd-base.occupied { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.55); }
+.gd-base.gd-base-home { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.12); }
 /* Grid areas: second base top-middle, third base middle-left, first base middle-right, home bottom-middle */
 .gd-cell-second { grid-column: 2; grid-row: 1; }
 .gd-cell-third  { grid-column: 1; grid-row: 2; }
 .gd-cell-first  { grid-column: 3; grid-row: 2; }
 .gd-cell-home   { grid-column: 2; grid-row: 3; align-items: flex-end; }
 
-/* Home plate: a proper pentagon shape */
-.gd-home-plate { width: 26px; height: 23px; opacity: .85; }
-.gd-home-plate svg { width: 100%; height: 100%; display: block; }
+
 
 /* Count section */
 .gd-count-big { display: flex; flex-direction: column; gap: 6px; }
@@ -401,6 +402,37 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 
 
+
+
+/* Cubs scoring celebration */
+@keyframes gdCelebrateGlow {
+  0%,100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
+  50% { box-shadow: 0 0 45px 14px rgba(251,191,36,0.65); }
+}
+.card-gameday.gd-celebrate { animation: gdCelebrateGlow 0.9s ease-in-out 4; }
+.gd-score-banner {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a1a;
+  font-weight: 900;
+  font-size: .95rem;
+  padding: 6px 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  z-index: 20;
+  animation: gdBannerPop 4s ease-in-out forwards;
+  white-space: nowrap;
+}
+@keyframes gdBannerPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.8); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+  15% { transform: translateX(-50%) translateY(0) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.95); }
+}
 
 /* EOD banner (only shows near 5pm) */
 #eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
@@ -576,6 +608,8 @@ setInterval(tick,1000);tick();
 function showMusicMode(){
   document.getElementById('gameday-card').style.display='none';
   document.getElementById('music-card').style.display='block';
+  window._lastCubsScore=undefined;
+  window._cubsJustScored=false;
 }
 function showGamedayMode(){
   document.getElementById('gameday-card').style.display='flex';
@@ -665,6 +699,12 @@ async function loadGameday(){
     const oppScore=homeIsCubs?(linescore?linescore.teams.away.runs:0):(linescore?linescore.teams.home.runs:0);
     const cubsWinning=cubsScore>oppScore;
     const oppWinning=oppScore>cubsScore;
+
+    // Detect Cubs scoring a run since last check — trigger a celebration
+    if(typeof window._lastCubsScore==='number' && cubsScore>window._lastCubsScore){
+      window._cubsJustScored=true;
+    }
+    window._lastCubsScore=cubsScore;
 
     // Inning info
     const inning=linescore?linescore.currentInning:1;
@@ -780,7 +820,7 @@ async function loadGameday(){
               '<div class="gd-base-cell gd-cell-second"><div class="gd-base'+(on2?' occupied':'')+'"></div></div>'+
               '<div class="gd-base-cell gd-cell-third"><div class="gd-base'+(on3?' occupied':'')+'"></div></div>'+
               '<div class="gd-base-cell gd-cell-first"><div class="gd-base'+(on1?' occupied':'')+'"></div></div>'+
-              '<div class="gd-base-cell gd-cell-home"><div class="gd-home-plate"><svg viewBox="0 0 20 18"><polygon points="10,0 20,0 20,10 10,18 0,10 0,0" fill="#ffffff" fill-opacity="0.35" stroke="rgba(255,255,255,0.5)" stroke-width="1"/></svg></div></div>'+
+              '<div class="gd-base-cell gd-cell-home"><div class="gd-base gd-base-home"></div></div>'+
             '</div>'+
             '<div class="gd-count-big">'+
               '<div class="gd-count-row"><span class="gd-count-label">BALLS</span><div class="gd-count-dots">'+dots(balls,4,'')+'</div></div>'+
@@ -797,6 +837,18 @@ async function loadGameday(){
       '<div class="gd-last-play"><strong>LAST PLAY</strong>'+lastPlay+'</div>';
 
     showGamedayMode();
+
+    if(window._cubsJustScored){
+      window._cubsJustScored=false;
+      const gc=document.getElementById('gameday-card');
+      gc.classList.add('gd-celebrate');
+      setTimeout(function(){gc.classList.remove('gd-celebrate');},3600);
+      const banner=document.createElement('div');
+      banner.className='gd-score-banner';
+      banner.textContent='⚾ CUBS SCORE! 🎉';
+      gc.appendChild(banner);
+      setTimeout(function(){if(banner&&banner.parentNode)banner.parentNode.removeChild(banner);},4000);
+    }
   }catch(e){
     console.error('Gameday error:',e);
     showMusicMode();
@@ -924,7 +976,9 @@ function fmtTime(ev){if(ev.allDay||!ev.start)return'All day';const h=ev.start.ge
 
 function eventRow(ev,now){
   const isPast=ev.end?ev.end<now:ev.start<now;
-  const cls='cal-event'+(isPast?' past':'')+(ev.isHoliday?' holiday':'');
+  // Ongoing = started already and (has an end time we're still inside, or no end time but within 60 min of start)
+  const isOngoing=!ev.allDay && ev.start && ev.start<=now && (ev.end ? now<=ev.end : now<new Date(ev.start.getTime()+60*60000));
+  const cls='cal-event'+(isPast&&!isOngoing?' past':'')+(ev.isHoliday?' holiday':'')+(isOngoing?' ongoing':'');
   return'<div class="'+cls+'" style="border-left-color:'+ev.color+'"><span class="cal-ev-time">'+fmtTime(ev)+'</span><span class="cal-ev-title">'+ev.sm+'</span><span class="cal-ev-person">'+(ev.person||'')+'</span></div>';
 }
 

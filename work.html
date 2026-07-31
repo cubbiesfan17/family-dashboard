@@ -296,9 +296,10 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 /* Right game state */
 .gd-game-state {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 16px;
+  grid-template-columns: auto auto auto;
+  gap: 14px;
   align-items: center;
+  justify-content: start;
   padding: 9px 12px;
   background: rgba(0,0,0,0.28);
   border-radius: 8px;
@@ -307,26 +308,44 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 /* Base diamond */
 .gd-diamond {
   position: relative;
-  width: 82px;
-  height: 82px;
-  transform: rotate(45deg);
+  width: 100px;
+  height: 100px;
   flex-shrink: 0;
 }
+/* Each base is a small square rotated 45° so it reads as a diamond shape,
+   positioned at compass points around the field (no rotation on the container itself) */
 .gd-base {
   position: absolute;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   background: transparent;
   border: 2.5px solid rgba(255,255,255,0.3);
-  border-radius: 3px;
+  border-radius: 2px;
+  transform: translate(-50%, -50%) rotate(45deg);
 }
 .gd-base.occupied { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 10px rgba(251,191,36,0.5); }
-.gd-base.first { bottom: 0; right: 0; }
-.gd-base.second { top: 0; right: 0; }
-.gd-base.third { top: 0; left: 0; }
-.gd-base.home {
-  bottom: 0; left: 0;
-  opacity: .3;
+/* Standard MLB broadcast orientation: 1B on the right, 2B at top, 3B on the left, home at bottom */
+.gd-base.first  { top: 50%; left: 82%; }
+.gd-base.second { top: 8%;  left: 50%; }
+.gd-base.third  { top: 50%; left: 18%; }
+
+/* Home plate: a proper pentagon shape (not rotated), sitting at the bottom point */
+.gd-home-plate {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 16px;
+  opacity: .85;
+}
+.gd-home-plate svg { width: 100%; height: 100%; display: block; }
+
+/* Connecting base paths (subtle lines between bases, like a real diamond) */
+.gd-basepath {
+  position: absolute;
+  border-top: 2px dashed rgba(255,255,255,0.15);
+  transform-origin: 0 0;
 }
 
 /* Count section */
@@ -399,6 +418,45 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-pregame-time { font-size: .85rem; color: rgba(255,255,255,0.65); }
 .gd-pregame-countdown { font-size: .95rem; color: #fbbf24; font-weight: 700; margin-top: 4px; }
 
+
+
+/* Strike zone */
+.gd-szone-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.gd-szone {
+  position: relative;
+  width: 78px;
+  height: 96px;
+  background: rgba(0,0,0,0.25);
+  border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+}
+.gd-szone-box {
+  position: absolute;
+  left: 22%;
+  width: 56%;
+  border: 1.5px solid rgba(255,255,255,0.45);
+  background: rgba(255,255,255,0.03);
+}
+.gd-pitch {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .45rem;
+  font-weight: 800;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.3);
+}
+.gd-pitch.ball { background: #3b82f6; }
+.gd-pitch.strike { background: #e11d48; }
+.gd-pitch.foul { background: #f59e0b; }
+.gd-pitch.inplay { background: #22c55e; }
+.gd-szone-label { font-size: .52rem; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; }
+.gd-last-pitch { font-size: .6rem; color: rgba(255,255,255,0.7); text-align: center; min-height: 12px; }
 
 /* EOD banner (only shows near 5pm) */
 #eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
@@ -590,6 +648,55 @@ async function fetchMLBLive(gamePk){
   }catch{return null;}
 }
 
+
+// Build a strike-zone plot from the current at-bat's pitches
+function buildStrikeZone(pitches){
+  if(!pitches||!pitches.length){
+    return '<div class="gd-szone-wrap"><div class="gd-szone-label">Strike zone</div><div class="gd-szone"></div><div class="gd-last-pitch">Waiting for pitch…</div></div>';
+  }
+  // Average strike zone top/bottom across pitches (batter-specific zone)
+  let zTop=0,zBot=0,zCount=0;
+  pitches.forEach(function(p){
+    if(p.pitchData&&p.pitchData.strikeZoneTop){zTop+=p.pitchData.strikeZoneTop;zBot+=p.pitchData.strikeZoneBottom;zCount++;}
+  });
+  zTop=zCount?zTop/zCount:3.45;
+  zBot=zCount?zBot/zCount:1.6;
+  // Fixed display range: 0 to 5 ft vertical, -1.5 to 1.5 ft horizontal
+  const vMin=0,vMax=5;
+  const pctFromBottom=function(ft){return Math.max(0,Math.min(100,(ft-vMin)/(vMax-vMin)*100));};
+  const zoneTopPct=100-pctFromBottom(zTop);
+  const zoneBotPct=100-pctFromBottom(zBot);
+  const zoneHeightPct=zoneBotPct-zoneTopPct;
+
+  let dotsHtml='';
+  pitches.forEach(function(p,i){
+    const coords=p.pitchData&&p.pitchData.coordinates;
+    if(!coords||coords.pX===undefined||coords.pZ===undefined)return;
+    const xPct=Math.max(2,Math.min(98,((coords.pX+1.5)/3)*100));
+    const yPct=100-Math.max(2,Math.min(98,pctFromBottom(coords.pZ)));
+    const code=(p.details&&p.details.code)||'';
+    let cls='ball';
+    if(code==='C'||code==='S'||code==='K'||code==='L'||code==='M'||code==='O'||code==='Q'||code==='T')cls='strike';
+    else if(code==='F'||code==='T')cls='foul';
+    else if(code==='X'||code==='D'||code==='E')cls='inplay';
+    else if(code==='B'||code==='I'||code==='P'||code==='V')cls='ball';
+    dotsHtml+='<div class="gd-pitch '+cls+'" style="left:'+xPct+'%;top:'+yPct+'%;">'+(i+1)+'</div>';
+  });
+
+  const last=pitches[pitches.length-1];
+  let lastLine='';
+  if(last&&last.pitchData){
+    const speed=last.pitchData.startSpeed?Math.round(last.pitchData.startSpeed)+' mph':'';
+    const ptype=(last.details&&last.details.type&&last.details.type.description)||'';
+    const desc=(last.details&&last.details.description)||'';
+    lastLine=[speed,ptype].filter(Boolean).join(' · ')||desc;
+  }
+
+  return '<div class="gd-szone-wrap"><div class="gd-szone-label">Strike zone</div>'+
+    '<div class="gd-szone"><div class="gd-szone-box" style="top:'+zoneTopPct+'%;height:'+zoneHeightPct+'%;"></div>'+dotsHtml+'</div>'+
+    '<div class="gd-last-pitch">'+(lastLine||'&nbsp;')+'</div></div>';
+}
+
 async function loadGameday(){
   try{
     const today=new Date();
@@ -656,6 +763,8 @@ async function loadGameday(){
     const linescore=live&&live.liveData&&live.liveData.linescore;
     const plays=live&&live.liveData&&live.liveData.plays;
     const currentPlay=plays&&plays.currentPlay;
+    const currentPitches=(currentPlay&&currentPlay.playEvents||[]).filter(function(e){return e.isPitch&&e.pitchData&&e.pitchData.coordinates;});
+    const strikeZoneHtml=buildStrikeZone(currentPitches);
 
     const cubsScore=homeIsCubs?(linescore?linescore.teams.home.runs:0):(linescore?linescore.teams.away.runs:0);
     const oppScore=homeIsCubs?(linescore?linescore.teams.away.runs:0):(linescore?linescore.teams.home.runs:0);
@@ -773,13 +882,14 @@ async function loadGameday(){
               '<div class="gd-base second'+(on2?' occupied':'')+'"></div>'+
               '<div class="gd-base third'+(on3?' occupied':'')+'"></div>'+
               '<div class="gd-base first'+(on1?' occupied':'')+'"></div>'+
-              '<div class="gd-base home"></div>'+
+              '<div class="gd-home-plate"><svg viewBox="0 0 20 18"><polygon points="10,0 20,0 20,10 10,18 0,10 0,0" fill="#ffffff" fill-opacity="0.35" stroke="rgba(255,255,255,0.5)" stroke-width="1"/></svg></div>'+
             '</div>'+
             '<div class="gd-count-big">'+
               '<div class="gd-count-row"><span class="gd-count-label">BALLS</span><div class="gd-count-dots">'+dots(balls,4,'')+'</div></div>'+
               '<div class="gd-count-row"><span class="gd-count-label">STRIKES</span><div class="gd-count-dots">'+dots(strikes,3,'strike')+'</div></div>'+
               '<div class="gd-count-row"><span class="gd-count-label">OUTS</span><div class="gd-count-dots">'+dots(outs,3,'out')+'</div></div>'+
             '</div>'+
+            strikeZoneHtml+
           '</div>'+
           (batterName||pitcherName?'<div class="gd-matchup">'+
             '<div class="gd-mp-cell"><div class="gd-mp-role">⚾ At bat</div><div class="gd-mp-name">'+(batterName||'—')+'</div>'+(batterStats?'<div class="gd-mp-stats">'+batterStats+'</div>':'')+'</div>'+

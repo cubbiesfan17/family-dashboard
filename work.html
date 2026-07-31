@@ -74,8 +74,8 @@ body {
   min-height: 0;
 }
 .card-news    { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; }
-.card-weather { grid-column: 2; grid-row: 1; }
-.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; }
+.card-weather { grid-column: 2; grid-row: 1; align-self: stretch; }
+.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; align-self: stretch; }
 .card-music   { grid-column: 2 / span 2; grid-row: 2; }
 
 /* Weather */
@@ -327,7 +327,6 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-base.home {
   bottom: 0; left: 0;
   opacity: .3;
-  border-radius: 50% 50% 50% 0 / 50% 50% 50% 0;
 }
 
 /* Count section */

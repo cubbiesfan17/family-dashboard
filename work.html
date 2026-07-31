@@ -55,9 +55,9 @@ body {
 .card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
 .quote-text { font-size: .82rem; font-style: italic; color: #fff; line-height: 1.35; }
 .quote-author { font-size: .7rem; color: #7ECFED; margin-top: 4px; }
-.clock-time { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: #fff; }
-.clock-date { font-size: .75rem; color: #7BAFC4; margin-top: 2px; }
-.progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 6px; overflow: hidden; }
+.clock-time { font-size: 2.6rem; font-weight: 800; letter-spacing: -2px; line-height: 1; color: #fff; }
+.clock-date { font-size: .9rem; color: #7BAFC4; margin-top: 3px; font-weight: 500; }
+.progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 4px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 3px; background: #4A9EBF; transition: width 1s linear; }
 .progress-label { font-size: .62rem; color: #7BAFC4; margin-top: 3px; }
 
@@ -75,7 +75,7 @@ body {
 }
 .card-news    { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; }
 .card-weather { grid-column: 2; grid-row: 1; }
-.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; }
+.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; align-self: start; }
 .card-music   { grid-column: 2 / span 2; grid-row: 2; }
 
 /* Weather */
@@ -110,7 +110,7 @@ body {
 .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
 .cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .58rem; color: #7BAFC4; }
 .cal-legend-bar { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.cal-list { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+.cal-list { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; scrollbar-width: none; max-height: 155px; }
 .cal-list::-webkit-scrollbar { display: none; }
 .cal-event { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
 .cal-event.past { opacity: .4; }
@@ -400,6 +400,105 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-pregame-time { font-size: .85rem; color: rgba(255,255,255,0.65); }
 .gd-pregame-countdown { font-size: .95rem; color: #fbbf24; font-weight: 700; margin-top: 4px; }
 
+
+/* ═══ Article reader overlay ═══ */
+.reader-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: #0d1f2d;
+  flex-direction: column;
+}
+.reader-overlay.open { display: flex; }
+.reader-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #0f1e28;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  flex-shrink: 0;
+  height: 48px;
+}
+.reader-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #4A9EBF;
+  color: #fff;
+  font-size: .95rem;
+  font-weight: 700;
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.reader-back:hover { background: #3a8ba8; }
+.reader-title {
+  font-size: .8rem;
+  color: #7BAFC4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 60%;
+  margin: 0 12px;
+}
+.reader-external {
+  background: transparent;
+  color: #7BAFC4;
+  font-size: .75rem;
+  padding: 6px 12px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.reader-external:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.reader-body { flex: 1; position: relative; overflow: hidden; }
+.reader-body iframe { width: 100%; height: 100%; border: none; background: #fff; }
+.reader-fallback {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: #0d1f2d;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 30px;
+  text-align: center;
+}
+.reader-fallback.show { display: flex; }
+.reader-fallback-msg { color: #F0F4F7; font-size: 1rem; line-height: 1.5; max-width: 500px; }
+.reader-fallback-sub { color: #7BAFC4; font-size: .8rem; }
+.reader-fallback-btn {
+  background: #4A9EBF;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+}
+.reader-fallback-btn:hover { background: #3a8ba8; }
+.reader-loading {
+  position: absolute;
+  inset: 0;
+  background: rgba(13, 31, 45, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7BAFC4;
+  font-size: .95rem;
+  gap: 10px;
+  z-index: 10;
+}
+.reader-loading.hide { display: none; }
+
 /* EOD banner (only shows near 5pm) */
 #eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
 </style>
@@ -516,6 +615,28 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 </div>
 
 <div id="eod-banner">⏰ Almost 5pm — wrap up, write your done list!</div>
+
+
+<!-- Article reader overlay -->
+<div class="reader-overlay" id="reader-overlay">
+  <div class="reader-topbar">
+    <button class="reader-back" onclick="closeReader()">
+      <span style="font-size:1.2rem;line-height:1;">←</span>
+      <span>Back to dashboard</span>
+    </button>
+    <div class="reader-title" id="reader-title"></div>
+    <a class="reader-external" id="reader-external" href="#" target="_blank" rel="noopener">Open in browser ↗</a>
+  </div>
+  <div class="reader-body">
+    <div class="reader-loading" id="reader-loading"><span class="sp"></span> Loading article…</div>
+    <iframe id="reader-iframe" src="about:blank"></iframe>
+    <div class="reader-fallback" id="reader-fallback">
+      <div class="reader-fallback-msg">This site blocks embedded viewing</div>
+      <div class="reader-fallback-sub">Many news sites (NYT, WSJ, etc.) don't allow their articles to be shown inside other apps. You can open it in your tablet's browser instead.</div>
+      <a class="reader-fallback-btn" id="reader-fallback-btn" href="#" target="_blank" rel="noopener">Open in browser</a>
+    </div>
+  </div>
+</div>
 
 <script src="shared-calendars.js"></script>
 <script>
@@ -994,9 +1115,8 @@ async function loadHeadlines(){
       const src=dashIdx>0?title.slice(dashIdx+3):'';
       const d=document.createElement('a');
       d.className='news-item';
-      d.href=link;
-      d.target='_blank';
-      d.rel='noopener';
+      d.href='#';
+      d.onclick=(function(url,title){return function(e){e.preventDefault();openReader(url,title);return false;};})(link,hed);
       d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
       d.innerHTML='<div class="news-hed">'+hed+'</div><div class="news-src">'+src+'</div>';
       container.appendChild(d);
@@ -1204,6 +1324,47 @@ async function loadSports(){
 }
 loadSports();setInterval(loadSports,300000);
 
+
+
+// ── Article reader overlay ──
+let _readerTimeout=null;
+function openReader(url,title){
+  const overlay=document.getElementById('reader-overlay');
+  const iframe=document.getElementById('reader-iframe');
+  const loading=document.getElementById('reader-loading');
+  const fallback=document.getElementById('reader-fallback');
+  const titleEl=document.getElementById('reader-title');
+  const externalBtn=document.getElementById('reader-external');
+  const fallbackBtn=document.getElementById('reader-fallback-btn');
+  titleEl.textContent=title||'';
+  externalBtn.href=url;
+  fallbackBtn.href=url;
+  fallback.classList.remove('show');
+  loading.classList.remove('hide');
+  iframe.style.display='block';
+  overlay.classList.add('open');
+  // Load iframe with timeout — if it doesn't load in 4s, show fallback
+  iframe.onload=function(){loading.classList.add('hide');clearTimeout(_readerTimeout);};
+  iframe.onerror=function(){showReaderFallback();};
+  _readerTimeout=setTimeout(showReaderFallback,4000);
+  try{iframe.src=url;}catch(e){showReaderFallback();}
+}
+function showReaderFallback(){
+  clearTimeout(_readerTimeout);
+  document.getElementById('reader-iframe').style.display='none';
+  document.getElementById('reader-loading').classList.add('hide');
+  document.getElementById('reader-fallback').classList.add('show');
+}
+function closeReader(){
+  const overlay=document.getElementById('reader-overlay');
+  const iframe=document.getElementById('reader-iframe');
+  clearTimeout(_readerTimeout);
+  overlay.classList.remove('open');
+  // Clear iframe to stop any playing media / requests
+  setTimeout(()=>{iframe.src='about:blank';},300);
+}
+// ESC key closes reader (useful for keyboard testing)
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeReader();});
 
 </script>
 </body>

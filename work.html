@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Work Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;min-height:100vh;padding:12px}
+.section-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#4A7A95;margin:4px 2px 8px;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:rgba(74,122,149,0.25)}
+.grid{display:grid;gap:12px}
+.card{background:rgba(255,255,255,0.10);border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,0.15);overflow:hidden}
+.card-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#7BAFC4;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.icon-btn{background:none;border:none;cursor:pointer;color:#7BAFC4;font-size:15px;padding:0;line-height:1}
+.icon-btn:hover{color:#fff}
+.status-msg{font-size:.82rem;color:#7BAFC4;padding:8px 0;text-align:center}
+.btn{font-size:.78rem;padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#F0F4F7;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,0.1)}
+.sp{display:inline-block;width:14px;height:14px;border:2px solid rgba(74,158,191,0.3);border-top-color:#4A9EBF;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ════ TIER 1: WORK (biggest, top) ════ */
+.tier-top{grid-template-columns:1.5fr 1fr;margin-bottom:10px}
+.card-work{background:rgba(74,158,191,0.13);border-color:rgba(74,158,191,0.35)}
+
+/* Clock — larger for work tier */
+.clock-time{font-size:3.6rem;font-weight:800;letter-spacing:-2px;line-height:1;color:#fff}
+.clock-date{font-size:.95rem;color:#7BAFC4;margin-top:5px}
+.progress-wrap{background:rgba(255,255,255,0.1);border-radius:3px;height:6px;margin-top:14px;overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;background:#4A9EBF;transition:width 1s linear}
+.progress-label{font-size:.75rem;color:#7BAFC4;margin-top:5px}
+
+
+
+/* ════ TIER 2: MEDIUM (Cubs + Spotify) ════ */
+.tier-media{grid-template-columns:1fr;margin-bottom:8px}
+
+/* Cubs Gameday */
+.card-gameday{background:rgba(14,51,134,0.65);border-color:rgba(14,51,134,0.8)}
+.card-gameday .card-label{color:rgba(255,255,255,.5)}
+.gameday-vs{font-size:1.05rem;font-weight:700;margin:2px 0 3px;color:#fff}
+.gameday-time{font-size:.82rem;color:rgba(255,255,255,.65);margin-bottom:8px}
+.gameday-btns{display:flex;gap:8px;margin-top:10px}
+.gameday-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none;border:none}
+.btn-mlb{background:#fff;color:#002d72}
+.btn-mlb:hover{background:#f0f4ff}
+.btn-audio{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
+.btn-audio:hover{background:rgba(255,255,255,.25)}
+.no-game{font-size:.85rem;color:rgba(255,255,255,.6);line-height:1.5;margin-top:4px}
+
+/* Spotify */
+.spotify-shortcuts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
+.shortcut-pill{font-size:.75rem;padding:4px 11px;border-radius:20px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);cursor:pointer;color:#F0F4F7;white-space:nowrap}
+.shortcut-pill:hover{background:rgba(255,255,255,0.15)}
+.spotify-search-row{display:flex;gap:6px;margin-bottom:9px}
+.spotify-search-row input{flex:1;font-size:.85rem;padding:7px 11px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none}
+.spotify-search-row input::placeholder{color:#7BAFC4}
+.spotify-search-row input:focus{border-color:#1db954}
+.spotify-search-row button{padding:7px 13px;border-radius:8px;border:none;background:#1db954;color:#fff;font-size:.8rem;cursor:pointer}
+.spotify-placeholder{background:rgba(255,255,255,0.05);border-radius:8px;border:1px solid rgba(255,255,255,0.1);padding:16px;text-align:center}
+.spotify-placeholder p{font-size:.82rem;color:#7BAFC4}
+.spotify-big-icon{font-size:1.8rem;color:#1db954;margin-bottom:5px}
+
+/* ════ TIER 3: GENERAL (smallest, bottom) ════ */
+.tier-general{grid-template-columns:1.3fr 1.6fr 1.1fr}
+.card-general{padding:13px 15px;background:rgba(255,255,255,0.06)}
+.card-general .card-label{font-size:.62rem;color:#4A7A95}
+
+/* Weather — home dashboard style */
+.weather-main{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.weather-icon{font-size:2.4rem;line-height:1}
+.weather-temp{font-size:2.8rem;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1}
+.weather-desc{font-size:.95rem;color:#7BAFC4;text-transform:capitalize;margin-left:4px}
+.weather-detail-line{font-size:.9rem;color:#fff;margin-top:2px}
+.weather-detail-line .feels{color:#fff;font-weight:500}
+.weather-dress{padding:6px 10px;border-radius:10px;background:rgba(74,158,191,0.2);font-size:.82rem;font-weight:700;color:#fff;border:1px solid rgba(74,158,191,0.3);margin-top:8px;display:inline-block}
+.forecast-strip{display:flex;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;margin-top:10px}
+.forecast-day{flex:1;text-align:center;padding:0 4px;border-right:1px solid rgba(255,255,255,.08)}
+.forecast-day:last-child{border-right:none}
+.fc-dow{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:#7BAFC4;margin-bottom:3px}
+.fc-icon{font-size:1.1rem;margin-bottom:3px}
+.fc-high{font-size:.82rem;font-weight:600;color:#fff}
+.fc-precip{font-size:.65rem;color:#4A9EBF;margin-top:1px}
+
+/* Calendar — single combined list */
+.view-toggle{display:flex;gap:4px}
+.view-btn{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid rgba(74,158,191,0.4);background:transparent;color:#7BAFC4;cursor:pointer;letter-spacing:.5px}
+.view-btn.active{background:#4A9EBF;color:#fff;border-color:#4A9EBF}
+.view-btn:hover:not(.active){background:rgba(74,158,191,0.18);color:#fff}
+.cal-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:.65rem;color:#7BAFC4}
+.cal-legend-bar{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.cal-list{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;scrollbar-width:none}
+.cal-list::-webkit-scrollbar{display:none}
+.cal-event{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;background:rgba(13,25,45,0.6);border-left:4px solid #4A9EBF}
+.cal-event.past{opacity:.4}
+.cal-event.next{background:rgba(74,158,191,0.15);box-shadow:0 0 8px rgba(74,158,191,0.4)}
+.cal-event.holiday{border-left-color:#f0a500}
+.cal-event.holiday .cal-ev-title{color:#f0d080;font-style:italic}
+.cal-ev-time{font-size:.72rem;font-weight:600;color:#7BAFC4;min-width:72px;flex-shrink:0}
+.cal-ev-title{font-size:.85rem;font-weight:600;color:#fff;flex:1;line-height:1.25}
+.cal-ev-person{font-size:.62rem;color:#7BAFC4;flex-shrink:0}
+.cal-now-badge{font-size:.58rem;color:#7ECFED;font-weight:700;margin-left:6px}
+.wm-day-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#4A9EBF;padding:6px 0 3px;margin-top:4px;border-bottom:1px solid rgba(74,158,191,0.2)}
+.wm-day-label.today-label{color:#7ECFED}
+.no-events{font-size:.82rem;color:#7BAFC4;padding:10px 0;text-align:center}
+
+/* Headlines */
+.news-item{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:6px;transition:background 0.15s;margin:0 -4px;}
+.news-item:last-child{border-bottom:none}
+a.news-item:hover{background:rgba(74,158,191,0.12);}
+a.news-item:hover .news-hed{color:#7ECFED;}
+.news-hed{font-size:.78rem;color:#F0F4F7;line-height:1.4}
+.news-src{font-size:.62rem;color:#7BAFC4;margin-top:1px}
+
+
+
+.eod-banner{display:none;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:10px;padding:9px 14px;font-size:.82rem;color:#fcd34d;text-align:center;margin-top:8px}
+.sp-tile{background:rgba(255,255,255,0.05);border-radius:6px;padding:5px;cursor:pointer;display:flex;flex-direction:column;gap:3px;border:1px solid rgba(255,255,255,0.08);}
+.sp-tile:hover{background:rgba(255,255,255,0.12);}
+.sp-tile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;}
+.sp-tile-name{font-size:.65rem;font-weight:600;color:#fff;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.sp-tile-sub{font-size:.58rem;color:#7BAFC4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.shortcut-pill.sp-tab.active{background:#1db954;border-color:#1db954;color:#fff;}
+.err{color:#ef4444;font-size:.78rem;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- ════════ TOP: Quote + Clock ════════ -->
+<div class="grid tier-top">
+  <div class="card card-work">
+    <div class="card-label">✦ Motivation of the day</div>
+    <div style="display:flex;align-items:center;height:calc(100% - 24px);">
+      <div>
+        <span class="quote-text" id="quote-text" style="font-size:1.15rem;font-style:italic;color:#fff;line-height:1.5;"></span>
+        <div class="quote-author" id="quote-author" style="font-size:.85rem;color:#7ECFED;margin-top:8px;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card card-work">
+    <div class="card-label">Time &amp; workday</div>
+    <div class="clock-time" id="clock">--:--</div>
+    <div class="clock-date" id="clock-date"></div>
+    <div class="progress-wrap"><div class="progress-fill" id="day-bar" style="width:0%"></div></div>
+    <div class="progress-label" id="day-pct">Workday progress</div>
+  </div>
+</div>
+
+<!-- ════════ TIER 3: GENERAL ════════ -->
+<div class="section-label">📋 General — at a glance</div>
+<div class="grid tier-general">
+  <div class="card card-general">
+    <div class="card-label">
+      <span>Weather — Algonquin</span>
+      <button class="icon-btn" onclick="loadWeather()" title="Refresh">↻</button>
+    </div>
+    <div id="weather-body"><span class="sp"></span> Loading…</div>
+  </div>
+  <div class="card card-general" style="display:flex;flex-direction:column;">
+    <div class="card-label">
+      <span id="cal-title">📅 Today's schedule</span>
+      <span style="display:flex;gap:8px;align-items:center;">
+        <span class="view-toggle">
+          <button class="view-btn active" id="vbtn-today" onclick="switchCalView('today')">TODAY</button>
+          <button class="view-btn" id="vbtn-week" onclick="switchCalView('week')">WEEK</button>
+          <button class="view-btn" id="vbtn-month" onclick="switchCalView('month')">MONTH</button>
+        </span>
+        <button class="icon-btn" onclick="loadCal()" title="Refresh">↻</button>
+      </span>
+    </div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#2e9e5b"></div>Family</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#3b82f6"></div>Finn</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#ec4899"></div>Millie</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#eab308"></div>Nolan</div>
+    </div>
+    <div id="cal"><span class="sp"></span></div>
+  </div>
+  <div class="card card-general">
+    <div class="card-label">Headlines</div>
+    <div id="news-list"></div>
+  </div>
+</div>
+
+<!-- ════════ MEDIA ROW: Music (default) OR Cubs gameday (when playing) ════════ -->
+<div class="section-label" id="media-label">🎵 Music &amp; audio</div>
+<div class="grid tier-media" id="media-row">
+  <!-- Gameday takes over full width when Cubs are playing today -->
+  <div class="card card-gameday" id="gameday-card" style="display:none;">
+    <div class="card-label">⚾ Cubs Gameday</div>
+    <div id="gameday-content"></div>
+  </div>
+  <!-- Music & audio when no game -->
+  <div class="card" id="music-card">
+    <div class="card-label">
+      <span>Music &amp; audio</span>
+      <span id="sp-status" style="font-size:.62rem;color:#7BAFC4;"></span>
+    </div>
+    <div id="sp-personal" style="display:none;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;margin-bottom:8px;font-size:.62rem;">
+        <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
+        <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Your top tracks</button>
+        <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
+      </div>
+      <div id="sp-personal-list" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;"></div>
+    </div>
+    <div id="sp-connect" style="display:none;font-size:.78rem;color:#7BAFC4;margin-bottom:8px;">
+      <a href="/api/spotify/auth" style="color:#1db954;">Connect your Spotify ↗</a> to see your playlists and recently played
+    </div>
+    <div class="spotify-shortcuts">
+      <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus music</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Chicago blues</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep focus</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
+      <button class="shortcut-pill" onclick="spotifyLoad('baseball podcast')">🎙 Podcast</button>
+    </div>
+    <div class="spotify-search-row">
+      <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
+      <button onclick="spotifySearch()">Search</button>
+    </div>
+    <div id="spotify-embed">
+      <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut or search to load the player</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- Sports ticker (same as home dashboard) -->
+<div id="sports-ticker" style="margin-top:8px;background:rgba(13,25,45,0.90);border-radius:12px;padding:0;overflow:hidden;display:flex;align-items:center;height:48px;line-height:48px;">
+  <div style="background:#0f1e28;color:#E8F4F8;font-size:.78rem;font-weight:700;padding:0 16px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:1.5px;flex-shrink:0;">🏆 SCORES</div>
+  <div style="overflow:hidden;flex:1;position:relative;height:100%;">
+    <div id="sports-ticker-inner" style="display:flex;align-items:center;height:100%;white-space:nowrap;will-change:transform;line-height:1;">
+      <span style="color:#c7d2fe;font-size:.82rem;padding:0 20px;">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="eod-banner" id="eod-banner">⏰ Almost 5pm — wrap up, write your done list, and call it a day!</div>
+
+<script src="shared-calendars.js"></script>
+<script>
+// ── Calendar config: read from shared-calendars.js (single source of truth) ──
+// Falls back to inline defaults if the shared file didn't load.
+const ICS_COLS = (window.SHARED_CALENDARS || []).map(c => ({
+  label: c.label,
+  color: c.color,
+  raw: (c.urls || []).join(',') || c.raw || ''
+}));
+
+// ── Quote ──
+const QUOTES=[
+  {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+  {q:"It always seems impossible until it's done.",a:"Nelson Mandela"},
+  {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+  {q:"The only way to do great work is to love what you do.",a:"Steve Jobs"},
+  {q:"Focus on being productive instead of busy.",a:"Tim Ferriss"},
+  {q:"You don't have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {q:"Do the hard jobs first. The easy jobs will take care of themselves.",a:"Dale Carnegie"},
+  {q:"Small daily improvements are the key to staggering long-term results.",a:"Robin Sharma"},
+  {q:"Motivation is what gets you started. Habit is what keeps you going.",a:"Jim Ryun"},
+  {q:"Don't watch the clock; do what it does. Keep going.",a:"Sam Levenson"},
+  {q:"Hard work beats talent when talent doesn't work hard.",a:"Tim Notke"},
+  {q:"Push yourself because no one else is going to do it for you.",a:"Unknown"},
+];
+// ── Populate quote ──
+(function(){const now=new Date(),doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);const fb=QUOTES[doy%QUOTES.length];document.getElementById('quote-text').textContent='\u201c'+fb.q+'\u201d';document.getElementById('quote-author').textContent=fb.a?'\u2014 '+fb.a:'';})();
+
+
+// ── Clock ──
+let _lastDate=new Date().toDateString();
+function tick(){
+  const n=new Date(),h=n.getHours(),m=String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent=(h%12||12)+':'+m+(h<12?' AM':' PM');
+  const D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('clock-date').textContent=D[n.getDay()]+', '+M[n.getMonth()]+' '+n.getDate();
+  const pct=Math.min(100,Math.max(0,Math.round(((h*60+parseInt(m))-540)/480*100)));
+  document.getElementById('day-bar').style.width=pct+'%';
+  document.getElementById('day-pct').textContent='Workday: '+pct+'% complete';
+  document.getElementById('eod-banner').style.display=(h===16&&parseInt(m)>=45)?'block':'none';
+}
+setInterval(tick,1000);tick();
+
+
+
+// ── Cubs Gameday: only show during warmups (~45min pre-game) or LIVE ──
+function showMusicMode(){
+  document.getElementById('gameday-card').style.display='none';
+  document.getElementById('music-card').style.display='block';
+  document.getElementById('media-label').textContent='🎵 Music & audio';
+}
+function showGamedayMode(){
+  document.getElementById('gameday-card').style.display='block';
+  document.getElementById('music-card').style.display='none';
+  document.getElementById('media-label').textContent='⚾ Cubs Gameday';
+}
+async function loadGameday(){
+  try{
+    const today=new Date();const todayStr=today.getFullYear()+String(today.getMonth()+1).padStart(2,'0')+String(today.getDate()).padStart(2,'0');
+    const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates='+todayStr);
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    const games=(d.events||[]).filter(e=>{const comp=e.competitions[0];return comp.competitors.some(c=>c.team.abbreviation==='CHC');});
+    if(!games.length){showMusicMode();return;}
+    const g=games[0],comp=g.competitions[0];
+    const status=g.status.type;
+    const gameTime=new Date(g.date);
+    const now=new Date();
+    const minsUntilStart=(gameTime-now)/60000;
+    // Show gameday view ONLY IF:
+    //   - game is LIVE ('in' state), OR
+    //   - game is 'pre' AND within 45 min of first pitch (warmups)
+    const isLive=status.state==='in';
+    const isWarmup=status.state==='pre'&&minsUntilStart<=45&&minsUntilStart>=-5;
+    if(!isLive&&!isWarmup){showMusicMode();return;}
+    const cubs=comp.competitors.find(c=>c.team.abbreviation==='CHC');
+    const opp=comp.competitors.find(c=>c.team.abbreviation!=='CHC');
+    const isHome=cubs.homeAway==='home';
+    let statusLine='',scoreLine='';
+    if(isWarmup){
+      const gt=new Date(g.date);const minsLeft=Math.max(0,Math.round(minsUntilStart));
+      statusLine='🟡 Warmups · First pitch '+gt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'})+' CT'+(minsLeft>0?' ('+minsLeft+' min)':'')+' · '+comp.venue.fullName;
+      scoreLine='';
+    } else {
+      statusLine='🔴 LIVE · '+status.shortDetail;
+      scoreLine='<span style="color:#7BAFC4;">Cubs</span> '+cubs.score+' — '+opp.score+' <span style="color:#7BAFC4;">'+opp.team.abbreviation+'</span>';
+    }
+    document.getElementById('gameday-content').innerHTML=
+      '<div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">'+
+        '<div style="display:flex;align-items:center;gap:14px;">'+
+          '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:56px;width:56px;border-radius:50%;background:#fff;padding:3px;"/>'+
+          '<div><div style="font-size:1.3rem;font-weight:700;color:#fff;">Cubs '+(isHome?'vs.':'@')+' '+opp.team.shortDisplayName+'</div>'+
+          '<div style="font-size:.85rem;color:rgba(255,255,255,.65);margin-top:2px;">'+statusLine+'</div></div>'+
+        '</div>'+
+        (scoreLine?'<div style="font-size:1.6rem;font-weight:800;color:#fff;margin-left:auto;">'+scoreLine+'</div>':'')+
+      '</div>';
+    showGamedayMode();
+  }catch(e){showMusicMode();}
+}
+loadGameday();setInterval(loadGameday,60000);
+
+// ── Weather (Open-Meteo) ──
+async function loadWeather(){
+  const body=document.getElementById('weather-body');
+  body.innerHTML='<span class="sp"></span> Loading…';
+  try{
+    const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=42.1656&longitude=-88.2834&current=temperature_2m,weathercode&hourly=precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=5');
+    if(!res.ok)throw new Error('fail');
+    const d=await res.json();
+    function wmo(c){if(c===0)return{i:'☀️',l:'Clear'};if(c<=2)return{i:'⛅',l:'Partly Cloudy'};if(c===3)return{i:'☁️',l:'Overcast'};if(c<=49)return{i:'🌫️',l:'Foggy'};if(c<=59)return{i:'🌦',l:'Drizzle'};if(c<=69)return{i:'🌧',l:'Rain'};if(c<=79)return{i:'🌨',l:'Snow'};if(c<=82)return{i:'🌧',l:'Showers'};if(c<=99)return{i:'⛈',l:'Storm'};return{i:'🌤',l:'Mixed'};}
+    const cur=d.current,daily=d.daily,hourly=d.hourly,cw=wmo(cur.weathercode);
+    const todayStr=new Date().toISOString().slice(0,10);
+    const hrs=hourly.time.map((t,i)=>({t,p:hourly.precipitation_probability[i]})).filter(h=>h.t.startsWith(todayStr));
+    const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;
+    const morn=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=6&&x<12;}).map(h=>h.p));
+    const aftn=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=12&&x<18;}).map(h=>h.p));
+    const evng=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=18&&x<24;}).map(h=>h.p));
+    const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const fc=daily.time.slice(1,5).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
+    const pbar=p=>'<div class="precip-bar-wrap"><div class="precip-bar" style="width:'+p+'%"></div></div>';
+    // Determine when precip happens (morning/afternoon/evening) for the timing hint
+    const windows=[];
+    if(morn>=30)windows.push('morning');
+    if(aftn>=30)windows.push('afternoon');
+    if(evng>=30)windows.push('evening');
+    const maxPrecip=Math.max(morn,aftn,evng);
+    const precipTiming=windows.length?' ('+windows.join(' & ')+')':'';
+    const isSnowy=[71,73,75,77,85,86].includes(cur.weathercode);
+    const precipType=isSnowy?'snow':'rain';
+    const temp=Math.round(cur.temperature_2m);
+    const hi=Math.round(daily.temperature_2m_max[0]);
+    const lo=Math.round(daily.temperature_2m_min[0]);
+    // Dress tip
+    let dressTip='';
+    if(temp<=20)dressTip='🧥 Heavy coat, hat & gloves!';
+    else if(temp<=32)dressTip='🧥 Heavy coat & gloves!';
+    else if(temp<=45)dressTip='🧣 Warm coat & scarf!';
+    else if(temp<=55)dressTip='🧥 Light jacket today!';
+    else if(temp<=65)dressTip='👕 Light layer recommended!';
+    else if(temp<=75)dressTip='👕 Comfortable outside!';
+    else if(temp<=85)dressTip='😎 T-shirt weather!';
+    else dressTip='🥵 Hot — stay cool & hydrated!';
+    if(maxPrecip>=40){if(isSnowy)dressTip+=' ❄️ Snow gear!';else dressTip+=' ☂️ Raincoat!';}
+    body.innerHTML=`<div class="weather-main"><span class="weather-icon">${cw.i}</span><span class="weather-temp">${temp}°F</span><span class="weather-desc">${cw.l.toLowerCase()}</span></div>
+    <div class="weather-detail-line">H <span class="feels">${hi}°</span> · L <span class="feels">${lo}°</span> &nbsp;·&nbsp; 🌧 ${maxPrecip}% ${precipType}${precipTiming}</div>
+    <div class="weather-dress">${dressTip}</div>
+    <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-icon">${f.icon}</div><div class="fc-high">${f.high}°</div><div class="fc-precip">${f.precip}%</div></div>`).join('')}</div>`;
+  }catch(e){body.innerHTML='<div class="err">Could not load weather. <button class="btn" onclick="loadWeather()">Retry</button></div>';}
+}
+loadWeather();setInterval(loadWeather,600000);
+
+// ════ ICS CALENDAR ENGINE (ported from home dashboard) ════
+function parseICS(txt,person,color){
+  const pd=(v)=>{if(!v)return null;const c=v.replace(/[TZ]/g,'');if(c.length===8)return new Date(c.slice(0,4),c.slice(4,6)-1,c.slice(6,8));if(v.endsWith('Z'))return new Date(Date.UTC(+c.slice(0,4),c.slice(4,6)-1,+c.slice(6,8),+c.slice(8,10)||0,+c.slice(10,12)||0));const iso=c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6,8)+'T'+(c.slice(8,10)||'00')+':'+(c.slice(10,12)||'00')+':00';try{const cd=new Date(new Date(iso).toLocaleString('en-US',{timeZone:'America/Chicago'}));return new Date(new Date(iso).getTime()+(new Date(iso)-cd));}catch{return new Date(iso);}};
+  const parseRRule=(s)=>{if(!s)return null;const r={};s.split(';').forEach(p=>{const[k,v]=p.split('=');r[k.trim()]=v?v.trim():'';});return r;};
+  const DOW={SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+  const NOW=new Date();const EXPAND_FROM=new Date(NOW);EXPAND_FROM.setHours(0,0,0,0);const EXPAND_TO=new Date(NOW);EXPAND_TO.setDate(EXPAND_TO.getDate()+45);
+  function expandRecurrence(bs,be,rrule,exdates,sm,allDay){
+    const rr=parseRRule(rrule);if(!rr||!rr.FREQ)return[];
+    const freq=rr.FREQ,interval=parseInt(rr.INTERVAL||'1',10),count=rr.COUNT?parseInt(rr.COUNT,10):null,until=rr.UNTIL?pd(rr.UNTIL):null,byDay=rr.BYDAY?rr.BYDAY.split(',').map(s=>s.trim()):null;
+    const durMs=(be&&bs)?(be-bs):0;
+    const exSet=new Set((exdates||[]).map(d=>{const x=pd(d);return x?x.toDateString():null;}).filter(Boolean));
+    const results=[];let cur=new Date(bs),n=0,iter=0;
+    while(iter++<5000){
+      if(until&&cur>until)break;if(count!==null&&n>=count)break;if(cur>EXPAND_TO)break;
+      if(cur>=EXPAND_FROM&&cur<=EXPAND_TO&&!exSet.has(cur.toDateString())){const evtEnd=durMs>0?new Date(cur.getTime()+durMs):null;results.push({sm,start:new Date(cur),end:evtEnd,allDay,person,color});}
+      n++;
+      if(freq==='DAILY'){cur=new Date(cur);cur.setDate(cur.getDate()+interval);}
+      else if(freq==='WEEKLY'){if(byDay&&byDay.length>0){const days=byDay.map(bd=>DOW[bd.replace(/[+-\d]/g,'').toUpperCase()]).filter(d=>d!==undefined);cur=new Date(cur);cur.setDate(cur.getDate()+1);let found=false;for(let dd=0;dd<7*interval;dd++){if(days.includes(cur.getDay())){found=true;break;}cur.setDate(cur.getDate()+1);}if(!found)break;}else{cur=new Date(cur);cur.setDate(cur.getDate()+7*interval);}}
+      else if(freq==='MONTHLY'){cur=new Date(cur);cur.setMonth(cur.getMonth()+interval);}
+      else if(freq==='YEARLY'){cur=new Date(cur);cur.setFullYear(cur.getFullYear()+interval);}
+      else break;
+    }
+    return results;
+  }
+  const evts=[];txt=txt.replace(/\r\n[ \t]/g,'').replace(/\r/g,'');
+  txt.split('BEGIN:VEVENT').slice(1).forEach(b=>{
+    const gv=k=>{const m=b.match(new RegExp('(?:^|\\n)'+k+'[^:\\n]*:([^\\n]+)',''));return m?m[1].trim():'';};
+    const sm=gv('SUMMARY'),ds=gv('DTSTART'),de=gv('DTEND');if(!sm)return;
+    const allDay=ds.replace(/[^0-9]/g,'').length===8;const baseStart=pd(ds),baseEnd=pd(de);
+    const exdates=[];const exRe=/(?:^|\n)EXDATE[^\n]*:([^\n]+)/g;let exMatch;while((exMatch=exRe.exec(b))!==null){exMatch[1].split(',').forEach(v=>exdates.push(v.trim()));}
+    const rruleRaw=gv('RRULE');
+    if(rruleRaw){const occ=expandRecurrence(baseStart,baseEnd,rruleRaw,exdates,sm,allDay);occ.forEach(o=>evts.push(o));if(baseStart&&baseStart>=EXPAND_FROM&&baseStart<=EXPAND_TO){const exSet=new Set(exdates.map(d=>{const x=pd(d);return x?x.toDateString():null;}).filter(Boolean));if(!exSet.has(baseStart.toDateString())&&!occ.some(o=>o.start.toDateString()===baseStart.toDateString()))evts.push({sm,start:baseStart,end:baseEnd,allDay,person,color});}}
+    else{if(baseStart&&baseStart>=EXPAND_FROM)evts.push({sm,start:baseStart,end:baseEnd,allDay,person,color});}
+  });
+  return evts;
+}
+
+async function fetchICS(rawUrl){
+  const url=rawUrl.trim().replace(/^webcal:\/\//i,'https://');
+  // 1) Vercel server-side proxy (same as home dashboard) — bypasses CORS reliably
+  try{const r=await fetch('/api/proxy?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(10000)});if(r.ok){const t=await r.text();if(t.includes('BEGIN:VCALENDAR'))return t;}}catch{}
+  // 2) Direct (works on desktop browsers)
+  try{const r=await fetch(url,{signal:AbortSignal.timeout(6000)});if(r.ok){const t=await r.text();if(t.includes('BEGIN:VCALENDAR'))return t;}}catch{}
+  // 3) Public proxies as last resort
+  const proxies=[u=>'https://corsproxy.io/?'+encodeURIComponent(u),u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u)];
+  for(const makeUrl of proxies){try{const r=await fetch(makeUrl(url),{signal:AbortSignal.timeout(8000)});if(!r.ok)continue;const t=await r.text();if(t.includes('BEGIN:VCALENDAR'))return t;}catch{}}
+  return null;
+}
+
+async function loadColEvents(col){
+  const urls=col.raw.split(',').map(s=>s.trim()).filter(Boolean);
+  const results=await Promise.all(urls.map(fetchICS));
+  const allText=results.filter(Boolean).join('\n');
+  if(!allText)return null;
+  return parseICS(allText,col.label,col.color);
+}
+
+// Holidays
+function getNthWeekday(y,m,nth,dow){if(nth===-1){const last=new Date(y,m+1,0);return new Date(y,m,last.getDate()-(last.getDay()-dow+7)%7);}const first=new Date(y,m,1);return new Date(y,m,1+(dow-first.getDay()+7)%7+(nth-1)*7);}
+function getEaster(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,mm=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*mm+114)/31)-1,day=((h+l-7*mm+114)%31)+1;return new Date(y,mo,day);}
+function getHolidays(){const hs=[];for(const y of[new Date().getFullYear(),new Date().getFullYear()+1]){const h=(m,d,n,ic)=>({sm:ic+' '+n,start:new Date(y,m,d),end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'});const wd=(m,nth,dow,n,ic)=>({sm:ic+' '+n,start:getNthWeekday(y,m,nth,dow),end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'});const tg=getNthWeekday(y,10,4,4);hs.push(h(0,1,"New Year's Day",'🎆'),wd(0,3,1,'MLK Day','🇺🇸'),wd(1,3,1,"Presidents' Day",'🇺🇸'),h(1,14,"Valentine's Day",'💝'),h(2,17,"St. Patrick's Day",'🍀'),{sm:"🐣 Easter",start:getEaster(y),end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'},wd(4,2,0,"Mother's Day",'🌷'),wd(4,-1,1,'Memorial Day','🇺🇸'),h(5,19,'Juneteenth','🇺🇸'),wd(5,3,0,"Father's Day",'👨'),h(6,4,'Independence Day','🇺🇸'),wd(8,1,1,'Labor Day','🇺🇸'),h(9,31,'Halloween','👻'),h(10,11,'Veterans Day','🇺🇸'),{sm:'🦃 Thanksgiving',start:tg,end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'},h(11,24,'Christmas Eve','🎄'),h(11,25,'Christmas Day','🎄'),h(11,31,"New Year's Eve",'🎆'));}return hs;}
+
+let _allEvents=null,_calView='today';
+const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function fmtTime(ev){if(ev.allDay||!ev.start)return'All day';const h=ev.start.getHours(),mn=String(ev.start.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn+(h<12?' AM':' PM');}
+
+function eventRow(ev,now){
+  const isPast=ev.end?ev.end<now:ev.start<now;
+  const cls='cal-event'+(isPast?' past':'')+(ev.isHoliday?' holiday':'');
+  return'<div class="'+cls+'" style="border-left-color:'+ev.color+'"><span class="cal-ev-time">'+fmtTime(ev)+'</span><span class="cal-ev-title">'+ev.sm+'</span><span class="cal-ev-person">'+(ev.person||'')+'</span></div>';
+}
+
+function renderCalView(view){
+  const el=document.getElementById('cal');if(!el||!_allEvents)return;
+  const now=new Date();
+  if(view==='today'){
+    const today=now.toDateString();
+    const todayEv=_allEvents.filter(e=>e.start&&e.start.toDateString()===today);
+    todayEv.sort((a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return a.start-b.start;});
+    if(!todayEv.length){el.innerHTML='<div class="no-events">No events today — open schedule!</div>';return;}
+    el.innerHTML='<div class="cal-list">'+todayEv.map(e=>eventRow(e,now)).join('')+'</div>';
+  } else {
+    const start=new Date(now);start.setHours(0,0,0,0);
+    const end=new Date(start);end.setDate(start.getDate()+(view==='week'?6:29));end.setHours(23,59,59,999);
+    const inRange=_allEvents.filter(e=>{if(!e.start)return false;const ed=new Date(e.start);ed.setHours(0,0,0,0);return ed>=start&&ed<=end;});
+    if(!inRange.length){el.innerHTML='<div class="no-events">No events in the next '+(view==='week'?'7':'30')+' days</div>';return;}
+    let html='<div class="cal-list">';const cur=new Date(start);
+    while(cur<=end){
+      const ds=cur.toDateString();
+      const dayEv=inRange.filter(e=>e.start&&e.start.toDateString()===ds).sort((a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return a.start-b.start;});
+      if(dayEv.length){const isToday=ds===now.toDateString();const lbl=isToday?'Today — '+DAY_NAMES[cur.getDay()]+' '+MONTH_NAMES[cur.getMonth()]+' '+cur.getDate():DAY_NAMES[cur.getDay()]+', '+MONTH_NAMES[cur.getMonth()]+' '+cur.getDate();html+='<div class="wm-day-label'+(isToday?' today-label':'')+'">'+lbl+'</div>'+dayEv.map(e=>eventRow(e,now)).join('');}
+      cur.setDate(cur.getDate()+1);
+    }
+    html+='</div>';el.innerHTML=html;
+  }
+}
+
+function switchCalView(view){_calView=view;['today','week','month'].forEach(v=>{const b=document.getElementById('vbtn-'+v);if(b)b.classList.toggle('active',v===view);});const titles={today:"📅 Today's schedule",week:'📅 Next 7 days',month:'📅 Next 30 days'};document.getElementById('cal-title').textContent=titles[view];if(_allEvents)renderCalView(view);}
+
+async function loadCal(){
+  const el=document.getElementById('cal');
+  try{
+    const perCol=await Promise.all(ICS_COLS.map(loadColEvents));
+    let all=[];perCol.forEach(list=>{if(Array.isArray(list))all=all.concat(list);});
+    // add holidays
+    const holidays=getHolidays();const existing=new Set(all.filter(e=>e.isHoliday).map(e=>e.start.toDateString()));
+    holidays.forEach(h=>{if(!existing.has(h.start.toDateString()))all.push(h);});
+    _allEvents=all;
+    renderCalView(_calView);
+  }catch(e){el.innerHTML='<div class="err">Could not load calendar: '+e.message+'</div>';}
+}
+loadCal();setInterval(loadCal,300000);
+
+// ── Spotify ──
+function spotifySearch(){const q=document.getElementById('spotify-search').value.trim();if(q)spotifyLoad(q);}
+function spotifyLoad(query){document.getElementById('spotify-search').value=query;const enc=encodeURIComponent(query);document.getElementById('spotify-embed').innerHTML='<div style="border-radius:8px;overflow:hidden;"><iframe src="https://open.spotify.com/embed/search/'+enc+'?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius:8px;display:block;"></iframe></div><p style="font-size:.65rem;color:#7BAFC4;margin-top:5px;">Requires Spotify · <a href="https://open.spotify.com/search/'+enc+'" target="_blank" rel="noopener" style="color:#1db954;">Open full player ↗</a></p>';}
+
+// ── Sports Tracker: last final + next game for Cubs and Bears ──
+async function loadTracker(team){
+  const cfg=team==='cubs'?{sport:'baseball/mlb',abbr:'CHC',lastEl:'cubs-last',nextEl:'cubs-next'}:{sport:'football/nfl',abbr:'CHI',lastEl:'bears-last',nextEl:'bears-next'};
+  try{
+    const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+cfg.sport+'/teams/'+cfg.abbr+'/schedule');
+    if(!r.ok)throw new Error();
+    const d=await r.json();
+    const events=(d.events||[]).map(e=>({date:new Date(e.date),comp:e.competitions[0],status:e.status,name:e.name})).sort((a,b)=>a.date-b.date);
+    const now=new Date();
+    const lastFinal=events.filter(e=>e.status.type.state==='post').slice(-1)[0];
+    const next=events.find(e=>e.status.type.state==='pre'&&e.date>now);
+    // Last final formatting
+    if(lastFinal){
+      const cubs=lastFinal.comp.competitors.find(c=>c.team.abbreviation===cfg.abbr);
+      const opp=lastFinal.comp.competitors.find(c=>c.team.abbreviation!==cfg.abbr);
+      const won=parseInt(cubs.score)>parseInt(opp.score);
+      const wl=won?'<span class="tracker-win">W</span>':'<span class="tracker-loss">L</span>';
+      const oppAbbr=opp.team.abbreviation;
+      const homeAway=cubs.homeAway==='home'?'vs':'@';
+      document.getElementById(cfg.lastEl).innerHTML=wl+' '+cubs.score+'–'+opp.score+' '+homeAway+' '+oppAbbr;
+    } else {document.getElementById(cfg.lastEl).textContent='—';}
+    // Next game formatting
+    if(next){
+      const cubs=next.comp.competitors.find(c=>c.team.abbreviation===cfg.abbr);
+      const opp=next.comp.competitors.find(c=>c.team.abbreviation!==cfg.abbr);
+      const homeAway=cubs.homeAway==='home'?'vs':'@';
+      const oppAbbr=opp.team.abbreviation;
+      const dateStr=next.date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      const timeStr=next.date.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'});
+      document.getElementById(cfg.nextEl).textContent=homeAway+' '+oppAbbr+' · '+dateStr+' '+timeStr;
+    } else {document.getElementById(cfg.nextEl).textContent='—';}
+  }catch(e){document.getElementById(cfg.lastEl).textContent='—';document.getElementById(cfg.nextEl).textContent='offline';}
+}
+loadTracker('cubs');loadTracker('bears');setInterval(()=>{loadTracker('cubs');loadTracker('bears');},600000);
+
+// ── Live Headlines (Google News RSS) ──
+async function loadHeadlines(){
+  const container=document.getElementById('news-list');
+  // Google News top stories RSS
+  const feedUrl='https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en';
+  // Try /api/proxy first (hosted), then public proxies
+  const attempts=[
+    '/api/proxy?url='+encodeURIComponent(feedUrl),
+    'https://corsproxy.io/?'+encodeURIComponent(feedUrl),
+    'https://api.allorigins.win/raw?url='+encodeURIComponent(feedUrl),
+  ];
+  let xmlText=null;
+  for(const u of attempts){
+    try{const r=await fetch(u,{signal:AbortSignal.timeout(6000)});if(r.ok){const t=await r.text();if(t.includes('<item>')){xmlText=t;break;}}}catch{}
+  }
+  if(!xmlText){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Headlines offline — retry later</div></div>';return;}
+  try{
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(xmlText,'text/xml');
+    const items=Array.from(doc.querySelectorAll('item')).slice(0,6);
+    container.innerHTML='';
+    items.forEach(item=>{
+      const title=(item.querySelector('title')?.textContent||'').trim();
+      const link=(item.querySelector('link')?.textContent||'').trim();
+      // Google News titles include " - Source" at the end; split it out
+      const dashIdx=title.lastIndexOf(' - ');
+      const hed=dashIdx>0?title.slice(0,dashIdx):title;
+      const src=dashIdx>0?title.slice(dashIdx+3):'';
+      const d=document.createElement('a');
+      d.className='news-item';
+      d.href=link;
+      d.target='_blank';
+      d.rel='noopener';
+      d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
+      d.innerHTML='<div class="news-hed">'+hed+'</div><div class="news-src">'+src+'</div>';
+      container.appendChild(d);
+    });
+  }catch(e){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Could not parse headlines</div></div>';}
+}
+loadHeadlines();setInterval(loadHeadlines,900000);
+
+// ── Personalized Spotify (via /api/spotify/me) ──
+let _spData=null,_spTab='recent';
+async function loadSpotifyPersonal(){
+  try{
+    const r=await fetch('/api/spotify/me');
+    if(r.status===401){document.getElementById('sp-connect').style.display='block';document.getElementById('sp-status').textContent='not connected';return;}
+    if(!r.ok)throw new Error('fail');
+    _spData=await r.json();
+    document.getElementById('sp-personal').style.display='block';
+    document.getElementById('sp-connect').style.display='none';
+    document.getElementById('sp-status').textContent='\u2022 connected';
+    document.getElementById('sp-status').style.color='#1db954';
+    renderSpotifyTab();
+  }catch(e){document.getElementById('sp-status').textContent='offline';}
+}
+function spTab(t){_spTab=t;document.querySelectorAll('.sp-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));renderSpotifyTab();}
+function renderSpotifyTab(){
+  if(!_spData)return;
+  const el=document.getElementById('sp-personal-list');
+  let items=[];
+  if(_spTab==='recent')items=_spData.recent.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
+  else if(_spTab==='top')items=_spData.top.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
+  else items=_spData.playlists.map(p=>({name:p.name,sub:(p.tracks||0)+' tracks',uri:p.uri,image:p.image}));
+  el.innerHTML=items.slice(0,8).map(it=>{const playUrl=it.uri?'https://open.spotify.com/'+it.uri.replace('spotify:','').replace(':','/'):'#';return '<a href="'+playUrl+'" target="_blank" rel="noopener" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="aspect-ratio:1;background:#222;border-radius:4px;"></div>')+'<div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></a>';}).join('');
+}
+loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
+
+</script>
+</body>
+</html>

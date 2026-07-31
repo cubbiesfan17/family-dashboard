@@ -68,15 +68,15 @@ body {
 */
 .row-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.9fr);
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1.4fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 6px;
   min-height: 0;
 }
-.card-weather { grid-column: 1; grid-row: 1; }
-.card-cal     { grid-column: 2; grid-row: 1; display: flex; flex-direction: column; }
-.card-news    { grid-column: 3; grid-row: 1 / span 2; display: flex; flex-direction: column; }
-.card-music   { grid-column: 1 / span 2; grid-row: 2; }
+.card-news    { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; }
+.card-weather { grid-column: 2; grid-row: 1; }
+.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; }
+.card-music   { grid-column: 2 / span 2; grid-row: 2; }
 
 /* Weather */
 .weather-main { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
@@ -207,6 +207,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .sp { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(74,158,191,0.3); border-top-color: #4A9EBF; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .err { color: #ef4444; font-size: .7rem; line-height: 1.4; }
+
+
+/* Force Weather + Schedule to only take content height (not stretch) */
+.card-weather, .card-cal { align-self: start; }
+/* Music/gameday fills remaining vertical space */
+.card-music { align-self: stretch; display: flex; flex-direction: column; }
+.card-music #spotify-embed { flex: 1; min-height: 0; overflow: hidden; }
+.card-music .spotify-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; }
 
 /* EOD banner (only shows near 5pm) */
 #eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }

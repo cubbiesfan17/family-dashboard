@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=1280, initial-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Work Dashboard</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
@@ -12,19 +12,20 @@ body {
   font-family: 'Inter', sans-serif;
   background: #0d1f2d;
   color: #F0F4F7;
-  padding: 6px;
+  padding: 5px;
   height: 100vh;
   width: 100vw;
   display: grid;
-  grid-template-rows: 100px 1fr 32px;
-  gap: 6px;
+  grid-template-rows: 85px 1fr 28px;
+  gap: 5px;
+  font-size: 14px;
 }
 
 /* Card base */
 .card {
   background: rgba(255,255,255,0.10);
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 9px;
+  padding: 7px 10px;
   border: 1px solid rgba(255,255,255,0.15);
   overflow: hidden;
   min-height: 0;
@@ -52,9 +53,9 @@ body {
   min-height: 0;
 }
 .card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
-.quote-text { font-size: .88rem; font-style: italic; color: #fff; line-height: 1.35; }
+.quote-text { font-size: .82rem; font-style: italic; color: #fff; line-height: 1.35; }
 .quote-author { font-size: .7rem; color: #7ECFED; margin-top: 4px; }
-.clock-time { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: #fff; }
+.clock-time { font-size: 2rem; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: #fff; }
 .clock-date { font-size: .75rem; color: #7BAFC4; margin-top: 2px; }
 .progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 6px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 3px; background: #4A9EBF; transition: width 1s linear; }
@@ -67,7 +68,7 @@ body {
 */
 .row-main {
   display: grid;
-  grid-template-columns: 1fr 1.5fr 1.1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 0.9fr);
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 6px;
   min-height: 0;
@@ -80,7 +81,7 @@ body {
 /* Weather */
 .weather-main { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .weather-icon { font-size: 1.8rem; line-height: 1; }
-.weather-temp { font-size: 1.9rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
+.weather-temp { font-size: 1.7rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
 .weather-desc { font-size: .7rem; color: #7BAFC4; text-transform: capitalize; }
 .weather-detail-line { font-size: .7rem; color: #fff; margin-top: 2px; }
 .weather-dress {
@@ -180,13 +181,13 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 /* ═══ Row 3: Sports ticker (same style as home dashboard) ═══ */
 #sports-ticker {
   background: rgba(13,25,45,0.90);
-  border-radius: 8px;
+  border-radius: 7px;
   padding: 0;
   overflow: hidden;
   display: flex;
   align-items: center;
-  height: 32px;
-  line-height: 32px;
+  height: 28px;
+  line-height: 28px;
 }
 #sports-ticker > div:first-child {
   background: #0f1e28;

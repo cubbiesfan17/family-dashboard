@@ -2,228 +2,248 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=1280, initial-scale=1.0, user-scalable=no"/>
 <title>Work Dashboard</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;min-height:100vh;padding:12px}
-.section-label{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:#4A7A95;margin:4px 2px 8px;display:flex;align-items:center;gap:8px}
-.section-label::after{content:'';flex:1;height:1px;background:rgba(74,122,149,0.25)}
-.grid{display:grid;gap:12px}
-.card{background:rgba(255,255,255,0.10);border-radius:14px;padding:16px 18px;border:1px solid rgba(255,255,255,0.15);overflow:hidden}
-.card-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#7BAFC4;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
-.icon-btn{background:none;border:none;cursor:pointer;color:#7BAFC4;font-size:15px;padding:0;line-height:1}
-.icon-btn:hover{color:#fff}
-.status-msg{font-size:.82rem;color:#7BAFC4;padding:8px 0;text-align:center}
-.btn{font-size:.78rem;padding:5px 11px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:transparent;color:#F0F4F7;cursor:pointer}
-.btn:hover{background:rgba(255,255,255,0.1)}
-.sp{display:inline-block;width:14px;height:14px;border:2px solid rgba(74,158,191,0.3);border-top-color:#4A9EBF;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
-@keyframes spin{to{transform:rotate(360deg)}}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0d1f2d;
+  color: #F0F4F7;
+  padding: 6px;
+  display: grid;
+  grid-template-rows: 100px 1fr 32px;
+  gap: 6px;
+  height: 100vh;
+  width: 100vw;
+}
 
-/* ════ TIER 1: WORK (biggest, top) ════ */
-.tier-top{grid-template-columns:1.5fr 1fr;margin-bottom:10px}
-.card-work{background:rgba(74,158,191,0.13);border-color:rgba(74,158,191,0.35)}
+/* ───────── Global card styles ───────── */
+.card {
+  background: rgba(255,255,255,0.10);
+  border-radius: 10px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  overflow: hidden;
+}
+.card-label {
+  font-size: .58rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #7BAFC4;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.icon-btn { background: none; border: none; cursor: pointer; color: #7BAFC4; font-size: 13px; padding: 0; line-height: 1; }
+.icon-btn:hover { color: #fff; }
+.status-msg { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
 
-/* Clock — larger for work tier */
-.clock-time{font-size:3.6rem;font-weight:800;letter-spacing:-2px;line-height:1;color:#fff}
-.clock-date{font-size:.95rem;color:#7BAFC4;margin-top:5px}
-.progress-wrap{background:rgba(255,255,255,0.1);border-radius:3px;height:6px;margin-top:14px;overflow:hidden}
-.progress-fill{height:100%;border-radius:3px;background:#4A9EBF;transition:width 1s linear}
-.progress-label{font-size:.75rem;color:#7BAFC4;margin-top:5px}
+/* ───────── Row 1: Top (Motivation + Clock) ───────── */
+.row-top {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 6px;
+}
+.card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
+.quote-text { font-size: .84rem; font-style: italic; color: #fff; line-height: 1.35; }
+.quote-author { font-size: .68rem; color: #7ECFED; margin-top: 4px; }
+.clock-time { font-size: 2.2rem; font-weight: 800; letter-spacing: -1.5px; line-height: 1; color: #fff; }
+.clock-date { font-size: .72rem; color: #7BAFC4; margin-top: 2px; }
+.progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 6px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: #4A9EBF; transition: width 1s linear; }
+.progress-label { font-size: .6rem; color: #7BAFC4; margin-top: 3px; }
 
+/* ───────── Row 2: Middle Grid (Weather+Music stacked | Calendar | Headlines) ───────── */
+.row-main {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.1fr;
+  gap: 6px;
+  min-height: 0;
+}
+.col-left {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 6px;
+  min-height: 0;
+}
 
+/* Weather */
+.card-weather { min-height: 0; overflow: hidden; }
+.weather-main { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.weather-icon { font-size: 1.8rem; line-height: 1; }
+.weather-temp { font-size: 1.9rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
+.weather-desc { font-size: .68rem; color: #7BAFC4; text-transform: capitalize; }
+.weather-detail-line { font-size: .68rem; color: #fff; margin-top: 2px; }
+.weather-dress {
+  padding: 3px 7px;
+  border-radius: 7px;
+  background: rgba(74,158,191,0.2);
+  font-size: .62rem;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid rgba(74,158,191,0.3);
+  margin-top: 5px;
+  display: inline-block;
+}
+.forecast-strip { display: flex; border-top: 1px solid rgba(255,255,255,.1); padding-top: 6px; margin-top: 6px; }
+.forecast-day { flex: 1; text-align: center; padding: 0 2px; border-right: 1px solid rgba(255,255,255,.08); }
+.forecast-day:last-child { border-right: none; }
+.fc-dow { font-size: .5rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 2px; }
+.fc-icon { font-size: .9rem; margin-bottom: 1px; }
+.fc-high { font-size: .68rem; font-weight: 600; color: #fff; }
+.fc-precip { font-size: .55rem; color: #4A9EBF; }
 
-/* ════ TIER 2: MEDIUM (Cubs + Spotify) ════ */
-.tier-media{grid-template-columns:1fr;margin-bottom:8px}
+/* Music (under weather) */
+.card-media { min-height: 0; overflow: hidden; padding: 7px 11px; }
+.card-gameday { background: rgba(14,51,134,0.65); border-color: rgba(14,51,134,0.8); }
+.card-gameday .card-label { color: rgba(255,255,255,.55); }
+.gameday-vs { font-size: .95rem; font-weight: 700; color: #fff; margin: 2px 0 3px; }
+.gameday-time { font-size: .68rem; color: rgba(255,255,255,.65); margin-bottom: 6px; }
+.no-game { font-size: .72rem; color: rgba(255,255,255,.6); line-height: 1.4; margin-top: 2px; }
 
-/* Cubs Gameday */
-.card-gameday{background:rgba(14,51,134,0.65);border-color:rgba(14,51,134,0.8)}
-.card-gameday .card-label{color:rgba(255,255,255,.5)}
-.gameday-vs{font-size:1.05rem;font-weight:700;margin:2px 0 3px;color:#fff}
-.gameday-time{font-size:.82rem;color:rgba(255,255,255,.65);margin-bottom:8px}
-.gameday-btns{display:flex;gap:8px;margin-top:10px}
-.gameday-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px 10px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;text-decoration:none;border:none}
-.btn-mlb{background:#fff;color:#002d72}
-.btn-mlb:hover{background:#f0f4ff}
-.btn-audio{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)}
-.btn-audio:hover{background:rgba(255,255,255,.25)}
-.no-game{font-size:.85rem;color:rgba(255,255,255,.6);line-height:1.5;margin-top:4px}
+.spotify-shortcuts { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 5px; }
+.shortcut-pill {
+  font-size: .58rem;
+  padding: 2px 7px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+  color: #F0F4F7;
+  white-space: nowrap;
+}
+.shortcut-pill:hover { background: rgba(255,255,255,0.15); }
+.spotify-search-row { display: flex; gap: 5px; margin-bottom: 5px; }
+.spotify-search-row input {
+  flex: 1;
+  font-size: .68rem;
+  padding: 4px 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+  outline: none;
+}
+.spotify-search-row button {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #1db954;
+  color: #fff;
+  font-size: .66rem;
+  cursor: pointer;
+}
+.spotify-placeholder {
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px;
+  text-align: center;
+}
+.spotify-placeholder p { font-size: .62rem; color: #7BAFC4; }
+.spotify-big-icon { font-size: 1.1rem; color: #1db954; margin-bottom: 2px; }
+#sp-connect { font-size: .65rem; color: #7BAFC4; margin-bottom: 5px; }
+#sp-personal-list { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.sp-tile { background: rgba(255,255,255,0.05); border-radius: 5px; padding: 3px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+.sp-tile:hover { background: rgba(255,255,255,0.12); }
+.sp-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 3px; }
+.sp-tile-name { font-size: .52rem; font-weight: 600; color: #fff; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.sp-tile-sub { font-size: .48rem; color: #7BAFC4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tab { font-size: .54rem !important; padding: 2px 7px !important; }
+.sp-tab.active { background: #1db954 !important; border-color: #1db954 !important; color: #fff !important; }
 
-/* Spotify */
-.spotify-shortcuts{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px}
-.shortcut-pill{font-size:.75rem;padding:4px 11px;border-radius:20px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);cursor:pointer;color:#F0F4F7;white-space:nowrap}
-.shortcut-pill:hover{background:rgba(255,255,255,0.15)}
-.spotify-search-row{display:flex;gap:6px;margin-bottom:9px}
-.spotify-search-row input{flex:1;font-size:.85rem;padding:7px 11px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;background:rgba(255,255,255,0.07);color:#fff;outline:none}
-.spotify-search-row input::placeholder{color:#7BAFC4}
-.spotify-search-row input:focus{border-color:#1db954}
-.spotify-search-row button{padding:7px 13px;border-radius:8px;border:none;background:#1db954;color:#fff;font-size:.8rem;cursor:pointer}
-.spotify-placeholder{background:rgba(255,255,255,0.05);border-radius:8px;border:1px solid rgba(255,255,255,0.1);padding:16px;text-align:center}
-.spotify-placeholder p{font-size:.82rem;color:#7BAFC4}
-.spotify-big-icon{font-size:1.8rem;color:#1db954;margin-bottom:5px}
-
-/* ════ TIER 3: GENERAL (smallest, bottom) ════ */
-.tier-general{grid-template-columns:1.3fr 1.6fr 1.1fr}
-.card-general{padding:13px 15px;background:rgba(255,255,255,0.06)}
-.card-general .card-label{font-size:.62rem;color:#4A7A95}
-
-/* Weather — home dashboard style */
-.weather-main{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}
-.weather-icon{font-size:2.4rem;line-height:1}
-.weather-temp{font-size:2.8rem;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1}
-.weather-desc{font-size:.95rem;color:#7BAFC4;text-transform:capitalize;margin-left:4px}
-.weather-detail-line{font-size:.9rem;color:#fff;margin-top:2px}
-.weather-detail-line .feels{color:#fff;font-weight:500}
-.weather-dress{padding:6px 10px;border-radius:10px;background:rgba(74,158,191,0.2);font-size:.82rem;font-weight:700;color:#fff;border:1px solid rgba(74,158,191,0.3);margin-top:8px;display:inline-block}
-.forecast-strip{display:flex;border-top:1px solid rgba(255,255,255,.1);padding-top:10px;margin-top:10px}
-.forecast-day{flex:1;text-align:center;padding:0 4px;border-right:1px solid rgba(255,255,255,.08)}
-.forecast-day:last-child{border-right:none}
-.fc-dow{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:#7BAFC4;margin-bottom:3px}
-.fc-icon{font-size:1.1rem;margin-bottom:3px}
-.fc-high{font-size:.82rem;font-weight:600;color:#fff}
-.fc-precip{font-size:.65rem;color:#4A9EBF;margin-top:1px}
-
-/* Calendar — single combined list */
-.view-toggle{display:flex;gap:4px}
-.view-btn{font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:20px;border:1px solid rgba(74,158,191,0.4);background:transparent;color:#7BAFC4;cursor:pointer;letter-spacing:.5px}
-.view-btn.active{background:#4A9EBF;color:#fff;border-color:#4A9EBF}
-.view-btn:hover:not(.active){background:rgba(74,158,191,0.18);color:#fff}
-.cal-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
-.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:.65rem;color:#7BAFC4}
-.cal-legend-bar{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.cal-list{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow-y:auto;scrollbar-width:none}
-.cal-list::-webkit-scrollbar{display:none}
-.cal-event{display:flex;align-items:center;gap:10px;padding:6px 10px;border-radius:8px;background:rgba(13,25,45,0.6);border-left:4px solid #4A9EBF}
-.cal-event.past{opacity:.4}
-.cal-event.next{background:rgba(74,158,191,0.15);box-shadow:0 0 8px rgba(74,158,191,0.4)}
-.cal-event.holiday{border-left-color:#f0a500}
-.cal-event.holiday .cal-ev-title{color:#f0d080;font-style:italic}
-.cal-ev-time{font-size:.72rem;font-weight:600;color:#7BAFC4;min-width:72px;flex-shrink:0}
-.cal-ev-title{font-size:.85rem;font-weight:600;color:#fff;flex:1;line-height:1.25}
-.cal-ev-person{font-size:.62rem;color:#7BAFC4;flex-shrink:0}
-.cal-now-badge{font-size:.58rem;color:#7ECFED;font-weight:700;margin-left:6px}
-.wm-day-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#4A9EBF;padding:6px 0 3px;margin-top:4px;border-bottom:1px solid rgba(74,158,191,0.2)}
-.wm-day-label.today-label{color:#7ECFED}
-.no-events{font-size:.82rem;color:#7BAFC4;padding:10px 0;text-align:center}
+/* Calendar */
+.card-cal { min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.view-toggle { display: flex; gap: 3px; }
+.view-btn {
+  font-size: .5rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  border: 1px solid rgba(74,158,191,0.4);
+  background: transparent;
+  color: #7BAFC4;
+  cursor: pointer;
+  letter-spacing: .5px;
+}
+.view-btn.active { background: #4A9EBF; color: #fff; border-color: #4A9EBF; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .55rem; color: #7BAFC4; }
+.cal-legend-bar { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.cal-list { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow-y: auto; scrollbar-width: none; min-height: 0; }
+.cal-list::-webkit-scrollbar { display: none; }
+.cal-event { display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
+.cal-event.past { opacity: .4; }
+.cal-event.next { background: rgba(74,158,191,0.15); box-shadow: 0 0 6px rgba(74,158,191,0.4); }
+.cal-event.holiday { border-left-color: #f0a500; }
+.cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
+.cal-ev-time { font-size: .6rem; font-weight: 600; color: #7BAFC4; min-width: 56px; flex-shrink: 0; }
+.cal-ev-title { font-size: .7rem; font-weight: 600; color: #fff; flex: 1; line-height: 1.2; }
+.cal-ev-person { font-size: .52rem; color: #7BAFC4; flex-shrink: 0; }
+.cal-now-badge { font-size: .5rem; color: #7ECFED; font-weight: 700; margin-left: 5px; }
+.wm-day-label { font-size: .52rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4A9EBF; padding: 3px 0 2px; border-bottom: 1px solid rgba(74,158,191,0.2); margin-top: 3px; }
+.wm-day-label.today-label { color: #7ECFED; }
+.no-events { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
 
 /* Headlines */
-.news-item{padding:7px 4px;border-bottom:1px solid rgba(255,255,255,0.08);border-radius:6px;transition:background 0.15s;margin:0 -4px;}
-.news-item:last-child{border-bottom:none}
-a.news-item:hover{background:rgba(74,158,191,0.12);}
-a.news-item:hover .news-hed{color:#7ECFED;}
-.news-hed{font-size:.78rem;color:#F0F4F7;line-height:1.4}
-.news-src{font-size:.62rem;color:#7BAFC4;margin-top:1px}
+.card-news { min-height: 0; overflow: hidden; display: flex; flex-direction: column; }
+#news-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
+#news-list::-webkit-scrollbar { display: none; }
+#news-list .news-item:nth-child(n+4) { display: none; }
+.news-item { padding: 4px 3px; border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 4px; display: block; text-decoration: none; }
+.news-item:last-of-type { border-bottom: none; }
+a.news-item:hover { background: rgba(74,158,191,0.12); }
+a.news-item:hover .news-hed { color: #7ECFED; }
+.news-hed { font-size: .65rem; color: #F0F4F7; line-height: 1.3; }
+.news-src { font-size: .52rem; color: #7BAFC4; margin-top: 1px; }
 
-
-
-.eod-banner{display:none;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:10px;padding:9px 14px;font-size:.82rem;color:#fcd34d;text-align:center;margin-top:8px}
-.sp-tile{background:rgba(255,255,255,0.05);border-radius:6px;padding:5px;cursor:pointer;display:flex;flex-direction:column;gap:3px;border:1px solid rgba(255,255,255,0.08);}
-.sp-tile:hover{background:rgba(255,255,255,0.12);}
-.sp-tile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;}
-.sp-tile-name{font-size:.65rem;font-weight:600;color:#fff;line-height:1.2;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
-.sp-tile-sub{font-size:.58rem;color:#7BAFC4;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.shortcut-pill.sp-tab.active{background:#1db954;border-color:#1db954;color:#fff;}
-.err{color:#ef4444;font-size:.78rem;line-height:1.5}
-
-/* ═══ Compact tablet layout: everything fits in ~1280x800 landscape ═══ */
-@media (max-width: 1400px) {
-  body { padding: 5px; }
-  .grid { gap: 6px !important; }
-  .card { padding: 7px 10px; border-radius: 10px; }
-  .card-label { font-size: .58rem; margin-bottom: 3px; letter-spacing: 1px; }
-  .section-label { display: none !important; }  /* Hide "GENERAL — AT A GLANCE" etc labels on tablet — save vertical space */
-
-  /* ─── Row 1: Quote + Clock (compact) ─── */
-  .tier-top { grid-template-columns: 1.4fr 1fr !important; margin-bottom: 6px !important; }
-  .card-quote, .card-work { padding: 7px 12px !important; }
-  .clock-time { font-size: 2.2rem !important; line-height: 1; }
-  .clock-date { font-size: .72rem !important; margin-top: 2px; }
-  .progress-wrap { margin-top: 5px; height: 3px; }
-  .progress-label { font-size: .6rem; margin-top: 3px; }
-  .quote-text { font-size: .82rem !important; line-height: 1.35 !important; }
-  .quote-author { font-size: .65rem !important; margin-top: 3px !important; }
-
-  /* ─── Row 2: 4-column grid — Weather | Calendar | Headlines | Music ─── */
-  .tier-general { grid-template-columns: 1fr 1.4fr 1.1fr 1fr !important; margin-bottom: 6px !important; }
-
-  /* Weather — compact */
-  .weather-main { margin-bottom: 3px; gap: 6px; }
-  .weather-icon { font-size: 1.7rem; }
-  .weather-temp { font-size: 1.8rem; letter-spacing: -1px; }
-  .weather-desc { font-size: .68rem; margin-left: 2px; }
-  .weather-detail-line { font-size: .68rem; margin-top: 2px; }
-  .weather-dress { padding: 3px 7px; font-size: .62rem; margin-top: 4px; border-radius: 7px; }
-  .forecast-strip { padding-top: 6px; margin-top: 6px; }
-  .fc-dow { font-size: .5rem; }
-  .fc-icon { font-size: .85rem; margin-bottom: 1px; }
-  .fc-high { font-size: .68rem; }
-  .fc-precip { font-size: .55rem; }
-
-  /* Calendar list — takes the widest column */
-  .cal-legend { gap: 6px; margin-bottom: 4px; }
-  .cal-legend-item { font-size: .55rem; }
-  .cal-legend-bar { width: 7px; height: 7px; }
-  .cal-list { max-height: 240px; gap: 2px; }
-  .cal-event { padding: 3px 7px; border-left-width: 3px; }
-  .cal-ev-time { font-size: .6rem; min-width: 56px; }
-  .cal-ev-title { font-size: .7rem; }
-  .cal-ev-person { font-size: .52rem; }
-  .wm-day-label { font-size: .52rem; padding: 3px 0 2px; margin-top: 3px; }
-  .view-btn { font-size: .5rem; padding: 2px 6px; }
-
-  /* Headlines */
-  .news-item { padding: 3px 3px; }
-  .news-hed { font-size: .65rem; line-height: 1.3; }
-  .news-src { font-size: .52rem; }
-
-  /* ─── Media row: MOVE Music into General row on tablet ─── */
-  /* Hide the standalone media row entirely — Music will be repositioned via JS */
-  .tier-media { display: none !important; }
-
-  /* Music card compact styling (when placed inside general row) */
-  #music-card-tablet { display: block; }
-  #music-card-tablet .spotify-shortcuts { gap: 3px; margin-bottom: 5px; flex-wrap: wrap; }
-  #music-card-tablet .shortcut-pill { font-size: .55rem; padding: 2px 6px; }
-  #music-card-tablet .spotify-search-row { margin-bottom: 4px; gap: 4px; }
-  #music-card-tablet .spotify-search-row input { font-size: .65rem; padding: 4px 7px; }
-  #music-card-tablet .spotify-search-row button { padding: 4px 8px; font-size: .62rem; }
-  #music-card-tablet .spotify-placeholder { padding: 8px; }
-  #music-card-tablet .spotify-big-icon { font-size: 1.2rem; margin-bottom: 3px; }
-  #music-card-tablet .spotify-placeholder p { font-size: .62rem; }
-  #music-card-tablet #sp-connect-tablet { font-size: .62rem; margin-bottom: 5px; }
-
-  /* Cubs gameday when active — takes over full width, forecast + calendar hide music */
-  .gameday-vs { font-size: .9rem; }
-  .gameday-time { font-size: .65rem; }
-
-  /* ─── Row 3: Sports ticker ─── */
-  #sports-ticker { height: 32px !important; margin-top: 5px !important; }
-  #sports-ticker > div:first-child { font-size: .58rem !important; padding: 0 10px !important; letter-spacing: 1px !important; }
-  #sports-ticker-inner { font-size: .72rem; }
+/* ───────── Row 3: Sports ticker ───────── */
+#sports-ticker {
+  background: rgba(13,25,45,0.90);
+  border-radius: 8px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  height: 32px;
+  line-height: 32px;
 }
-
-/* ═══ Even tighter for exact Fire HD 8 height ~ 800px ═══ */
-@media (max-height: 820px) {
-  .clock-time { font-size: 1.9rem !important; }
-  .quote-text { font-size: .76rem !important; }
-  .weather-temp { font-size: 1.6rem !important; }
-  .cal-list { max-height: 200px !important; }
-  .card { padding: 6px 9px !important; }
-  body { padding: 4px !important; }
+#sports-ticker > div:first-child {
+  background: #0f1e28;
+  color: #E8F4F8;
+  font-size: .58rem;
+  font-weight: 700;
+  padding: 0 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  letter-spacing: 1px;
+  flex-shrink: 0;
 }
+#sports-ticker-inner { display: flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; line-height: 1; font-size: .72rem; }
+
+/* Spinner */
+.sp { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(74,158,191,0.3); border-top-color: #4A9EBF; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.err { color: #ef4444; font-size: .7rem; line-height: 1.4; }
 </style>
 </head>
 <body>
 
-<!-- ════════ TOP: Quote + Clock ════════ -->
-<div class="grid tier-top">
+<!-- ───── Row 1: Motivation + Clock ───── -->
+<div class="row-top">
   <div class="card card-work">
     <div class="card-label">✦ Motivation of the day</div>
-    <div style="display:flex;align-items:center;height:calc(100% - 24px);">
+    <div style="display:flex;align-items:center;height:calc(100% - 20px);">
       <div>
-        <span class="quote-text" id="quote-text" style="font-size:1.15rem;font-style:italic;color:#fff;line-height:1.5;"></span>
-        <div class="quote-author" id="quote-author" style="font-size:.85rem;color:#7ECFED;margin-top:8px;"></div>
+        <span class="quote-text" id="quote-text"></span>
+        <div class="quote-author" id="quote-author"></div>
       </div>
     </div>
   </div>
@@ -236,20 +256,61 @@ a.news-item:hover .news-hed{color:#7ECFED;}
   </div>
 </div>
 
-<!-- ════════ TIER 3: GENERAL ════════ -->
-<div class="section-label">📋 General — at a glance</div>
-<div class="grid tier-general">
-  <div class="card card-general">
-    <div class="card-label">
-      <span>Weather — Algonquin</span>
-      <button class="icon-btn" onclick="loadWeather()" title="Refresh">↻</button>
+<!-- ───── Row 2: Weather+Music (stacked) | Calendar | Headlines ───── -->
+<div class="row-main">
+  <!-- Left column: Weather stacked above Music/Gameday -->
+  <div class="col-left">
+    <div class="card card-weather">
+      <div class="card-label">
+        <span>Weather — Algonquin</span>
+        <button class="icon-btn" onclick="loadWeather()" title="Refresh">↻</button>
+      </div>
+      <div id="weather-body"><span class="sp"></span> Loading…</div>
     </div>
-    <div id="weather-body"><span class="sp"></span> Loading…</div>
+
+    <!-- Music (or Cubs gameday when applicable) -->
+    <div class="card card-media" id="music-card">
+      <div class="card-label">
+        <span>Music</span>
+        <span id="sp-status" style="font-size:.55rem;color:#7BAFC4;"></span>
+      </div>
+      <div id="sp-personal" style="display:none;margin-bottom:6px;">
+        <div style="display:flex;gap:4px;margin-bottom:5px;">
+          <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recent</button>
+          <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top</button>
+          <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Playlists</button>
+        </div>
+        <div id="sp-personal-list"></div>
+      </div>
+      <div id="sp-connect" style="display:none;">
+        <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a>
+      </div>
+      <div class="spotify-shortcuts">
+        <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
+      </div>
+      <div class="spotify-search-row">
+        <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
+        <button onclick="spotifySearch()">Go</button>
+      </div>
+      <div id="spotify-embed">
+        <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut to load</p></div>
+      </div>
+    </div>
+
+    <div class="card card-media card-gameday" id="gameday-card" style="display:none;">
+      <div class="card-label">⚾ Cubs Gameday</div>
+      <div id="gameday-content"></div>
+    </div>
   </div>
-  <div class="card card-general" style="display:flex;flex-direction:column;">
+
+  <!-- Calendar -->
+  <div class="card card-cal">
     <div class="card-label">
       <span id="cal-title">📅 Today's schedule</span>
-      <span style="display:flex;gap:8px;align-items:center;">
+      <span style="display:flex;gap:6px;align-items:center;">
         <span class="view-toggle">
           <button class="view-btn active" id="vbtn-today" onclick="switchCalView('today')">TODAY</button>
           <button class="view-btn" id="vbtn-week" onclick="switchCalView('week')">WEEK</button>
@@ -258,98 +319,35 @@ a.news-item:hover .news-hed{color:#7ECFED;}
         <button class="icon-btn" onclick="loadCal()" title="Refresh">↻</button>
       </span>
     </div>
-    <div class="cal-legend">
+    <div class="cal-legend" id="cal-legend">
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#2e9e5b"></div>Family</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#3b82f6"></div>Finn</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#ec4899"></div>Millie</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#eab308"></div>Nolan</div>
     </div>
-    <div id="cal"><span class="sp"></span></div>
+    <div id="cal" style="flex:1;overflow:hidden;min-height:0;"><span class="sp"></span></div>
   </div>
-  <div class="card card-general">
+
+  <!-- Headlines -->
+  <div class="card card-news">
     <div class="card-label">Headlines</div>
     <div id="news-list"></div>
   </div>
-  <!-- Tablet-only Music card — hidden on desktop via inline style, shown by media query -->
-  <div class="card card-general" id="music-card-tablet" style="display:none;">
-    <div class="card-label">
-      <span>Music</span>
-      <span id="sp-status-tablet" style="font-size:.55rem;color:#7BAFC4;"></span>
-    </div>
-    <div id="sp-connect-tablet" style="display:none;font-size:.65rem;color:#7BAFC4;margin-bottom:5px;">
-      <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a>
-    </div>
-    <div class="spotify-shortcuts">
-      <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
-    </div>
-    <div class="spotify-search-row">
-      <input type="text" placeholder="Search…" onkeydown="if(event.key==='Enter'){document.getElementById('spotify-search').value=this.value;spotifySearch();}"/>
-    </div>
-    <div id="spotify-embed-tablet">
-      <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut to play</p></div>
-    </div>
-  </div>
 </div>
 
-<!-- ════════ MEDIA ROW: Music (default) OR Cubs gameday (when playing) ════════ -->
-<div class="section-label" id="media-label">🎵 Music &amp; audio</div>
-<div class="grid tier-media" id="media-row">
-  <!-- Gameday takes over full width when Cubs are playing today -->
-  <div class="card card-gameday" id="gameday-card" style="display:none;">
-    <div class="card-label">⚾ Cubs Gameday</div>
-    <div id="gameday-content"></div>
-  </div>
-  <!-- Music & audio when no game -->
-  <div class="card" id="music-card">
-    <div class="card-label">
-      <span>Music &amp; audio</span>
-      <span id="sp-status" style="font-size:.62rem;color:#7BAFC4;"></span>
-    </div>
-    <div id="sp-personal" style="display:none;margin-bottom:10px;">
-      <div style="display:flex;gap:6px;margin-bottom:8px;font-size:.62rem;">
-        <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
-        <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Your top tracks</button>
-        <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
-      </div>
-      <div id="sp-personal-list" style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;"></div>
-    </div>
-    <div id="sp-connect" style="display:none;font-size:.78rem;color:#7BAFC4;margin-bottom:8px;">
-      <a href="/api/spotify/auth" style="color:#1db954;">Connect your Spotify ↗</a> to see your playlists and recently played
-    </div>
-    <div class="spotify-shortcuts">
-      <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus music</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Chicago blues</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep focus</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('baseball podcast')">🎙 Podcast</button>
-    </div>
-    <div class="spotify-search-row">
-      <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
-      <button onclick="spotifySearch()">Search</button>
-    </div>
-    <div id="spotify-embed">
-      <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut or search to load the player</p></div>
-    </div>
-  </div>
-</div>
-
-<!-- Sports ticker (same as home dashboard) -->
-<div id="sports-ticker" style="margin-top:8px;background:rgba(13,25,45,0.90);border-radius:12px;padding:0;overflow:hidden;display:flex;align-items:center;height:48px;line-height:48px;">
-  <div style="background:#0f1e28;color:#E8F4F8;font-size:.78rem;font-weight:700;padding:0 16px;height:100%;display:flex;align-items:center;white-space:nowrap;letter-spacing:1.5px;flex-shrink:0;">🏆 SCORES</div>
+<!-- ───── Row 3: Sports ticker ───── -->
+<div id="sports-ticker">
+  <div>🏆 SCORES</div>
   <div style="overflow:hidden;flex:1;position:relative;height:100%;">
-    <div id="sports-ticker-inner" style="display:flex;align-items:center;height:100%;white-space:nowrap;will-change:transform;line-height:1;">
-      <span style="color:#c7d2fe;font-size:.82rem;padding:0 20px;">Loading...</span>
+    <div id="sports-ticker-inner">
+      <span style="color:#c7d2fe;padding:0 20px;">Loading...</span>
     </div>
   </div>
 </div>
-
-<div class="eod-banner" id="eod-banner">⏰ Almost 5pm — wrap up, write your done list, and call it a day!</div>
 
 <script src="shared-calendars.js"></script>
 <script>
+
 // ── Calendar config: read from shared-calendars.js (single source of truth) ──
 // Falls back to inline defaults if the shared file didn't load.
 const ICS_COLS = (window.SHARED_CALENDARS || []).map(c => ({
@@ -620,40 +618,7 @@ function spotifySearch(){const q=document.getElementById('spotify-search').value
 function spotifyLoad(query){document.getElementById('spotify-search').value=query;const enc=encodeURIComponent(query);const _tabletE=document.getElementById('spotify-embed-tablet');if(_tabletE){const _enc=encodeURIComponent(query);_tabletE.innerHTML='<div style="border-radius:8px;overflow:hidden;"><iframe src="https://open.spotify.com/embed/search/'+_enc+'?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media" loading="lazy" style="border-radius:8px;display:block;"></iframe></div>';}
   document.getElementById('spotify-embed').innerHTML='<div style="border-radius:8px;overflow:hidden;"><iframe src="https://open.spotify.com/embed/search/'+enc+'?utm_source=generator&theme=0" width="100%" height="152" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius:8px;display:block;"></iframe></div><p style="font-size:.65rem;color:#7BAFC4;margin-top:5px;">Requires Spotify · <a href="https://open.spotify.com/search/'+enc+'" target="_blank" rel="noopener" style="color:#1db954;">Open full player ↗</a></p>';}
 
-// ── Sports Tracker: last final + next game for Cubs and Bears ──
-async function loadTracker(team){
-  const cfg=team==='cubs'?{sport:'baseball/mlb',abbr:'CHC',lastEl:'cubs-last',nextEl:'cubs-next'}:{sport:'football/nfl',abbr:'CHI',lastEl:'bears-last',nextEl:'bears-next'};
-  try{
-    const r=await fetch('https://site.api.espn.com/apis/site/v2/sports/'+cfg.sport+'/teams/'+cfg.abbr+'/schedule');
-    if(!r.ok)throw new Error();
-    const d=await r.json();
-    const events=(d.events||[]).map(e=>({date:new Date(e.date),comp:e.competitions[0],status:e.status,name:e.name})).sort((a,b)=>a.date-b.date);
-    const now=new Date();
-    const lastFinal=events.filter(e=>e.status.type.state==='post').slice(-1)[0];
-    const next=events.find(e=>e.status.type.state==='pre'&&e.date>now);
-    // Last final formatting
-    if(lastFinal){
-      const cubs=lastFinal.comp.competitors.find(c=>c.team.abbreviation===cfg.abbr);
-      const opp=lastFinal.comp.competitors.find(c=>c.team.abbreviation!==cfg.abbr);
-      const won=parseInt(cubs.score)>parseInt(opp.score);
-      const wl=won?'<span class="tracker-win">W</span>':'<span class="tracker-loss">L</span>';
-      const oppAbbr=opp.team.abbreviation;
-      const homeAway=cubs.homeAway==='home'?'vs':'@';
-      document.getElementById(cfg.lastEl).innerHTML=wl+' '+cubs.score+'–'+opp.score+' '+homeAway+' '+oppAbbr;
-    } else {document.getElementById(cfg.lastEl).textContent='—';}
-    // Next game formatting
-    if(next){
-      const cubs=next.comp.competitors.find(c=>c.team.abbreviation===cfg.abbr);
-      const opp=next.comp.competitors.find(c=>c.team.abbreviation!==cfg.abbr);
-      const homeAway=cubs.homeAway==='home'?'vs':'@';
-      const oppAbbr=opp.team.abbreviation;
-      const dateStr=next.date.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-      const timeStr=next.date.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'});
-      document.getElementById(cfg.nextEl).textContent=homeAway+' '+oppAbbr+' · '+dateStr+' '+timeStr;
-    } else {document.getElementById(cfg.nextEl).textContent='—';}
-  }catch(e){document.getElementById(cfg.lastEl).textContent='—';document.getElementById(cfg.nextEl).textContent='offline';}
-}
-loadTracker('cubs');loadTracker('bears');setInterval(()=>{loadTracker('cubs');loadTracker('bears');},600000);
+// (ticker code below)
 
 // ── Live Headlines (Google News RSS) ──
 async function loadHeadlines(){
@@ -722,6 +687,178 @@ function renderSpotifyTab(){
   el.innerHTML=items.slice(0,8).map(it=>{const playUrl=it.uri?'https://open.spotify.com/'+it.uri.replace('spotify:','').replace(':','/'):'#';return '<a href="'+playUrl+'" target="_blank" rel="noopener" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="aspect-ratio:1;background:#222;border-radius:4px;"></div>')+'<div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></a>';}).join('');
 }
 loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
+
+// ── Sports Ticker (ported from home dashboard) ──
+async function fetchESPN(url){
+  try{const r=await fetch(url,{signal:AbortSignal.timeout(6000)});if(r.ok)return await r.json();}catch{}
+  const proxies=[u=>'https://api.allorigins.win/get?url='+encodeURIComponent(u),u=>'https://corsproxy.io/?'+encodeURIComponent(u)];
+  for(const makeUrl of proxies){try{const r=await fetch(makeUrl(url),{signal:AbortSignal.timeout(8000)});if(!r.ok)continue;let t=await r.text();if(t.startsWith('{')&&t.includes('contents')){try{t=JSON.parse(t).contents;}catch{}}try{return JSON.parse(t);}catch{}}catch{}}
+  return null;
+}
+function parseESPNGames(data,teamAbbr){
+  if(!data||!data.events)return[];
+  const events=data.events.filter(e=>{const comp=e.competitions&&e.competitions[0];if(!comp)return false;return comp.competitors.some(c=>c.team.abbreviation===teamAbbr);});
+  return events.map(e=>{
+    const comp=e.competitions[0];
+    const home=comp.competitors.find(c=>c.homeAway==='home');
+    const away=comp.competitors.find(c=>c.homeAway==='away');
+    const homeAbbr=home.team.abbreviation,awayAbbr=away.team.abbreviation;
+    const status=e.status.type.name;
+    const game={start_time:e.date,home:homeAbbr,away:awayAbbr,status:status==='STATUS_FINAL'?'closed':status==='STATUS_SCHEDULED'?'scheduled':'live',score:{},situation:e.status.type.shortDetail||'',pitchers:{}};
+    if(comp.probables){comp.probables.forEach(p=>{const side=p.homeAway;const name=p.athlete?p.athlete.shortName||p.athlete.displayName:'TBD';game.pitchers[side]=name;});}
+    if(status==='STATUS_FINAL'||status==='STATUS_IN_PROGRESS'){game.score[homeAbbr]=parseInt(home.score)||0;game.score[awayAbbr]=parseInt(away.score)||0;}
+    return game;
+  });
+}
+function getMLBStandings(standingsData,teamId){
+  if(!standingsData||!standingsData.records)return null;
+  try{
+    for(const divRecord of standingsData.records){
+      const teamRecord=divRecord.teamRecords.find(r=>r.team.id===teamId);
+      if(teamRecord){
+        const rank=teamRecord.divisionRank?parseInt(teamRecord.divisionRank):null;
+        const suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
+        const gb=teamRecord.gamesBack==='-'?0:parseFloat(teamRecord.gamesBack);
+        const wins=teamRecord.wins,losses=teamRecord.losses;
+        const divLookup={200:'AL West',201:'AL East',202:'AL Central',203:'NL West',204:'NL East',205:'NL Central'};
+        const divId=divRecord.division?divRecord.division.id:null;
+        const divName=(divId&&divLookup[divId])||(divRecord.division&&(divRecord.division.nameShort||divRecord.division.name))||'';
+        const summary=rank+suffix+' in '+divName;
+        let gamesUp=null;
+        if(rank===1){const sorted=[...divRecord.teamRecords].sort((a,b)=>(parseInt(a.divisionRank)||99)-(parseInt(b.divisionRank)||99));const second=sorted.find(r=>r.team.id!==teamId);if(second)gamesUp=second.gamesBack==='-'?0:parseFloat(second.gamesBack);}
+        return{rank,suffix,gb,wins,losses,summary,gamesUp};
+      }
+    }
+    return null;
+  }catch(e){return null;}
+}
+function getTeamStandings(teamData){
+  if(!teamData)return null;
+  try{
+    const team=teamData.team||teamData;
+    const standingSummary=team.standingSummary||'';
+    const rankMatch=standingSummary.match(/(\d+)(st|nd|rd|th)/i);
+    const rank=rankMatch?parseInt(rankMatch[1]):null;
+    let gb=null,wins=null,losses=null;
+    const record=team.record;
+    if(record&&record.items){
+      for(const item of record.items){const stats=item.stats||[];for(const s of stats){if(s.name==='gamesBehind'||s.name==='gamesBack'||s.name==='gb'){if(s.value!==undefined&&s.value!==null){gb=s.value;break;}}}if(gb!==null)break;}
+      const overall=record.items.find(r=>r.type==='total')||record.items[0];
+      if(overall){const wStat=(overall.stats||[]).find(s=>s.name==='wins');const lStat=(overall.stats||[]).find(s=>s.name==='losses');if(wStat)wins=wStat.value;if(lStat)losses=lStat.value;}
+    }
+    return{rank,gb,wins,losses,summary:standingSummary};
+  }catch(e){return null;}
+}
+const mlbLogoMap={'ARI':'ari','ATL':'atl','BAL':'bal','BOS':'bos','CHC':'chc','CWS':'cws','CIN':'cin','CLE':'cle','COL':'col','DET':'det','HOU':'hou','KC':'kc','LAA':'laa','LAD':'lad','MIA':'mia','MIL':'mil','MIN':'min','NYM':'nym','NYY':'nyy','OAK':'oak','PHI':'phi','PIT':'pit','SD':'sd','SEA':'sea','SF':'sf','STL':'stl','TB':'tb','TEX':'tex','TOR':'tor','WSH':'wsh'};
+const nflLogoMap={'CHI':'chi','GB':'gb','MIN':'min','DET':'det','DAL':'dal','NYG':'nyg','PHI':'phi','WSH':'was','ATL':'atl','CAR':'car','NO':'no','TB':'tb','ARI':'ari','LAR':'lar','SF':'sf','SEA':'sea','BUF':'buf','MIA':'mia','NE':'ne','NYJ':'nyj','BAL':'bal','CIN':'cin','CLE':'cle','PIT':'pit','HOU':'hou','IND':'ind','JAX':'jax','TEN':'ten','DEN':'den','KC':'kc','LV':'lv','LAC':'lac'};
+function teamLogo(abbr,league){const map=league==='nfl'?nflLogoMap:mlbLogoMap;const id=map[abbr]||abbr.toLowerCase();const base=league==='nfl'?'nfl':'mlb';return'<img src="https://a.espncdn.com/i/teamlogos/'+base+'/500/'+id+'.png" style="height:16px;width:16px;vertical-align:middle;border-radius:50%;margin:0 2px;">';}
+
+async function loadSports(){
+  const inner=document.getElementById('sports-ticker-inner');
+  try{
+    const now=new Date();
+    const yesterday=new Date(now-3*24*60*60*1000);
+    const twoWeeks=new Date(now.getTime()+14*24*60*60*1000);
+    const fmt=d=>d.toISOString().slice(0,10).replace(/-/g,'');
+    const threeDaysAgo=new Date(now-3*24*60*60*1000);
+    const year=now.getFullYear();
+    const [cubsScores,cubsSchedule,cubsLive,bearsScores,bearsSchedule,bearsLive,cubsTeam,bearsTeam]=await Promise.all([
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates='+fmt(threeDaysAgo)+'-'+fmt(now)+'&limit=30'),
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates='+fmt(now)+'-'+fmt(twoWeeks)+'&limit=30'),
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard'),
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+fmt(threeDaysAgo)+'-'+fmt(now)+'&limit=30'),
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+fmt(now)+'-'+fmt(twoWeeks)+'&limit=30'),
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'),
+      fetchESPN('https://statsapi.mlb.com/api/v1/standings?leagueId=104&season='+year+'&standingsTypes=regularSeason&hydrate=team'),
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/3'),
+    ]);
+    function mergeGames(live,scores,schedule,abbr){
+      const all=[...parseESPNGames(live,abbr),...parseESPNGames(scores,abbr),...parseESPNGames(schedule,abbr)];
+      const map=new Map();
+      for(const g of all){const key=g.start_time;if(!map.has(key)){map.set(key,g);}else{const existing=map.get(key);const priority=s=>s==='live'?3:s==='closed'?2:1;if(priority(g.status)>priority(existing.status))map.set(key,g);}}
+      return Array.from(map.values());
+    }
+    const cubsGames=mergeGames(cubsLive,cubsScores,cubsSchedule,'CHC');
+    const bearsGames=mergeGames(bearsLive,bearsScores,bearsSchedule,'CHI');
+    const cubsStandings=getMLBStandings(cubsTeam,112);
+    const bearsStandings=getTeamStandings(bearsTeam);
+    function buildTeamTicker(name,logo,games,teamAbbr,standings){
+      const hasRecent=games.some(g=>g.status==='closed');
+      const hasLive=games.some(g=>g.status==='live');
+      const hasUpcoming=games.some(g=>g.status==='scheduled'&&new Date(g.start_time)<=twoWeeks);
+      if(!hasRecent&&!hasLive&&!hasUpcoming)return null;
+      let parts=[];
+      const live=games.find(g=>g.status==='live');
+      if(live){
+        const myScore=live.score[teamAbbr]||0;
+        const oppAbbr=live.home===teamAbbr?live.away:live.home;
+        const oppScore=live.score[oppAbbr]||0;
+        const loc=live.home===teamAbbr?'vs':'@';
+        const winning=myScore>oppScore,tied=myScore===oppScore;
+        const color=winning?'#4CAF82':tied?'#E8A838':'#E05C5C';
+        const situation=live.situation||'In Progress';
+        parts.push('<span style="color:#FFFFFF;font-weight:800;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">'+logo+' '+name.toUpperCase()+'</span>');
+        parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#E8A838;font-weight:700;">🔴 LIVE</span><span style="color:#9BB5C5;margin-left:4px;">'+loc+' '+teamLogo(oppAbbr,teamAbbr==='CHI'?'nfl':'mlb')+oppAbbr+'</span><span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:'+color+';font-weight:700;">'+myScore+'-'+oppScore+'</span><span style="color:#7A99AA;margin-left:4px;font-size:.68rem;">('+situation+')</span>');
+        return parts.join('');
+      }
+      const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      parts.push('<span style="color:#FFFFFF;font-weight:800;display:inline-flex;align-items:center;gap:4px;vertical-align:middle;">'+logo+' '+name.toUpperCase()+'</span>');
+      const recent=games.filter(g=>{if(g.status!=='closed')return false;return new Date(g.start_time)>=yesterday;}).sort((a,b)=>new Date(b.start_time)-new Date(a.start_time))[0];
+      if(recent){
+        const myScore=recent.score[teamAbbr];
+        const oppAbbr=recent.home===teamAbbr?recent.away:recent.home;
+        const oppScore=recent.score[oppAbbr];
+        const won=myScore>oppScore;
+        const loc=recent.home===teamAbbr?'vs':'@';
+        const color=won?'#5DD99A':'#FF6B6B';
+        const gameD=new Date(recent.start_time).toLocaleDateString('en-US',{timeZone:'America/Chicago'});
+        const todayD=now.toLocaleDateString('en-US',{timeZone:'America/Chicago'});
+        const yesterD=new Date(now-86400000).toLocaleDateString('en-US',{timeZone:'America/Chicago'});
+        const diffDays=gameD===todayD?0:gameD===yesterD?1:Math.floor((now-new Date(recent.start_time))/86400000);
+        const daysAgoStr=diffDays===0?'today':diffDays===1?'yesterday':diffDays+' days ago';
+        const league=teamAbbr==='CHI'?'nfl':'mlb';
+        parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:'+color+';font-weight:800;">'+(won?'W':'L')+' '+myScore+'-'+oppScore+'</span><span style="color:#B8D4E0;margin-left:4px;">'+loc+' '+teamLogo(oppAbbr,league)+oppAbbr+'</span><span style="color:#6A8A99;margin-left:3px;font-size:.62rem;">('+daysAgoStr+')</span>');
+      }
+      if(standings&&(standings.rank||standings.wins!==null)){
+        let standingText=standings.summary||'';
+        if(standings.rank===1){if(standings.gamesUp&&standings.gamesUp>0){standingText+=' · '+standings.gamesUp+' up';}else{standingText+=' 🔝';}}
+        else if(standings.gb!==null&&parseFloat(standings.gb)>0)standingText+=' · '+standings.gb+' GB';
+        if(standings.wins!==null&&standings.losses!==null)standingText+=' ('+standings.wins+'-'+standings.losses+')';
+        parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#A8CCE0;">'+standingText+'</span>');
+      }
+      const next=games.filter(g=>{if(g.status!=='scheduled')return false;const t=new Date(g.start_time);return t>=now&&t<=twoWeeks;}).sort((a,b)=>new Date(a.start_time)-new Date(b.start_time))[0];
+      if(next){
+        const oppAbbr=next.home===teamAbbr?next.away:next.home;
+        const loc=next.home===teamAbbr?'vs':'@';
+        const d=new Date(next.start_time);
+        const chicagoDate=new Date(d.toLocaleString('en-US',{timeZone:'America/Chicago'}));
+        const dateStr=days[chicagoDate.getDay()]+' '+months[chicagoDate.getMonth()]+' '+chicagoDate.getDate();
+        const timeStr=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'});
+        parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#D0E8F5;">📅 '+loc+' '+teamLogo(oppAbbr,teamAbbr==='CHI'?'nfl':'mlb')+oppAbbr+' · '+dateStr+', '+timeStr+'</span>');
+      }
+      return parts.join('');
+    }
+    const items=[
+      buildTeamTicker('Cubs','<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;">',cubsGames,'CHC',cubsStandings),
+      buildTeamTicker('Bears','<img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;">',bearsGames,'CHI',bearsStandings),
+    ].filter(Boolean);
+    if(!items.length){inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">No sports data</span>';return;}
+    const separator='<span style="color:#4A7A95;margin:0 24px;">◆</span>';
+    const tickerContent='<span style="padding:0 30px;">'+items.join(separator)+'</span>';
+    inner.innerHTML=tickerContent+tickerContent+tickerContent+tickerContent;
+    if(window._tickerRAF)cancelAnimationFrame(window._tickerRAF);
+    inner.style.transform='translateX(0)';
+    setTimeout(()=>{
+      const singleWidth=inner.scrollWidth/4;const speed=35;let pos=0,last=null;
+      function step(ts){if(last!==null){pos+=(ts-last)/1000*speed;if(pos>=singleWidth)pos-=singleWidth;inner.style.transform='translateX(-'+pos+'px)';}last=ts;window._tickerRAF=requestAnimationFrame(step);}
+      window._tickerRAF=requestAnimationFrame(step);
+    },300);
+  } catch(err) {
+    inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">Sports data unavailable</span>';
+  }
+}
+loadSports();setInterval(loadSports,300000);
 
 </script>
 </body>

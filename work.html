@@ -218,6 +218,11 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .card-music { align-self: stretch; display: flex; flex-direction: column; }
 .card-music #spotify-embed { flex: 1; min-height: 0; overflow: hidden; }
 .card-music .spotify-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; }
+#np-bar { flex-shrink: 0; margin-bottom: 6px; }
+#np-bar-empty { font-size: .68rem; color: #7BAFC4; padding: 10px 8px; text-align: center; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.12); }
+#np-bar iframe { display: block; border-radius: 8px; width: 100%; border: none; }
+.music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+#sp-personal-list { max-height: none; }
 
 
 /* ═══ Gameday view (v2 - MLB app style) ═══ */
@@ -1103,6 +1108,15 @@ async function loadSpotifyPersonal(){
   }catch(e){document.getElementById('sp-status').textContent='offline';}
 }
 // Load a track/album/playlist/artist directly into the embedded player (stays on dashboard)
+// Delegated click handler for track/playlist tiles (avoids fragile inline-JS quoting)
+document.addEventListener('click',function(e){
+  const tile=e.target.closest('.sp-tile');
+  if(tile && tile.dataset && tile.dataset.uri!==undefined){
+    e.preventDefault();
+    playSpotifyEmbed(tile.dataset.uri, tile.dataset.label);
+  }
+});
+
 function playSpotifyEmbed(uri,label){
   if(!uri)return;
   // uri looks like "spotify:track:ID" or "spotify:playlist:ID" etc — convert to embed URL
@@ -1123,9 +1137,9 @@ function renderSpotifyTab(){
   if(_spTab==='recent')items=_spData.recent.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
   else if(_spTab==='top')items=_spData.top.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
   else items=_spData.playlists.map(p=>({name:p.name,sub:(p.tracks||0)+' tracks',uri:p.uri,image:p.image}));
-  el.innerHTML=items.slice(0,10).map(function(it,idx){
-    const safeName=(it.name||'').replace(/'/g,"\\'");
-    return '<a href="#" onclick="playSpotifyEmbed(\''+(it.uri||'')+'\',\''+safeName+'\');return false;" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';
+  function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+  el.innerHTML=items.slice(0,10).map(function(it){
+    return '<a href="#" data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';
   }).join('');
 }
 loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);

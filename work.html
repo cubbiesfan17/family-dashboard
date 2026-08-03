@@ -1184,10 +1184,21 @@ loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
 
 // ── Real "Now Playing" — reflects whatever's playing on the account (Chrome, phone, Echo, anything) ──
 async function spotifyControl(action){
+  const bar=document.getElementById('np-bar');
   try{
-    await fetch('/api/spotify/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});
+    const r=await fetch('/api/spotify/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok || j.ok===false){
+      const msg='Control error ('+r.status+'): '+(j.error||'unknown')+(j.detail?' — '+j.detail:'');
+      if(bar)bar.insertAdjacentHTML('afterbegin','<div style="font-size:.6rem;color:#f87171;background:rgba(239,68,68,0.12);padding:4px 8px;border-radius:5px;margin-bottom:4px;">'+msg+'</div>');
+      setTimeout(pollNowPlaying, 4000);
+      return;
+    }
     setTimeout(pollNowPlaying, 500);
-  }catch(e){}
+  }catch(e){
+    if(bar)bar.insertAdjacentHTML('afterbegin','<div style="font-size:.6rem;color:#f87171;background:rgba(239,68,68,0.12);padding:4px 8px;border-radius:5px;margin-bottom:4px;">Network error: '+String(e)+'</div>');
+    setTimeout(pollNowPlaying, 4000);
+  }
 }
 
 async function pollNowPlaying(){

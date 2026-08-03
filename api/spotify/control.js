@@ -27,10 +27,10 @@ async function getAccessToken(refreshToken) {
 }
 
 const ACTIONS = {
-  play: { method: 'PUT', path: '/me/player/play' },
-  pause: { method: 'PUT', path: '/me/player/pause' },
-  next: { method: 'POST', path: '/me/player/next' },
-  previous: { method: 'POST', path: '/me/player/previous' },
+  play: { method: 'PUT', path: '/v1/me/player/play' },
+  pause: { method: 'PUT', path: '/v1/me/player/pause' },
+  next: { method: 'POST', path: '/v1/me/player/next' },
+  previous: { method: 'POST', path: '/v1/me/player/previous' },
 };
 
 export default async function handler(req, res) {

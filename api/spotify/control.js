@@ -64,7 +64,13 @@ export default async function handler(req, res) {
       res.status(200).json({ ok: false, error: 'no_active_device' });
       return;
     }
-    res.status(200).json({ ok: r.ok });
+    if (!r.ok) {
+      let spotifyBody = null;
+      try { spotifyBody = await r.text(); } catch {}
+      res.status(200).json({ ok: false, error: 'spotify_' + r.status, detail: spotifyBody });
+      return;
+    }
+    res.status(200).json({ ok: true });
   } catch (err) {
     res.status(500).json({ ok: false, error: 'control_failed', detail: String(err) });
   }

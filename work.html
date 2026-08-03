@@ -220,7 +220,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .card-music .spotify-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; }
 #np-bar { flex-shrink: 0; margin-bottom: 6px; }
 #np-bar-empty { font-size: .68rem; color: #7BAFC4; padding: 10px 8px; text-align: center; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.12); }
-#np-bar iframe { display: block; border-radius: 8px; width: 100%; border: none; }
+.np-now-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 7px 9px; }
+.np-now-img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #222; }
+.np-now-info { flex: 1; min-width: 0; }
+.np-now-title { font-size: .8rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-now-artist { font-size: .66rem; color: #7BAFC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-now-device { font-size: .56rem; color: #4A7A95; margin-top: 1px; }
+.np-now-progress-wrap { background: rgba(255,255,255,0.15); height: 3px; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+.np-now-progress { height: 100%; background: #1db954; }
 .music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 #sp-personal-list { max-height: none; }
 
@@ -1113,9 +1120,31 @@ document.addEventListener('click',function(e){
   const tile=e.target.closest('.sp-tile');
   if(tile && tile.dataset && tile.dataset.uri!==undefined){
     e.preventDefault();
-    playSpotifyEmbed(tile.dataset.uri, tile.dataset.label);
+    openInChrome(tile.dataset.uri);
   }
 });
+
+// Open a track/playlist/album directly in the native Spotify app (full Premium
+// playback, reliable DRM). Falls back to the Spotify website if the app
+// isn't installed or the link can't be handled.
+function openInChrome(uri){
+  if(!uri)return;
+  const parts=uri.split(':');
+  if(parts.length<3)return;
+  const type=parts[1],id=parts[2];
+  const httpsUrl='https://open.spotify.com/'+type+'/'+id;
+  // Plain spotify: URI — Android hands this directly to the Spotify app if installed
+  const appUri='spotify:'+type+':'+id;
+  // Intent form as a fallback path some WebViews need, with website fallback if the app is missing
+  const intentUrl='intent://'+type+'/'+id+'#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url='+encodeURIComponent(httpsUrl)+';end';
+  try{
+    window.location.href=appUri;
+    // If the plain URI silently fails to hand off (some WebViews just no-op), try the intent form shortly after
+    setTimeout(function(){ try{ window.location.href=intentUrl; }catch(e){} }, 400);
+  }catch(e){
+    window.location.href=httpsUrl;
+  }
+}
 
 function playSpotifyEmbed(uri,label){
   if(!uri)return;
@@ -1145,6 +1174,30 @@ function renderSpotifyTab(){
   }).join('');
 }
 loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
+
+// ── Real "Now Playing" — reflects whatever's playing on the account (Chrome, phone, Echo, anything) ──
+async function pollNowPlaying(){
+  const bar=document.getElementById('np-bar');
+  if(!bar)return;
+  try{
+    const r=await fetch('/api/spotify/now-playing');
+    const j=await r.json();
+    if(!j.playing || !j.name){
+      bar.innerHTML='<div id="np-bar-empty">Nothing playing — tap a track below to open in Chrome</div>';
+      return;
+    }
+    const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
+    bar.innerHTML='<div class="np-now-row">'+
+      (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
+      '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+
+      (j.device?'<div class="np-now-device">▶ '+j.device+'</div>':'')+
+      '<div class="np-now-progress-wrap"><div class="np-now-progress" style="width:'+pct+'%"></div></div></div>'+
+    '</div>';
+  }catch(e){
+    bar.innerHTML='<div id="np-bar-empty">Nothing playing — tap a track below to open in Chrome</div>';
+  }
+}
+pollNowPlaying();setInterval(pollNowPlaying,5000);
 
 // ── Sports Ticker (ported from home dashboard) ──
 async function fetchESPN(url){

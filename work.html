@@ -233,7 +233,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-ctrl-btn:hover { background: rgba(255,255,255,0.2); }
 .np-ctrl-btn.play-pause { width: 34px; height: 34px; background: #1db954; font-size: .9rem; }
 .np-ctrl-btn.play-pause:hover { background: #1ed760; }
-.music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+.music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 #sp-personal-list { max-height: none; }
 
 
@@ -528,29 +528,22 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
     <!-- PRIORITY 1: Now Playing — always visible, never scrolls away -->
     <div id="np-bar">
-      <div id="np-bar-empty">Nothing playing — pick something below</div>
+      <div id="np-bar-empty">Nothing playing, tap track below</div>
     </div>
 
     <!-- Scrollable content: browsing list, shortcuts, search (lower priority) -->
     <div class="music-scroll">
       <div id="sp-personal" style="display:none;margin-bottom:6px;">
         <div style="display:flex;gap:5px;margin-bottom:5px;">
-          <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
-          <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
+          <button class="shortcut-pill sp-tab active" data-tab="shows" onclick="spTab('shows')">Podcasts</button>
           <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
-          <button class="shortcut-pill sp-tab" data-tab="shows" onclick="spTab('shows')">Podcasts</button>
+          <button class="shortcut-pill sp-tab" data-tab="recent" onclick="spTab('recent')">Recently played</button>
+          <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
         </div>
         <div id="sp-personal-list"></div>
       </div>
       <div id="sp-connect" style="display:none;">
         <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a> to see your playlists and recently played
-      </div>
-      <div class="spotify-shortcuts" style="margin-top:8px;">
-        <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
-        <button class="shortcut-pill" onclick="spotifyLoad('baseball podcast')">🎙 Podcast</button>
       </div>
       <div class="spotify-search-row">
         <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
@@ -1106,7 +1099,7 @@ async function loadHeadlines(){
 loadHeadlines();setInterval(loadHeadlines,900000);
 
 // ── Personalized Spotify (via /api/spotify/me) ──
-let _spData=null,_spTab='recent';
+let _spData=null,_spTab='shows';
 async function loadSpotifyPersonal(){
   try{
     const r=await fetch('/api/spotify/me');
@@ -1208,7 +1201,7 @@ async function pollNowPlaying(){
     const r=await fetch('/api/spotify/now-playing');
     const j=await r.json();
     if(!j.playing || !j.name){
-      bar.innerHTML='<div id="np-bar-empty">Nothing playing — tap a track below to open in Chrome</div>';
+      bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
       return;
     }
     const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
@@ -1225,7 +1218,7 @@ async function pollNowPlaying(){
       '</div>'+
     '</div>';
   }catch(e){
-    bar.innerHTML='<div id="np-bar-empty">Nothing playing — tap a track below to open in Chrome</div>';
+    bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
   }
 }
 pollNowPlaying();setInterval(pollNowPlaying,5000);

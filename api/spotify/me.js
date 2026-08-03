@@ -71,12 +71,15 @@ export default async function handler(req, res) {
         uri: t.uri,
         image: (t.album.images[0] && t.album.images[0].url) || null,
       })),
-      shows: (shows.items || []).map(s => ({
-        name: s.show.name,
-        publisher: s.show.publisher,
-        uri: s.show.uri,
-        image: (s.show.images && s.show.images[0] && s.show.images[0].url) || null,
-      })),
+      shows: (shows.items || [])
+        .slice()
+        .sort((a, b) => new Date(b.added_at) - new Date(a.added_at))
+        .map(s => ({
+          name: s.show.name,
+          publisher: s.show.publisher,
+          uri: s.show.uri,
+          image: (s.show.images && s.show.images[0] && s.show.images[0].url) || null,
+        })),
     };
 
     res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=300');

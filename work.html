@@ -171,12 +171,13 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .spotify-placeholder p { font-size: .68rem; color: #7BAFC4; }
 .spotify-big-icon { font-size: 1.3rem; color: #1db954; margin-bottom: 3px; }
 #sp-connect { font-size: .7rem; color: #7BAFC4; margin-bottom: 6px; }
-#sp-personal-list { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
-.sp-tile { background: rgba(255,255,255,0.05); border-radius: 5px; padding: 3px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+#sp-personal-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.sp-tile { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
 .sp-tile:hover { background: rgba(255,255,255,0.12); }
-.sp-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 3px; }
-.sp-tile-name { font-size: .54rem; font-weight: 600; color: #fff; line-height: 1.15; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.sp-tile-sub { font-size: .5rem; color: #7BAFC4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tile img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.sp-tile-text { min-width: 0; flex: 1; }
+.sp-tile-name { font-size: .68rem; font-weight: 700; color: #fff; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tile-sub { font-size: .58rem; color: #7BAFC4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sp-tab { font-size: .56rem !important; padding: 2px 8px !important; }
 .sp-tab.active { background: #1db954 !important; border-color: #1db954 !important; color: #fff !important; }
 
@@ -507,30 +508,39 @@ a.news-item:hover .news-hed { color: #7ECFED; }
       <span>🎵 Music &amp; audio</span>
       <span id="sp-status" style="font-size:.55rem;color:#7BAFC4;"></span>
     </div>
-    <div id="sp-personal" style="display:none;margin-bottom:6px;">
-      <div style="display:flex;gap:5px;margin-bottom:5px;">
-        <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
-        <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
-        <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
+
+    <!-- PRIORITY 1: Now Playing — always visible, never scrolls away -->
+    <div id="np-bar">
+      <div id="np-bar-empty">Nothing playing — pick something below</div>
+    </div>
+
+    <!-- Scrollable content: browsing list, shortcuts, search (lower priority) -->
+    <div class="music-scroll">
+      <div id="sp-personal" style="display:none;margin-bottom:6px;">
+        <div style="display:flex;gap:5px;margin-bottom:5px;">
+          <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
+          <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
+          <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
+        </div>
+        <div id="sp-personal-list"></div>
       </div>
-      <div id="sp-personal-list"></div>
-    </div>
-    <div id="sp-connect" style="display:none;">
-      <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a> to see your playlists and recently played
-    </div>
-    <div class="spotify-shortcuts">
-      <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
-      <button class="shortcut-pill" onclick="spotifyLoad('baseball podcast')">🎙 Podcast</button>
-    </div>
-    <div class="spotify-search-row">
-      <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
-      <button onclick="spotifySearch()">Search</button>
-    </div>
-    <div id="spotify-embed">
-      <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Pick a shortcut or search to load</p></div>
+      <div id="sp-connect" style="display:none;">
+        <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a> to see your playlists and recently played
+      </div>
+      <div class="spotify-shortcuts" style="margin-top:8px;">
+        <button class="shortcut-pill" onclick="spotifyLoad('focus work instrumental')">🎧 Focus</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('chicago blues')">🎸 Blues</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('lofi hip hop')">☕ Lo-fi</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('deep concentration')">🧠 Deep</button>
+        <button class="shortcut-pill" onclick="spotifyLoad('baseball podcast')">🎙 Podcast</button>
+      </div>
+      <div class="spotify-search-row">
+        <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
+        <button onclick="spotifySearch()">Search</button>
+      </div>
+      <div id="spotify-embed">
+        <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Search results appear here</p></div>
+      </div>
     </div>
   </div>
 
@@ -1113,10 +1123,9 @@ function renderSpotifyTab(){
   if(_spTab==='recent')items=_spData.recent.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
   else if(_spTab==='top')items=_spData.top.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
   else items=_spData.playlists.map(p=>({name:p.name,sub:(p.tracks||0)+' tracks',uri:p.uri,image:p.image}));
-  el.innerHTML=items.slice(0,8).map(function(it,idx){
+  el.innerHTML=items.slice(0,10).map(function(it,idx){
     const safeName=(it.name||'').replace(/'/g,"\\'");
-    const safeSub=(it.sub||'').replace(/'/g,"\\'");
-    return '<a href="#" onclick="playSpotifyEmbed(\''+(it.uri||'')+'\',\''+safeName+'\');return false;" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="aspect-ratio:1;background:#222;border-radius:4px;"></div>')+'<div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></a>';
+    return '<a href="#" onclick="playSpotifyEmbed(\''+(it.uri||'')+'\',\''+safeName+'\');return false;" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';
   }).join('');
 }
 loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);

@@ -228,6 +228,11 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-now-device { font-size: .56rem; color: #4A7A95; margin-top: 1px; }
 .np-now-progress-wrap { background: rgba(255,255,255,0.15); height: 3px; border-radius: 2px; margin-top: 5px; overflow: hidden; }
 .np-now-progress { height: 100%; background: #1db954; }
+.np-controls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.np-ctrl-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: .8rem; cursor: pointer; flex-shrink: 0; }
+.np-ctrl-btn:hover { background: rgba(255,255,255,0.2); }
+.np-ctrl-btn.play-pause { width: 34px; height: 34px; background: #1db954; font-size: .9rem; }
+.np-ctrl-btn.play-pause:hover { background: #1ed760; }
 .music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
 #sp-personal-list { max-height: none; }
 
@@ -533,6 +538,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
           <button class="shortcut-pill sp-tab active" data-tab="recent" onclick="spTab('recent')">Recently played</button>
           <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
           <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
+          <button class="shortcut-pill sp-tab" data-tab="shows" onclick="spTab('shows')">Podcasts</button>
         </div>
         <div id="sp-personal-list"></div>
       </div>
@@ -1167,15 +1173,23 @@ function renderSpotifyTab(){
   let items=[];
   if(_spTab==='recent')items=_spData.recent.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
   else if(_spTab==='top')items=_spData.top.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
+  else if(_spTab==='shows')items=(_spData.shows||[]).map(s=>({name:s.name,sub:s.publisher||'Podcast',uri:s.uri,image:s.image}));
   else items=_spData.playlists.map(p=>({name:p.name,sub:(p.tracks||0)+' tracks',uri:p.uri,image:p.image}));
   function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-  el.innerHTML=items.slice(0,10).map(function(it){
+  el.innerHTML=items.slice(0,6).map(function(it){
     return '<a href="#" data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';
   }).join('');
 }
 loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
 
 // ── Real "Now Playing" — reflects whatever's playing on the account (Chrome, phone, Echo, anything) ──
+async function spotifyControl(action){
+  try{
+    await fetch('/api/spotify/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});
+    setTimeout(pollNowPlaying, 500);
+  }catch(e){}
+}
+
 async function pollNowPlaying(){
   const bar=document.getElementById('np-bar');
   if(!bar)return;
@@ -1187,11 +1201,17 @@ async function pollNowPlaying(){
       return;
     }
     const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
+    const playPauseIcon = j.playing ? '⏸' : '▶';
     bar.innerHTML='<div class="np-now-row">'+
       (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
       '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+
       (j.device?'<div class="np-now-device">▶ '+j.device+'</div>':'')+
       '<div class="np-now-progress-wrap"><div class="np-now-progress" style="width:'+pct+'%"></div></div></div>'+
+      '<div class="np-controls">'+
+        '<button class="np-ctrl-btn" onclick="spotifyControl(\'previous\')" aria-label="Previous">⏮</button>'+
+        '<button class="np-ctrl-btn play-pause" onclick="spotifyControl(\''+(j.playing?'pause':'play')+'\')" aria-label="Play/Pause">'+playPauseIcon+'</button>'+
+        '<button class="np-ctrl-btn" onclick="spotifyControl(\'next\')" aria-label="Next">⏭</button>'+
+      '</div>'+
     '</div>';
   }catch(e){
     bar.innerHTML='<div id="np-bar-empty">Nothing playing — tap a track below to open in Chrome</div>';

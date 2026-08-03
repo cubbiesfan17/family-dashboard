@@ -18,6 +18,8 @@ export default function handler(req, res) {
     'playlist-read-collaborative',
     'user-read-currently-playing',
     'user-read-playback-state',
+    'user-modify-playback-state',
+    'user-library-read',
   ].join(' ');
 
   const params = new URLSearchParams({

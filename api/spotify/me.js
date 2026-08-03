@@ -36,16 +36,18 @@ export default async function handler(req, res) {
     const accessToken = await getAccessToken(refresh);
     const auth = { Authorization: 'Bearer ' + accessToken };
 
-    const [playlistsR, recentR, topR] = await Promise.all([
+    const [playlistsR, recentR, topR, showsR] = await Promise.all([
       fetch('https://api.spotify.com/v1/me/playlists?limit=8', { headers: auth }),
       fetch('https://api.spotify.com/v1/me/player/recently-played?limit=8', { headers: auth }),
       fetch('https://api.spotify.com/v1/me/top/tracks?limit=8&time_range=short_term', { headers: auth }),
+      fetch('https://api.spotify.com/v1/me/shows?limit=12', { headers: auth }),
     ]);
 
-    const [playlists, recent, top] = await Promise.all([
+    const [playlists, recent, top, shows] = await Promise.all([
       playlistsR.json(),
       recentR.json(),
       topR.json(),
+      showsR.json(),
     ]);
 
     const slim = {
@@ -68,6 +70,12 @@ export default async function handler(req, res) {
         artist: t.artists.map(a => a.name).join(', '),
         uri: t.uri,
         image: (t.album.images[0] && t.album.images[0].url) || null,
+      })),
+      shows: (shows.items || []).map(s => ({
+        name: s.show.name,
+        publisher: s.show.publisher,
+        uri: s.show.uri,
+        image: (s.show.images && s.show.images[0] && s.show.images[0].url) || null,
       })),
     };
 

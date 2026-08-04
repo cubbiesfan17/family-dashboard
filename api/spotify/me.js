@@ -26,7 +26,7 @@ async function getAccessToken(refreshToken) {
 }
 
 // Podcasts to always surface first, in this order (case-insensitive match on show name)
-const PINNED_SHOWS = ['up first', 'the journal', 'today explained', 'the lovable reunion'];
+const PINNED_SHOWS = ['up first from npr', 'the journal.', 'today, explained', 'the lovable reunion'];
 
 export default async function handler(req, res) {
   const refresh = getCookie(req, 'sp_refresh');

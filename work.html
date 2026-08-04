@@ -1164,10 +1164,14 @@ function renderSpotifyTab(){
   if(!_spData)return;
   const el=document.getElementById('sp-personal-list');
   let items=[];
-  if(_spTab==='recent')items=_spData.recent.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
-  else if(_spTab==='top')items=_spData.top.map(t=>({name:t.name,sub:t.artist,uri:t.uri,image:t.image}));
-  else if(_spTab==='shows')items=(_spData.shows||[]).map(s=>({name:s.name,sub:s.publisher||'Podcast',uri:s.uri,image:s.image}));
-  else items=_spData.playlists.map(p=>({name:p.name,sub:(p.tracks||0)+' tracks',uri:p.uri,image:p.image}));
+  if(_spTab==='recent')items=_spData.recent.slice();
+  else if(_spTab==='top')items=_spData.top.slice();
+  else if(_spTab==='shows')items=(_spData.shows||[]).slice();
+  else{
+    // Playlists: random shuffle each time this tab is viewed/refreshed
+    items=_spData.playlists.slice();
+    for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
+  }
   function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
   el.innerHTML=items.slice(0,6).map(function(it){
     return '<a href="#" data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';

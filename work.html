@@ -48,11 +48,16 @@ body {
 /* ═══ Row 1: Motivation + Clock ═══ */
 .row-top {
   display: grid;
-  grid-template-columns: 1.6fr 1fr;
+  grid-template-columns: 1.25fr 1fr 0.85fr;
   gap: 6px;
   min-height: 0;
 }
 .card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
+.card-exercise { background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.3); }
+.ex-item { display: flex; align-items: center; gap: 7px; font-size: .72rem; color: #fff; padding: 2px 0; }
+.ex-item input[type=checkbox] { accent-color: #22c55e; width: 14px; height: 14px; flex-shrink: 0; }
+.ex-item.done .ex-text { text-decoration: line-through; color: #7BAFC4; }
+.ex-text { flex: 1; line-height: 1.25; }
 .quote-text { font-size: .82rem; font-style: italic; color: #fff; line-height: 1.35; }
 .quote-author { font-size: .7rem; color: #7ECFED; margin-top: 4px; }
 .clock-time { font-size: 2.6rem; font-weight: 800; letter-spacing: -2px; line-height: 1; color: #fff; }
@@ -470,6 +475,10 @@ a.news-item:hover .news-hed { color: #7ECFED; }
     </div>
   </div>
   <div class="card card-work">
+    <div class="card-label">💪 Movement break</div>
+    <div id="exercise-list"></div>
+  </div>
+  <div class="card card-work">
     <div class="card-label">Time &amp; workday</div>
     <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
       <div class="clock-time" id="clock">--:--</div>
@@ -606,6 +615,53 @@ const QUOTES=[
 ];
 // ── Populate quote ──
 (function(){const now=new Date(),doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);const fb=QUOTES[doy%QUOTES.length];document.getElementById('quote-text').textContent='\u201c'+fb.q+'\u201d';document.getElementById('quote-author').textContent=fb.a?'\u2014 '+fb.a:'';})();
+
+// ── Daily movement break checklist ──
+const EXERCISE_POOL=[
+  '10 Pushups','15 Squats','20 Lunges (10 each leg)','30-sec Plank','20 Sit-ups',
+  '30-sec Wall sit','10 Burpees','20 Calf raises','30-sec Standing stretch','15 Tricep dips',
+  '20 Jumping jacks','30-sec Shoulder rolls','15 Glute bridges','10 Push-up to downward dog','1-min walk in place',
+];
+let _exerciseItems=[],_exerciseDone=[];
+function getDailyExercises(){
+  const now=new Date();
+  const doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);
+  const n=EXERCISE_POOL.length;
+  const startIdx=(doy*4)%n;
+  const picks=[];
+  for(let i=0;i<4;i++)picks.push(EXERCISE_POOL[(startIdx+i)%n]);
+  return picks;
+}
+function exerciseStorageKey(){return 'exercise_'+new Date().toDateString();}
+function loadExerciseState(){
+  try{const raw=localStorage.getItem(exerciseStorageKey());if(raw)return JSON.parse(raw);}catch(e){}
+  return {};
+}
+function saveExerciseState(){
+  try{localStorage.setItem(exerciseStorageKey(),JSON.stringify(_exerciseDone));}catch(e){}
+}
+function renderExercises(){
+  _exerciseItems=getDailyExercises();
+  const saved=loadExerciseState();
+  _exerciseDone=_exerciseItems.map((_,i)=>!!saved[i]);
+  const el=document.getElementById('exercise-list');
+  if(!el)return;
+  el.innerHTML=_exerciseItems.map((ex,i)=>
+    '<div class="ex-item'+(_exerciseDone[i]?' done':'')+'"><input type="checkbox" id="ex-'+i+'"'+(_exerciseDone[i]?' checked':'')+' onchange="toggleExercise('+i+')"/><label class="ex-text" for="ex-'+i+'">'+ex+'</label></div>'
+  ).join('');
+}
+function toggleExercise(i){
+  _exerciseDone[i]=!_exerciseDone[i];
+  saveExerciseState();
+  renderExercises();
+}
+renderExercises();
+// Re-render when the date rolls over so the checklist refreshes with new exercises and cleared checkboxes
+let _lastExerciseDate=new Date().toDateString();
+setInterval(function(){
+  const today=new Date().toDateString();
+  if(today!==_lastExerciseDate){_lastExerciseDate=today;renderExercises();}
+},60000);
 
 
 // ── Clock ──

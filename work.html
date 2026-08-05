@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Work Dashboard</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Anton&family=VT323&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {
@@ -143,7 +143,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 /* Music / Gameday (spans below weather + schedule) */
 .card-music { display: flex; flex-direction: column; }
-.card-gameday { background: rgba(14,51,134,0.65); border-color: rgba(14,51,134,0.8); }
+.card-gameday { background: rgba(19,58,32,0.85); border-color: rgba(11,40,20,0.9); }
 .card-gameday .card-label { color: rgba(255,255,255,.55); }
 .gameday-vs { font-size: 1rem; font-weight: 700; color: #fff; margin: 2px 0 3px; }
 .gameday-time { font-size: .72rem; color: rgba(255,255,255,.65); margin-bottom: 6px; }
@@ -243,7 +243,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 
 /* ═══ Gameday view (v2 - MLB app style) ═══ */
-.card-gameday { background: linear-gradient(135deg, rgba(14,51,134,0.85), rgba(14,51,134,0.55)); border-color: rgba(14,51,134,0.9); position: relative; }
+.card-gameday { background: linear-gradient(160deg, #1d4a2c, #0f2f1a); border: 2px solid #0b2814; position: relative; }
 .gd-header {
   font-size: .62rem;
   font-weight: 800;
@@ -298,10 +298,10 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-team-row.batting { border-left-color: #fbbf24; }
 .gd-team-logo { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 2px; }
 .gd-team-details { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.gd-team-name { font-size: .78rem; font-weight: 800; line-height: 1; color: #fff; }
+.gd-team-name { font-size: .85rem; font-weight: 400; line-height: 1; color: #f5f0dc; letter-spacing: .5px; font-family: 'Anton', sans-serif; text-transform: uppercase; }
 .gd-team-rec { font-size: .55rem; color: rgba(255,255,255,0.55); }
-.gd-team-score { font-size: 1.9rem; font-weight: 900; line-height: 1; letter-spacing: -1.5px; color: #fff; }
-.gd-team-score.winning { color: #22c55e; }
+.gd-team-score { font-size: 2.1rem; font-weight: 400; line-height: 1; letter-spacing: 0; color: #f5f5f0; font-family: 'Anton', sans-serif; }
+.gd-team-score.winning { color: #ffffff; }
 
 .gd-inning-strip {
   display: flex;
@@ -315,8 +315,8 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   border-bottom: 1px dashed rgba(255,255,255,0.1);
   margin: 2px 0;
 }
-.gd-inning-arrow { color: #fbbf24; font-size: .75rem; font-weight: 800; }
-.gd-inning-num { color: #fff; font-weight: 800; font-size: .75rem; }
+.gd-inning-arrow { color: #ffd400; font-size: .85rem; font-weight: 800; }
+.gd-inning-num { color: #ffd400; font-weight: 400; font-size: .95rem; font-family: 'Anton', sans-serif; letter-spacing: .5px; }
 
 /* Right game state */
 .gd-game-state {
@@ -325,7 +325,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   gap: 20px;
   align-items: center;
   padding: 10px 14px;
-  background: rgba(0,0,0,0.28);
+  background: rgba(6,26,13,0.65); border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;
 }
 
@@ -347,7 +347,8 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   border-radius: 3px;
   transform: rotate(45deg);
 }
-.gd-base.occupied { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 12px rgba(251,191,36,0.55); }
+.gd-base { border-color: rgba(255,255,255,0.4) !important; }
+.gd-base.occupied { background: radial-gradient(circle at 35% 35%, #fff8e0, #ffcf5c); border-color: #ffdd88 !important; box-shadow: 0 0 10px 3px rgba(255,215,120,0.65); }
 .gd-base.gd-base-home { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.12); }
 /* Grid areas: second base top-middle, third base middle-left, first base middle-right, home bottom-middle */
 .gd-cell-second { grid-column: 2; grid-row: 1; }
@@ -360,23 +361,19 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 /* Count section */
 .gd-count-big { display: flex; flex-direction: column; gap: 6px; }
 .gd-count-row { display: flex; align-items: center; gap: 10px; }
-.gd-count-label {
-  font-size: .68rem;
-  font-weight: 800;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 1px;
-  min-width: 42px;
-}
+.gd-count-label { font-size: .82rem; font-weight: 400; color: rgba(255,255,255,0.7); letter-spacing: 1.5px; min-width: 46px; font-family: 'VT323', monospace; text-transform: uppercase; }
 .gd-count-dots { display: flex; gap: 5px; }
 .gd-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,0.28);
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
 }
-.gd-dot.on { background: #fbbf24; border-color: #fbbf24; box-shadow: 0 0 6px rgba(251,191,36,0.4); }
-.gd-dot.strike.on { background: #e11d48; border-color: #e11d48; box-shadow: 0 0 6px rgba(225,29,72,0.5); }
-.gd-dot.out.on { background: #ef4444; border-color: #ef4444; }
+.gd-dot.on { background: radial-gradient(circle at 35% 35%, #fff8e0, #ffcf5c); border-color: #ffdd88; box-shadow: 0 0 7px 2px rgba(255,215,120,0.65); }
+.gd-dot.strike.on { background: radial-gradient(circle at 35% 35%, #fff0e0, #ff9a52); border-color: #ffb26b; box-shadow: 0 0 7px 2px rgba(255,154,82,0.6); }
+.gd-dot.out.on { background: radial-gradient(circle at 35% 35%, #ffe0d8, #ff6b4a); border-color: #ff8a66; box-shadow: 0 0 7px 2px rgba(255,107,74,0.55); }
 
 /* Batter/Pitcher matchup */
 .gd-matchup {
@@ -392,14 +389,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-.gd-mp-name { font-size: .95rem; font-weight: 800; color: #fff; }
+.gd-mp-name { font-size: .95rem; font-weight: 800; color: #f5f0dc; }
 .gd-mp-stats { font-size: .58rem; color: rgba(255,255,255,0.6); }
 
 /* Last play strip */
 .gd-last-play {
   margin-top: 8px;
   padding: 6px 10px;
-  background: rgba(251,191,36,0.1);
+  background: rgba(255,215,107,0.1);
   border-radius: 6px;
   font-size: .7rem;
   color: rgba(255,255,255,0.9);
@@ -844,7 +841,7 @@ async function loadGameday(){
 
     // Build inning arrow
     const inningArrow=inningHalf==='Top'?'▲':'▼';
-    const inningLabel=inningHalf==='Top'?'Top of the inning':'Bottom of the inning';
+    // inningLabel removed per request — arrow + ordinal is sufficient
 
     // Away team is always on top of stacked scoreboard (baseball convention)
     const awayIsCubs=!homeIsCubs;
@@ -888,7 +885,7 @@ async function loadGameday(){
       '<div class="gd-body">'+
         '<div class="gd-scoreboard-stacked">'+
           scoreRow(topRow)+
-          '<div class="gd-inning-strip"><span class="gd-inning-arrow">'+inningArrow+'</span><span class="gd-inning-num">'+inningOrdinal+'</span><span>'+inningLabel+'</span></div>'+
+          '<div class="gd-inning-strip"><span class="gd-inning-arrow">'+inningArrow+'</span><span class="gd-inning-num">'+inningOrdinal+'</span></div>'+
           scoreRow(botRow)+
         '</div>'+
         '<div>'+

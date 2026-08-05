@@ -1299,7 +1299,7 @@ function getTeamStandings(teamData){
 }
 const mlbLogoMap={'ARI':'ari','ATL':'atl','BAL':'bal','BOS':'bos','CHC':'chc','CWS':'cws','CIN':'cin','CLE':'cle','COL':'col','DET':'det','HOU':'hou','KC':'kc','LAA':'laa','LAD':'lad','MIA':'mia','MIL':'mil','MIN':'min','NYM':'nym','NYY':'nyy','OAK':'oak','PHI':'phi','PIT':'pit','SD':'sd','SEA':'sea','SF':'sf','STL':'stl','TB':'tb','TEX':'tex','TOR':'tor','WSH':'wsh'};
 const nflLogoMap={'CHI':'chi','GB':'gb','MIN':'min','DET':'det','DAL':'dal','NYG':'nyg','PHI':'phi','WSH':'was','ATL':'atl','CAR':'car','NO':'no','TB':'tb','ARI':'ari','LAR':'lar','SF':'sf','SEA':'sea','BUF':'buf','MIA':'mia','NE':'ne','NYJ':'nyj','BAL':'bal','CIN':'cin','CLE':'cle','PIT':'pit','HOU':'hou','IND':'ind','JAX':'jax','TEN':'ten','DEN':'den','KC':'kc','LV':'lv','LAC':'lac'};
-function teamLogo(abbr,league){const map=league==='nfl'?nflLogoMap:mlbLogoMap;const id=map[abbr]||abbr.toLowerCase();const base=league==='nfl'?'nfl':'mlb';return'<img src="https://a.espncdn.com/i/teamlogos/'+base+'/500/'+id+'.png" style="height:16px;width:16px;vertical-align:middle;border-radius:50%;margin:0 2px;background:#fff;padding:1px;box-sizing:border-box;">';}
+function teamLogo(abbr,league){const map=league==='nfl'?nflLogoMap:mlbLogoMap;const id=map[abbr]||abbr.toLowerCase();const base=league==='nfl'?'nfl':'mlb';return'<span style="display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;margin:0 3px;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/'+base+'/500/'+id+'.png" style="width:15px;height:15px;display:block;object-fit:contain;"></span>';}
 
 async function loadSports(){
   const inner=document.getElementById('sports-ticker-inner');
@@ -1388,8 +1388,8 @@ async function loadSports(){
       return parts.join('');
     }
     const items=[
-      buildTeamTicker('Cubs','<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;background:#fff;padding:1px;box-sizing:border-box;">',cubsGames,'CHC',cubsStandings),
-      buildTeamTicker('Bears','<img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;background:#fff;padding:1px;box-sizing:border-box;">',bearsGames,'CHI',bearsStandings),
+      buildTeamTicker('Cubs','<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>',cubsGames,'CHC',cubsStandings),
+      buildTeamTicker('Bears','<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>',bearsGames,'CHI',bearsStandings),
     ].filter(Boolean);
     if(!items.length){inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">No sports data</span>';return;}
     const separator='<span style="color:#4A7A95;margin:0 24px;">◆</span>';

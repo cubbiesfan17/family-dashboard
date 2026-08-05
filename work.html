@@ -1006,10 +1006,18 @@ function eventRow(ev,now){
 function renderCalView(view){
   const el=document.getElementById('cal');if(!el||!_allEvents)return;
   const now=new Date();
+  const sortFn=(a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return a.start-b.start;};
+  // Move events that have already ended to the bottom of the list (same as the home dashboard)
+  function orderWithPastLast(events){
+    const isEventPast=e=>e.end?e.end<now:e.start<now;
+    const upcoming=events.filter(e=>!isEventPast(e)).sort(sortFn);
+    const past=events.filter(e=>isEventPast(e)).sort(sortFn);
+    return [...upcoming,...past];
+  }
   if(view==='today'){
     const today=now.toDateString();
-    const todayEv=_allEvents.filter(e=>e.start&&e.start.toDateString()===today);
-    todayEv.sort((a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return a.start-b.start;});
+    let todayEv=_allEvents.filter(e=>e.start&&e.start.toDateString()===today);
+    todayEv=orderWithPastLast(todayEv);
     if(!todayEv.length){el.innerHTML='<div class="no-events">No events today — open schedule!</div>';return;}
     el.innerHTML='<div class="cal-list">'+todayEv.map(e=>eventRow(e,now)).join('')+'</div>';
   } else {
@@ -1020,7 +1028,8 @@ function renderCalView(view){
     let html='<div class="cal-list">';const cur=new Date(start);
     while(cur<=end){
       const ds=cur.toDateString();
-      const dayEv=inRange.filter(e=>e.start&&e.start.toDateString()===ds).sort((a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return a.start-b.start;});
+      let dayEv=inRange.filter(e=>e.start&&e.start.toDateString()===ds);
+      dayEv=orderWithPastLast(dayEv);
       if(dayEv.length){const isToday=ds===now.toDateString();const lbl=isToday?'Today — '+DAY_NAMES[cur.getDay()]+' '+MONTH_NAMES[cur.getMonth()]+' '+cur.getDate():DAY_NAMES[cur.getDay()]+', '+MONTH_NAMES[cur.getMonth()]+' '+cur.getDate();html+='<div class="wm-day-label'+(isToday?' today-label':'')+'">'+lbl+'</div>'+dayEv.map(e=>eventRow(e,now)).join('');}
       cur.setDate(cur.getDate()+1);
     }
@@ -1290,7 +1299,7 @@ function getTeamStandings(teamData){
 }
 const mlbLogoMap={'ARI':'ari','ATL':'atl','BAL':'bal','BOS':'bos','CHC':'chc','CWS':'cws','CIN':'cin','CLE':'cle','COL':'col','DET':'det','HOU':'hou','KC':'kc','LAA':'laa','LAD':'lad','MIA':'mia','MIL':'mil','MIN':'min','NYM':'nym','NYY':'nyy','OAK':'oak','PHI':'phi','PIT':'pit','SD':'sd','SEA':'sea','SF':'sf','STL':'stl','TB':'tb','TEX':'tex','TOR':'tor','WSH':'wsh'};
 const nflLogoMap={'CHI':'chi','GB':'gb','MIN':'min','DET':'det','DAL':'dal','NYG':'nyg','PHI':'phi','WSH':'was','ATL':'atl','CAR':'car','NO':'no','TB':'tb','ARI':'ari','LAR':'lar','SF':'sf','SEA':'sea','BUF':'buf','MIA':'mia','NE':'ne','NYJ':'nyj','BAL':'bal','CIN':'cin','CLE':'cle','PIT':'pit','HOU':'hou','IND':'ind','JAX':'jax','TEN':'ten','DEN':'den','KC':'kc','LV':'lv','LAC':'lac'};
-function teamLogo(abbr,league){const map=league==='nfl'?nflLogoMap:mlbLogoMap;const id=map[abbr]||abbr.toLowerCase();const base=league==='nfl'?'nfl':'mlb';return'<img src="https://a.espncdn.com/i/teamlogos/'+base+'/500/'+id+'.png" style="height:16px;width:16px;vertical-align:middle;border-radius:50%;margin:0 2px;">';}
+function teamLogo(abbr,league){const map=league==='nfl'?nflLogoMap:mlbLogoMap;const id=map[abbr]||abbr.toLowerCase();const base=league==='nfl'?'nfl':'mlb';return'<img src="https://a.espncdn.com/i/teamlogos/'+base+'/500/'+id+'.png" style="height:16px;width:16px;vertical-align:middle;border-radius:50%;margin:0 2px;background:#fff;padding:1px;box-sizing:border-box;">';}
 
 async function loadSports(){
   const inner=document.getElementById('sports-ticker-inner');
@@ -1379,8 +1388,8 @@ async function loadSports(){
       return parts.join('');
     }
     const items=[
-      buildTeamTicker('Cubs','<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;">',cubsGames,'CHC',cubsStandings),
-      buildTeamTicker('Bears','<img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;">',bearsGames,'CHI',bearsStandings),
+      buildTeamTicker('Cubs','<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;background:#fff;padding:1px;box-sizing:border-box;">',cubsGames,'CHC',cubsStandings),
+      buildTeamTicker('Bears','<img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="height:18px;width:18px;vertical-align:middle;border-radius:50%;background:#fff;padding:1px;box-sizing:border-box;">',bearsGames,'CHI',bearsStandings),
     ].filter(Boolean);
     if(!items.length){inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">No sports data</span>';return;}
     const separator='<span style="color:#4A7A95;margin:0 24px;">◆</span>';

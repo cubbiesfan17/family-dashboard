@@ -1009,6 +1009,23 @@ async function loadWeather(){
 }
 loadWeather();setInterval(loadWeather,600000);
 
+// ── Match Today's Schedule card height exactly to Weather's actual rendered height ──
+function matchScheduleHeightToWeather(){
+  const weatherCard=document.querySelector('.card-weather');
+  const calCard=document.querySelector('.card-cal');
+  if(!weatherCard||!calCard)return;
+  const h=weatherCard.offsetHeight;
+  if(h>20){
+    calCard.style.height=h+'px';
+    calCard.style.maxHeight=h+'px';
+    calCard.style.overflow='hidden';
+  }
+}
+// Run repeatedly for the first few seconds while weather/calendar are still loading in,
+// then settle into a slower recheck in case content reflows later (e.g. forecast icons wrap differently)
+[300,800,1500,2500,4000].forEach(function(delay){ setTimeout(matchScheduleHeightToWeather, delay); });
+setInterval(matchScheduleHeightToWeather, 60000);
+
 // ════ ICS CALENDAR ENGINE (ported from home dashboard) ════
 function parseICS(txt,person,color){
   const pd=(v)=>{if(!v)return null;const c=v.replace(/[TZ]/g,'');if(c.length===8)return new Date(c.slice(0,4),c.slice(4,6)-1,c.slice(6,8));if(v.endsWith('Z'))return new Date(Date.UTC(+c.slice(0,4),c.slice(4,6)-1,+c.slice(6,8),+c.slice(8,10)||0,+c.slice(10,12)||0));const iso=c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6,8)+'T'+(c.slice(8,10)||'00')+':'+(c.slice(10,12)||'00')+':00';try{const cd=new Date(new Date(iso).toLocaleString('en-US',{timeZone:'America/Chicago'}));return new Date(new Date(iso).getTime()+(new Date(iso)-cd));}catch{return new Date(iso);}};

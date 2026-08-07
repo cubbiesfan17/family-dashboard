@@ -35,9 +35,10 @@ export default async function handler(req, res) {
 
   try {
     const accessToken = await getAccessToken(refresh);
-    // IMPORTANT: Spotify only returns track data by default — episodes (podcasts)
-    // are silently omitted unless explicitly requested via additional_types.
-    const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing?additional_types=track,episode', {
+    // Use the full player-state endpoint (not just currently-playing) so we can
+    // also read shuffle_state — needed to be honest about Up Next accuracy,
+    // since Spotify's queue order and shuffle's actual next-track pick can disagree.
+    const r = await fetch('https://api.spotify.com/v1/me/player?additional_types=track,episode', {
       headers: { Authorization: 'Bearer ' + accessToken },
     });
 
@@ -106,6 +107,7 @@ export default async function handler(req, res) {
       uri: item.uri,
       device: (j.device && j.device.name) || null,
       isEpisode,
+      shuffle: !!j.shuffle_state,
     });
   } catch (err) {
     res.status(500).json({ playing: false, error: 'now_playing_failed', detail: String(err) });

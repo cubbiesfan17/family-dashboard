@@ -1150,9 +1150,16 @@ async function loadCal(){
     // add holidays
     const holidays=getHolidays();const existing=new Set(all.filter(e=>e.isHoliday).map(e=>e.start.toDateString()));
     holidays.forEach(h=>{if(!existing.has(h.start.toDateString()))all.push(h);});
-    _allEvents=all;
-    renderCalView(_calView);
-  }catch(e){el.innerHTML='<div class="err">Could not load calendar: '+e.message+'</div>';}
+    // Only replace the view if this fetch actually returned real data (or it's the very
+    // first load). A flaky proxy on a periodic refresh shouldn't blank out an already
+    // working calendar — just keep showing what was last successfully loaded.
+    if(all.length>0 || _allEvents===null){
+      _allEvents=all;
+      renderCalView(_calView);
+    }
+  }catch(e){
+    if(_allEvents===null){el.innerHTML='<div class="err">Could not load calendar: '+e.message+'</div>';}
+  }
 }
 loadCal();setInterval(loadCal,300000);
 
@@ -1323,16 +1330,16 @@ async function pollNowPlaying(){
       return;
     }
     const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
-    const playPauseIcon = j.playing ? '⏸' : '▶';
+    const playPauseIcon = j.playing ? '⏸\uFE0E' : '▶\uFE0E';
     bar.innerHTML='<div class="np-now-row">'+
       (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
       '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+
-      (j.device?'<div class="np-now-device">▶ '+j.device+'</div>':'')+
+      
       '<div class="np-now-progress-wrap"><div class="np-now-progress" style="width:'+pct+'%"></div></div></div>'+
       '<div class="np-controls">'+
-        '<button class="np-ctrl-btn" onclick="spotifyControl(\'previous\')" aria-label="Previous">⏮</button>'+
+        '<button class="np-ctrl-btn" onclick="spotifyControl(\'previous\')" aria-label="Previous">⏮\uFE0E</button>'+
         '<button class="np-ctrl-btn play-pause" onclick="spotifyControl(\''+(j.playing?'pause':'play')+'\')" aria-label="Play/Pause">'+playPauseIcon+'</button>'+
-        '<button class="np-ctrl-btn" onclick="spotifyControl(\'next\')" aria-label="Next">⏭</button>'+
+        '<button class="np-ctrl-btn" onclick="spotifyControl(\'next\')" aria-label="Next">⏭\uFE0E</button>'+
       '</div>'+
     '</div>';
 

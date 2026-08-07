@@ -52,7 +52,28 @@ export default async function handler(req, res) {
     }
 
     const j = await r.json();
-    if (!j || !j.item) {
+    if (!j) {
+      res.status(200).json({ playing: false });
+      return;
+    }
+    // During commercial breaks, Spotify gives no track/episode data at all —
+    // show a distinct "Advertisement" state so play/pause/skip still work
+    if (j.currently_playing_type === 'ad' || (!j.item && j.is_playing)) {
+      res.setHeader('Cache-Control', 'no-store');
+      res.status(200).json({
+        playing: !!j.is_playing,
+        name: 'Advertisement',
+        artist: '',
+        image: null,
+        progress_ms: 0,
+        duration_ms: 0,
+        uri: null,
+        device: (j.device && j.device.name) || null,
+        isAd: true,
+      });
+      return;
+    }
+    if (!j.item) {
       res.status(200).json({ playing: false });
       return;
     }

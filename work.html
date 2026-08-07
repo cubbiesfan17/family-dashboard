@@ -179,8 +179,10 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .spotify-placeholder p { font-size: .68rem; color: #7BAFC4; }
 .spotify-big-icon { font-size: 1.3rem; color: #1db954; margin-bottom: 3px; }
 #sp-connect { font-size: .7rem; color: #7BAFC4; margin-bottom: 6px; }
-#sp-personal-list { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+#sp-personal-list { display: flex; flex-direction: row; flex-wrap: nowrap; gap: 8px; overflow-x: scroll; overflow-y: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-x; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px; }
+#sp-personal-list::-webkit-scrollbar { display: none; }
 .sp-tile { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+#sp-personal-list .sp-tile { flex: 0 0 200px; width: 200px; }
 .sp-tile:hover { background: rgba(255,255,255,0.12); }
 .sp-tile img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
 .sp-tile-text { min-width: 0; flex: 1; }
@@ -237,13 +239,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-now-progress-wrap { background: rgba(255,255,255,0.15); height: 3px; border-radius: 2px; margin-top: 5px; overflow: hidden; }
 .np-now-progress { height: 100%; background: #1db954; }
 .np-controls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-.np-ctrl-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
-.np-ctrl-btn:hover { background: rgba(255,255,255,0.2); }
-.np-ctrl-btn.play-pause { width: 48px; height: 48px; background: #1db954; font-size: 1.25rem; }
-.np-ctrl-btn.play-pause:hover { background: #1ed760; }
+.np-ctrl-btn { background: rgba(74,158,191,0.18); border: 1px solid rgba(74,158,191,0.35); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; color: #cde8f5; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
+.np-ctrl-btn:hover { background: rgba(74,158,191,0.3); }
+.np-ctrl-btn.play-pause { width: 48px; height: 48px; background: #4A9EBF; border-color: #4A9EBF; color: #fff; font-size: 1.25rem; }
+.np-ctrl-btn.play-pause:hover { background: #5cb3d6; }
+.np-shuffle-note { font-size: .52rem; color: #ffd400; font-weight: 400; text-transform: none; letter-spacing: 0; }
 .np-queue { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
 .np-queue-title { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7BAFC4; margin-bottom: 5px; }
-.np-queue-list { display: flex; flex-direction: column; gap: 3px; }
+.np-queue-list { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
 .np-queue-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; background: rgba(255,255,255,0.04); text-decoration: none; }
 .np-queue-item:hover { background: rgba(255,255,255,0.1); }
 .np-queue-item img { width: 26px; height: 26px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
@@ -1281,7 +1284,7 @@ function renderSpotifyTab(){
     for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
   }
   function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-  el.innerHTML=items.slice(0,4).map(function(it){
+  el.innerHTML=items.slice(0,10).map(function(it){
     return '<div data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></div>';
   }).join('');
 }
@@ -1339,9 +1342,9 @@ async function pollNowPlaying(){
         try{
           const qr=await fetch('/api/spotify/queue');
           const qj=await qr.json();
-          const upcoming=(qj.queue||[]).slice(0,3);
+          const upcoming=(qj.queue||[]).slice(0,6);
           queueContainer.innerHTML=upcoming.length?(
-            '<div class="np-queue"><div class="np-queue-title">Up next</div><div class="np-queue-list">'+
+            '<div class="np-queue"><div class="np-queue-title">Up next'+(j.shuffle?' <span class="np-shuffle-note">(shuffle on — order may vary)</span>':'')+'</div><div class="np-queue-list">'+
               upcoming.map(function(it){
                 return '<div class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
                   (it.image?'<img src="'+it.image+'"/>':'<div style="width:26px;height:26px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+

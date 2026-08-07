@@ -234,10 +234,19 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-now-progress-wrap { background: rgba(255,255,255,0.15); height: 3px; border-radius: 2px; margin-top: 5px; overflow: hidden; }
 .np-now-progress { height: 100%; background: #1db954; }
 .np-controls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
-.np-ctrl-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: .8rem; cursor: pointer; flex-shrink: 0; }
+.np-ctrl-btn { background: rgba(255,255,255,0.1); border: none; border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
 .np-ctrl-btn:hover { background: rgba(255,255,255,0.2); }
-.np-ctrl-btn.play-pause { width: 34px; height: 34px; background: #1db954; font-size: .9rem; }
+.np-ctrl-btn.play-pause { width: 48px; height: 48px; background: #1db954; font-size: 1.25rem; }
 .np-ctrl-btn.play-pause:hover { background: #1ed760; }
+.np-queue { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+.np-queue-title { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7BAFC4; margin-bottom: 5px; }
+.np-queue-list { display: flex; flex-direction: column; gap: 3px; }
+.np-queue-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; background: rgba(255,255,255,0.04); text-decoration: none; }
+.np-queue-item:hover { background: rgba(255,255,255,0.1); }
+.np-queue-item img { width: 26px; height: 26px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+.np-queue-text { min-width: 0; flex: 1; }
+.np-queue-name { font-size: .68rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-queue-sub { font-size: .58rem; color: #7BAFC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 #sp-personal-list { max-height: none; }
 
@@ -1251,7 +1260,7 @@ function renderSpotifyTab(){
     for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
   }
   function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
-  el.innerHTML=items.slice(0,6).map(function(it){
+  el.innerHTML=items.slice(0,4).map(function(it){
     return '<a href="#" data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';
   }).join('');
 }
@@ -1288,7 +1297,7 @@ async function pollNowPlaying(){
     }
     const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
     const playPauseIcon = j.playing ? '⏸' : '▶';
-    bar.innerHTML='<div class="np-now-row">'+
+    let html='<div class="np-now-row">'+
       (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
       '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+
       (j.device?'<div class="np-now-device">▶ '+j.device+'</div>':'')+
@@ -1299,6 +1308,26 @@ async function pollNowPlaying(){
         '<button class="np-ctrl-btn" onclick="spotifyControl(\'next\')" aria-label="Next">⏭</button>'+
       '</div>'+
     '</div>';
+
+    // "Up Next" — only fetched/shown while something is actively playing
+    if(!j.isAd){
+      try{
+        const qr=await fetch('/api/spotify/queue');
+        const qj=await qr.json();
+        const upcoming=(qj.queue||[]).slice(0,3);
+        if(upcoming.length){
+          html+='<div class="np-queue"><div class="np-queue-title">Up next</div><div class="np-queue-list">'+
+            upcoming.map(function(it){
+              return '<a href="#" class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
+                (it.image?'<img src="'+it.image+'"/>':'<div style="width:26px;height:26px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+
+                '<div class="np-queue-text"><div class="np-queue-name">'+it.name+'</div><div class="np-queue-sub">'+(it.sub||'')+'</div></div></a>';
+            }).join('')+
+          '</div></div>';
+        }
+      }catch(e){}
+    }
+
+    bar.innerHTML=html;
   }catch(e){
     bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
   }

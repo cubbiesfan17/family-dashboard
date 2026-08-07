@@ -35,7 +35,9 @@ export default async function handler(req, res) {
 
   try {
     const accessToken = await getAccessToken(refresh);
-    const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
+    // IMPORTANT: Spotify only returns track data by default — episodes (podcasts)
+    // are silently omitted unless explicitly requested via additional_types.
+    const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing?additional_types=track,episode', {
       headers: { Authorization: 'Bearer ' + accessToken },
     });
 
@@ -56,16 +58,33 @@ export default async function handler(req, res) {
     }
 
     const item = j.item;
+    const isEpisode = item.type === 'episode' || j.currently_playing_type === 'episode';
+
+    let name, sub, image;
+    if (isEpisode) {
+      name = item.name;
+      sub = (item.show && item.show.name) || 'Podcast';
+      image =
+        (item.images && item.images[0] && item.images[0].url) ||
+        (item.show && item.show.images && item.show.images[0] && item.show.images[0].url) ||
+        null;
+    } else {
+      name = item.name;
+      sub = (item.artists || []).map(a => a.name).join(', ');
+      image = (item.album && item.album.images && item.album.images[0]) ? item.album.images[0].url : null;
+    }
+
     res.setHeader('Cache-Control', 'no-store');
     res.status(200).json({
       playing: !!j.is_playing,
-      name: item.name,
-      artist: (item.artists || []).map(a => a.name).join(', '),
-      image: (item.album && item.album.images && item.album.images[0]) ? item.album.images[0].url : null,
+      name,
+      artist: sub,
+      image,
       progress_ms: j.progress_ms || 0,
       duration_ms: item.duration_ms || 0,
       uri: item.uri,
       device: (j.device && j.device.name) || null,
+      isEpisode,
     });
   } catch (err) {
     res.status(500).json({ playing: false, error: 'now_playing_failed', detail: String(err) });

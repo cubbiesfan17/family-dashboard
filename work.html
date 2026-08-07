@@ -244,6 +244,9 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-ctrl-btn.play-pause { width: 48px; height: 48px; background: #4A9EBF; border-color: #4A9EBF; color: #fff; font-size: 1.25rem; }
 .np-ctrl-btn.play-pause:hover { background: #5cb3d6; }
 .np-shuffle-note { font-size: .52rem; color: #ffd400; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.icon-play { width: 0; height: 0; border-style: solid; border-width: 9px 0 9px 15px; border-color: transparent transparent transparent #fff; margin-left: 3px; display: inline-block; }
+.icon-pause { display: inline-flex; gap: 5px; align-items: center; }
+.icon-pause span { width: 5px; height: 17px; background: #fff; border-radius: 1px; display: block; }
 .np-queue { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
 .np-queue-title { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7BAFC4; margin-bottom: 5px; }
 .np-queue-list { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
@@ -1142,6 +1145,29 @@ function renderCalView(view){
 
 function switchCalView(view){_calView=view;['today','week','month'].forEach(v=>{const b=document.getElementById('vbtn-'+v);if(b)b.classList.toggle('active',v===view);});const titles={today:"📅 Today's schedule",week:'📅 Next 7 days',month:'📅 Next 30 days'};document.getElementById('cal-title').textContent=titles[view];if(_allEvents)renderCalView(view);}
 
+// ── Local cache so the calendar never shows blank, even on a fresh page load
+//    where the very first live fetch happens to fail (flaky free CORS proxies) ──
+function loadCalCache(){
+  try{
+    const raw=localStorage.getItem('cal_cache_v1');
+    if(!raw)return null;
+    const parsed=JSON.parse(raw);
+    return parsed.map(function(e){return Object.assign({},e,{
+      start:e.start?new Date(e.start):null,
+      end:e.end?new Date(e.end):null,
+    });});
+  }catch(e){return null;}
+}
+function saveCalCache(events){
+  try{
+    const serializable=events.map(function(e){return Object.assign({},e,{
+      start:e.start?e.start.toISOString():null,
+      end:e.end?e.end.toISOString():null,
+    });});
+    localStorage.setItem('cal_cache_v1',JSON.stringify(serializable));
+  }catch(e){}
+}
+
 async function loadCal(){
   const el=document.getElementById('cal');
   try{
@@ -1157,10 +1183,17 @@ async function loadCal(){
       _allEvents=all;
       renderCalView(_calView);
     }
+    if(all.length>0)saveCalCache(all);
   }catch(e){
     if(_allEvents===null){el.innerHTML='<div class="err">Could not load calendar: '+e.message+'</div>';}
   }
 }
+// Paint instantly from cache (if any) so there's never a blank moment on page load,
+// then the live fetch above runs in the background and updates when ready.
+(function(){
+  const cached=loadCalCache();
+  if(cached&&cached.length){_allEvents=cached;renderCalView(_calView);}
+})();
 loadCal();setInterval(loadCal,300000);
 
 // ── Spotify ──
@@ -1330,7 +1363,7 @@ async function pollNowPlaying(){
       return;
     }
     const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
-    const playPauseIcon = j.playing ? '⏸\uFE0E' : '▶\uFE0E';
+    const playPauseIcon = j.playing ? '<span class="icon-pause"><span></span><span></span></span>' : '<span class="icon-play"></span>';
     bar.innerHTML='<div class="np-now-row">'+
       (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
       '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+

@@ -247,7 +247,8 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-queue-text { min-width: 0; flex: 1; }
 .np-queue-name { font-size: .68rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .np-queue-sub { font-size: .58rem; color: #7BAFC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.music-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.music-scroll { flex: 1; min-height: 0; height: 100%; max-height: 220px; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: none; }
+.music-scroll::-webkit-scrollbar { display: none; }
 #sp-personal-list { max-height: none; }
 
 
@@ -553,7 +554,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
     </div>
 
     <!-- Scrollable content: browsing list, shortcuts, search (lower priority) -->
-    <div class="music-scroll">
+    <div class="music-scroll" id="music-browse-section">
       <div id="sp-personal" style="display:none;margin-bottom:6px;">
         <div style="display:flex;gap:5px;margin-bottom:5px;">
           <button class="shortcut-pill sp-tab active" data-tab="shows" onclick="spTab('shows')">Podcasts</button>

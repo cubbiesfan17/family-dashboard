@@ -250,7 +250,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .np-queue-text { min-width: 0; flex: 1; }
 .np-queue-name { font-size: .68rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .np-queue-sub { font-size: .58rem; color: #7BAFC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.music-scroll { flex: 1; min-height: 0; max-height: 220px; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: none; }
+.music-scroll { flex: 1; min-height: 0; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: none; }
 .music-scroll::-webkit-scrollbar { display: none; }
 #sp-personal-list { max-height: none; }
 
@@ -556,8 +556,9 @@ a.news-item:hover .news-hed { color: #7ECFED; }
       <div id="np-bar-empty">Nothing playing, tap track below</div>
     </div>
 
-    <!-- Scrollable content: browsing list, shortcuts, search (lower priority) -->
+    <!-- Scrollable content: Up Next, browsing list, shortcuts, search — all scroll together -->
     <div class="music-scroll" id="music-browse-section">
+      <div id="np-queue-container"></div>
       <div id="sp-personal" style="display:none;margin-bottom:6px;">
         <div style="display:flex;gap:5px;margin-bottom:5px;">
           <button class="shortcut-pill sp-tab active" data-tab="shows" onclick="spTab('shows')">Podcasts</button>
@@ -1307,17 +1308,20 @@ async function spotifyControl(action){
 
 async function pollNowPlaying(){
   const bar=document.getElementById('np-bar');
+  const queueContainer=document.getElementById('np-queue-container');
   if(!bar)return;
   try{
     const r=await fetch('/api/spotify/now-playing');
     const j=await r.json();
     if(!j.name){
       bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
+      if(queueContainer)queueContainer.innerHTML='';
+      fitMusicBrowseHeight();
       return;
     }
     const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
     const playPauseIcon = j.playing ? '⏸' : '▶';
-    let html='<div class="np-now-row">'+
+    bar.innerHTML='<div class="np-now-row">'+
       (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
       '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+
       (j.device?'<div class="np-now-device">▶ '+j.device+'</div>':'')+
@@ -1329,30 +1333,60 @@ async function pollNowPlaying(){
       '</div>'+
     '</div>';
 
-    // "Up Next" — only fetched/shown while something is actively playing
-    if(!j.isAd){
-      try{
-        const qr=await fetch('/api/spotify/queue');
-        const qj=await qr.json();
-        const upcoming=(qj.queue||[]).slice(0,3);
-        if(upcoming.length){
-          html+='<div class="np-queue"><div class="np-queue-title">Up next</div><div class="np-queue-list">'+
-            upcoming.map(function(it){
-              return '<div class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
-                (it.image?'<img src="'+it.image+'"/>':'<div style="width:26px;height:26px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+
-                '<div class="np-queue-text"><div class="np-queue-name">'+it.name+'</div><div class="np-queue-sub">'+(it.sub||'')+'</div></div></div>';
-            }).join('')+
-          '</div></div>';
-        }
-      }catch(e){}
+    // "Up Next" — lives in the scrollable section below, not in the pinned bar
+    if(queueContainer){
+      if(!j.isAd){
+        try{
+          const qr=await fetch('/api/spotify/queue');
+          const qj=await qr.json();
+          const upcoming=(qj.queue||[]).slice(0,3);
+          queueContainer.innerHTML=upcoming.length?(
+            '<div class="np-queue"><div class="np-queue-title">Up next</div><div class="np-queue-list">'+
+              upcoming.map(function(it){
+                return '<div class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
+                  (it.image?'<img src="'+it.image+'"/>':'<div style="width:26px;height:26px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+
+                  '<div class="np-queue-text"><div class="np-queue-name">'+it.name+'</div><div class="np-queue-sub">'+(it.sub||'')+'</div></div></div>';
+              }).join('')+
+            '</div></div>'
+          ):'';
+        }catch(e){ queueContainer.innerHTML=''; }
+      }else{
+        queueContainer.innerHTML='';
+      }
     }
 
-    bar.innerHTML=html;
+    fitMusicBrowseHeight();
   }catch(e){
     bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
+    if(queueContainer)queueContainer.innerHTML='';
+    fitMusicBrowseHeight();
   }
 }
 pollNowPlaying();setInterval(pollNowPlaying,5000);
+
+// ── Fit the scrollable browsing section to exactly whatever space is left after
+//    the pinned Now Playing bar, measured for real (same proven technique used
+//    for matching Today's Schedule to Weather) ──
+function fitMusicBrowseHeight(){
+  const musicCard=document.getElementById('music-card');
+  const npBar=document.getElementById('np-bar');
+  const browse=document.getElementById('music-browse-section');
+  if(!musicCard||!npBar||!browse)return;
+  const label=musicCard.querySelector('.card-label');
+  const cardStyle=getComputedStyle(musicCard);
+  const paddingTop=parseFloat(cardStyle.paddingTop)||0;
+  const paddingBottom=parseFloat(cardStyle.paddingBottom)||0;
+  const totalCardHeight=musicCard.clientHeight;
+  const labelHeight=label?label.offsetHeight:0;
+  const npBarHeight=npBar.offsetHeight;
+  const available=totalCardHeight-paddingTop-paddingBottom-labelHeight-npBarHeight-6;
+  if(available>40){
+    browse.style.height=available+'px';
+    browse.style.maxHeight=available+'px';
+  }
+}
+[300,800,1500,2500].forEach(function(delay){ setTimeout(fitMusicBrowseHeight, delay); });
+setInterval(fitMusicBrowseHeight, 60000);
 
 // ── Sports Ticker (ported from home dashboard) ──
 async function fetchESPN(url){

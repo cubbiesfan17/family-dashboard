@@ -1209,7 +1209,6 @@ async function loadSpotifyPersonal(){
 document.addEventListener('click',function(e){
   const tile=e.target.closest('.sp-tile');
   if(tile && tile.dataset && tile.dataset.uri!==undefined){
-    e.preventDefault();
     openInChrome(tile.dataset.uri);
   }
 });
@@ -1265,7 +1264,7 @@ function renderSpotifyTab(){
   }
   function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
   el.innerHTML=items.slice(0,4).map(function(it){
-    return '<a href="#" data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></a>';
+    return '<div data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></div>';
   }).join('');
 }
 loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
@@ -1322,9 +1321,9 @@ async function pollNowPlaying(){
         if(upcoming.length){
           html+='<div class="np-queue"><div class="np-queue-title">Up next</div><div class="np-queue-list">'+
             upcoming.map(function(it){
-              return '<a href="#" class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
+              return '<div class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
                 (it.image?'<img src="'+it.image+'"/>':'<div style="width:26px;height:26px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+
-                '<div class="np-queue-text"><div class="np-queue-name">'+it.name+'</div><div class="np-queue-sub">'+(it.sub||'')+'</div></div></a>';
+                '<div class="np-queue-text"><div class="np-queue-name">'+it.name+'</div><div class="np-queue-sub">'+(it.sub||'')+'</div></div></div>';
             }).join('')+
           '</div></div>';
         }

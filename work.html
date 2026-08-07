@@ -1282,7 +1282,7 @@ async function pollNowPlaying(){
   try{
     const r=await fetch('/api/spotify/now-playing');
     const j=await r.json();
-    if(!j.playing || !j.name){
+    if(!j.name){
       bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
       return;
     }

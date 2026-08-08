@@ -66,7 +66,7 @@ export default async function handler(req, res) {
     }
 
     const j = await r.json();
-    const queue = (j.queue || []).slice(0, 6).map(slimItem).filter(Boolean);
+    const queue = (j.queue || []).slice(0, 9).map(slimItem).filter(Boolean);
 
     res.setHeader('Cache-Control', 'no-store');
     res.status(200).json({ queue });

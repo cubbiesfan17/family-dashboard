@@ -81,10 +81,10 @@ body {
   gap: 6px;
   min-height: 0;
 }
-.card-news    { grid-column: 1; grid-row: 1 / span 2; display: flex; flex-direction: column; }
+.card-news    { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; align-self: start; }
 .card-weather { grid-column: 2; grid-row: 1; align-self: stretch; }
 .card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; align-self: stretch; }
-.card-music   { grid-column: 2 / span 2; grid-row: 2; }
+.card-music   { grid-column: 1 / span 3; grid-row: 2; }
 
 /* Weather */
 .weather-main { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
@@ -135,7 +135,7 @@ body {
 .no-events { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
 
 /* Headlines - full height right column */
-#news-list { flex: 1; overflow-y: auto; scrollbar-width: none; }
+#news-list { flex: 1; min-height: 0; overflow-y: scroll; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: none; }
 #news-list::-webkit-scrollbar { display: none; }
 .news-item { padding: 5px 3px; border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 4px; display: block; text-decoration: none; }
 .news-item:last-of-type { border-bottom: none; }
@@ -249,7 +249,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .icon-pause span { width: 5px; height: 17px; background: #fff; border-radius: 1px; display: block; }
 .np-queue { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
 .np-queue-title { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7BAFC4; margin-bottom: 5px; }
-.np-queue-list { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 8px; }
+.np-queue-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px 8px; }
 .np-queue-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; background: rgba(255,255,255,0.04); text-decoration: none; }
 .np-queue-item:hover { background: rgba(255,255,255,0.1); }
 .np-queue-item img { width: 26px; height: 26px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
@@ -1020,12 +1020,20 @@ loadWeather();setInterval(loadWeather,600000);
 function matchScheduleHeightToWeather(){
   const weatherCard=document.querySelector('.card-weather');
   const calCard=document.querySelector('.card-cal');
-  if(!weatherCard||!calCard)return;
+  const newsCard=document.querySelector('.card-news');
+  if(!weatherCard)return;
   const h=weatherCard.offsetHeight;
   if(h>20){
-    calCard.style.height=h+'px';
-    calCard.style.maxHeight=h+'px';
-    calCard.style.overflow='hidden';
+    if(calCard){
+      calCard.style.height=h+'px';
+      calCard.style.maxHeight=h+'px';
+      calCard.style.overflow='hidden';
+    }
+    if(newsCard){
+      newsCard.style.height=h+'px';
+      newsCard.style.maxHeight=h+'px';
+      newsCard.style.overflow='hidden';
+    }
   }
 }
 // Run repeatedly for the first few seconds while weather/calendar are still loading in,
@@ -1382,7 +1390,7 @@ async function pollNowPlaying(){
         try{
           const qr=await fetch('/api/spotify/queue');
           const qj=await qr.json();
-          const upcoming=(qj.queue||[]).slice(0,6);
+          const upcoming=(qj.queue||[]).slice(0,9);
           queueContainer.innerHTML=upcoming.length?(
             '<div class="np-queue"><div class="np-queue-title">Up next'+(j.shuffle?' <span class="np-shuffle-note">(shuffle on — order may vary)</span>':'')+'</div><div class="np-queue-list">'+
               upcoming.map(function(it){

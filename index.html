@@ -126,6 +126,19 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
   vertical-align: middle;
   letter-spacing: .3px;
 }
+.today-birthday-badge {
+  display: inline-block;
+  font-size: .65rem;
+  font-weight: 700;
+  background: rgba(232,121,201,0.18);
+  color: #f5a8e6;
+  border: 1px solid rgba(232,121,201,0.35);
+  border-radius: 20px;
+  padding: 2px 9px;
+  margin-left: 8px;
+  vertical-align: middle;
+  letter-spacing: .3px;
+}
 </style>
 </head>
 <body>
@@ -973,18 +986,29 @@ function getTodayHolidays() {
   return getHolidays().filter(hol => hol.start.toDateString() === todayStr);
 }
 
+function getTodayBirthdays() {
+  if (!_calResults || !Array.isArray(_calResults[0])) return [];
+  const todayStr = new Date().toDateString();
+  return _calResults[0].filter(e => e.isBirthday && e.start && e.start.toDateString() === todayStr);
+}
+
 function updateTodayHolidayBadge() {
   const titleEl = document.getElementById('cal-title');
   if (!titleEl) return;
   const todays = getTodayHolidays();
+  const bdays = getTodayBirthdays();
   const base = '&#128197; Today\'s Activities';
+  let html = base;
   if (todays.length) {
     const icons = todays.map(hol => hol.icon).join(' ');
     const names = todays.map(hol => hol.holidayName).join(' & ');
-    titleEl.innerHTML = base + ' <span class="today-holiday-badge">' + icons + ' ' + names + '</span>';
-  } else {
-    titleEl.innerHTML = base;
+    html += ' <span class="today-holiday-badge">' + icons + ' ' + names + '</span>';
   }
+  if (bdays.length) {
+    const names = bdays.map(b => b.sm.replace(/^\s*\u{1F382}\s*/u, '')).join(' & ');
+    html += ' <span class="today-birthday-badge">\u{1F382} ' + names + '</span>';
+  }
+  titleEl.innerHTML = html;
 }
 // End Holiday Engine
 

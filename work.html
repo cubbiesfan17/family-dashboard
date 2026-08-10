@@ -1212,6 +1212,30 @@ function spotifyLoad(query){document.getElementById('spotify-search').value=quer
 // (ticker code below)
 
 // ── Live Headlines (Google News RSS) ──
+// ── Local cache so Headlines never shows blank/error over already-good content ──
+function loadNewsCache(){
+  try{
+    const raw=localStorage.getItem('news_cache_v1');
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+function saveNewsCache(items){
+  try{localStorage.setItem('news_cache_v1',JSON.stringify(items));}catch(e){}
+}
+function renderNewsItems(container,items){
+  container.innerHTML='';
+  items.forEach(it=>{
+    const d=document.createElement('a');
+    d.className='news-item';
+    d.href=it.link;
+    d.target='_blank';
+    d.rel='noopener';
+    d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
+    d.innerHTML='<div class="news-hed">'+it.hed+'</div><div class="news-src">'+it.src+'</div>';
+    container.appendChild(d);
+  });
+}
+
 async function loadHeadlines(){
   const container=document.getElementById('news-list');
   // Google News top stories RSS
@@ -1226,36 +1250,46 @@ async function loadHeadlines(){
   for(const u of attempts){
     try{const r=await fetch(u,{signal:AbortSignal.timeout(6000)});if(r.ok){const t=await r.text();if(t.includes('<item>')){xmlText=t;break;}}}catch{}
   }
-  if(!xmlText){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Headlines offline — retry later</div></div>';return;}
+  if(!xmlText){
+    // All proxies failed on this refresh — keep showing whatever's already there
+    // rather than replacing good headlines with an error message.
+    if(!container.children.length){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Headlines offline — retry later</div></div>';}
+    return;
+  }
   try{
     const parser=new DOMParser();
     const doc=parser.parseFromString(xmlText,'text/xml');
-    const items=Array.from(doc.querySelectorAll('item')).slice(0,6);
-    container.innerHTML='';
-    items.forEach(item=>{
+    const rawItems=Array.from(doc.querySelectorAll('item')).slice(0,6);
+    const parsed=rawItems.map(item=>{
       const title=(item.querySelector('title')?.textContent||'').trim();
       let link=(item.querySelector('link')?.textContent||'').trim();
-      // Google News RSS wraps links in a redirect. Extract the real article URL from the description.
       const desc=(item.querySelector('description')?.textContent||'');
       const realUrlMatch=desc.match(/<a[^>]+href=["']([^"']+)["']/i);
       if(realUrlMatch&&realUrlMatch[1]&&!realUrlMatch[1].includes('news.google.com')){
         link=realUrlMatch[1];
       }
-      // Google News titles include " - Source" at the end; split it out
       const dashIdx=title.lastIndexOf(' - ');
       const hed=dashIdx>0?title.slice(0,dashIdx):title;
       const src=dashIdx>0?title.slice(dashIdx+3):'';
-      const d=document.createElement('a');
-      d.className='news-item';
-      d.href=link;
-      d.target='_blank';
-      d.rel='noopener';
-      d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
-      d.innerHTML='<div class="news-hed">'+hed+'</div><div class="news-src">'+src+'</div>';
-      container.appendChild(d);
-    });
-  }catch(e){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Could not parse headlines</div></div>';}
+      return {hed,src,link};
+    }).filter(it=>it.hed);
+    if(parsed.length){
+      renderNewsItems(container,parsed);
+      saveNewsCache(parsed);
+    }
+    // If parsing produced zero usable items, silently keep existing content —
+    // don't wipe good headlines over a parsing hiccup.
+  }catch(e){
+    // Keep showing existing headlines rather than replacing with an error
+    if(!container.children.length){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Could not parse headlines</div></div>';}
+  }
 }
+// Paint instantly from cache so there's never a blank moment on page load
+(function(){
+  const cached=loadNewsCache();
+  const container=document.getElementById('news-list');
+  if(cached&&cached.length&&container){renderNewsItems(container,cached);}
+})();
 loadHeadlines();setInterval(loadHeadlines,900000);
 
 // ── Personalized Spotify (via /api/spotify/me) ──

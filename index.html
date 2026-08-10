@@ -107,6 +107,11 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
 .event-item.holiday .event-time { color: #f0a500; font-size:.72rem; letter-spacing:.3px; }
 .event-item.holiday .event-title { color: #f0d080; font-style: italic; }
 
+/* Birthday events */
+.event-item.birthday { opacity: 1; }
+.event-item.birthday .event-time { color: #e879c9; font-size:.72rem; letter-spacing:.3px; }
+.event-item.birthday .event-title { color: #f5a8e6; font-style: italic; }
+
 /* Today holiday badge in card title */
 .today-holiday-badge {
   display: inline-block;
@@ -204,6 +209,11 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
       <label style="color:#065f46">&#9632; Nolan</label>
       <input id="si3" type="text" placeholder="webcal:// or https://..."/>
     </div>
+    <div class="field">
+      <label style="color:#c026d3">&#127874; Birthdays</label>
+      <input id="siB" type="text" placeholder="webcal:// or https://..."/>
+      <div class="hint">Shown alongside holidays at the top of the Family column</div>
+    </div>
     <div class="mactions">
       <button class="btn-cancel" onclick="closeM()">Cancel</button>
       <button class="btn-save" onclick="saveM()">Save &amp; Refresh</button>
@@ -224,6 +234,7 @@ function openM() {
   document.getElementById('si1').value = cfg.get('ics_1');
   document.getElementById('si2').value = cfg.get('ics_2');
   document.getElementById('si3').value = cfg.get('ics_3');
+  document.getElementById('siB').value = cfg.get('ics_birthdays');
   document.getElementById('modal').classList.add('open');
 }
 function closeM() { document.getElementById('modal').classList.remove('open'); }
@@ -234,6 +245,7 @@ function saveM() {
   cfg.set('ics_1', document.getElementById('si1').value.trim());
   cfg.set('ics_2', document.getElementById('si2').value.trim());
   cfg.set('ics_3', document.getElementById('si3').value.trim());
+  cfg.set('ics_birthdays', document.getElementById('siB').value.trim());
   closeM();
   init();
 }
@@ -996,7 +1008,7 @@ function renderCol(evts, colorClass) {
       const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
       ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
     }
-    return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + (current ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
+    return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + (current ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + (ev.isBirthday ? ' birthday' : '') + '">' +
       '<span class="event-time">' + ts + '</span>' +
       '<span class="event-title">' + ev.sm + '</span>' +
       '' + '</div>';
@@ -1074,7 +1086,7 @@ function renderColMultiDay(evts, view) {
         const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
         ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
       }
-      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + (isCurrent ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + '">' +
+      html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + (isCurrent ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + (ev.isBirthday ? ' birthday' : '') + '">' +
         '<span class="event-time">' + ts + '</span>' +
         '<span class="event-title">' + ev.sm + '</span>' +
         '</div>';
@@ -1167,7 +1179,10 @@ async function loadCal() {
   }
   // Don't show spinner - update silently in background
   try {
-    const results = await Promise.all(_CAL_COLS.map(c => loadColEvents(cfg.get(c.key))));
+    const [results, birthdaysRaw] = await Promise.all([
+      Promise.all(_CAL_COLS.map(c => loadColEvents(cfg.get(c.key)))),
+      loadColEvents(cfg.get('ics_birthdays')),
+    ]);
     // Inject holidays into Family column (index 0)
     const holidays = getHolidays();
     if (Array.isArray(results[0])) {
@@ -1175,6 +1190,17 @@ async function loadCal() {
       holidays.forEach(hol => { if (!existingDates.has(hol.start.toDateString())) results[0].push(hol); });
     } else {
       results[0] = holidays;
+    }
+    // Inject birthdays into Family column (index 0), styled/treated like holidays
+    if (Array.isArray(birthdaysRaw) && birthdaysRaw.length) {
+      const birthdays = birthdaysRaw.map(ev => ({
+        ...ev,
+        allDay: true,
+        isBirthday: true,
+        sm: /^\s*\u{1F382}/u.test(ev.sm) ? ev.sm : '\u{1F382} ' + ev.sm,
+      }));
+      if (!Array.isArray(results[0])) results[0] = [];
+      results[0].push(...birthdays);
     }
     _calResults = results;
     updateTodayHolidayBadge();
@@ -1738,6 +1764,7 @@ function init() {
   localStorage.setItem('ics_1', 'https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-YpLuyKf2fp0YCpAEexxO6hIaxyr9GvUf4GYyt-QDryidhoqM4ZgM3TYe3nQBn4EJU,https://www.gomotionapp.com/rest/ics/system/5/Events.ics?key=m1%2FTYjpXm54ufZNPynZ94Q%3D%3D&enabled=false&tz=America%2FChicago');
   localStorage.setItem('ics_2', 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f120c7-6715-b03e-9571-92d13fd9be2b&v=1775395850915,https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZDIY3sF_WNgNC_fNUwSPBTg6eYMaE7OWrf77WWhn061RyX0RKXPnnUh_qRFoDfF5I');
   localStorage.setItem('ics_3', 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f12aaf-7ff7-d162-9387-b24078612aeb&v=1774796141241,https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZEIHTZTHF1m31gnMOQWBL9lLZ9XTQ8SM0ZiX97pr9dcfu_4DsjxwSoHjBTRSFRwDA');
+  localStorage.setItem('ics_birthdays', 'https://calendar.google.com/calendar/ical/466e840c4f688930c5f4d8bf52a79387994a5e07dec6422fa118873791e653f2%40group.calendar.google.com/public/basic.ics');
 })();
 init();
 setInterval(loadWX, 600000);

@@ -118,6 +118,32 @@ body {
 .cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
 .cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .58rem; color: #7BAFC4; }
 .cal-legend-bar { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.today-holiday-badge {
+  display: inline-block;
+  font-size: .52rem;
+  font-weight: 700;
+  background: rgba(240,165,0,0.18);
+  color: #f0c040;
+  border: 1px solid rgba(240,165,0,0.35);
+  border-radius: 20px;
+  padding: 1px 7px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: .3px;
+}
+.today-birthday-badge {
+  display: inline-block;
+  font-size: .52rem;
+  font-weight: 700;
+  background: rgba(232,121,201,0.18);
+  color: #f5a8e6;
+  border: 1px solid rgba(232,121,201,0.35);
+  border-radius: 20px;
+  padding: 1px 7px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: .3px;
+}
 .cal-list { display: flex; flex-direction: column; gap: 2px; overflow-y: scroll; scrollbar-width: none; flex: 1; min-height: 0; max-height: 260px; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; }
 .cal-list::-webkit-scrollbar { display: none; }
 .cal-event { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
@@ -125,6 +151,8 @@ body {
 .cal-event.next { background: rgba(74,158,191,0.15); box-shadow: 0 0 6px rgba(74,158,191,0.4); }
 .cal-event.holiday { border-left-color: #f0a500; }
 .cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
+.cal-event.birthday { border-left-color: #e879c9; }
+.cal-event.birthday .cal-ev-title { color: #f5a8e6; font-style: italic; }
 .cal-event.ongoing .cal-ev-title { color: #eab308; font-weight: 800; }
 .cal-event.ongoing .cal-ev-time { color: #eab308; }
 .cal-ev-time { font-size: .62rem; font-weight: 600; color: #7BAFC4; min-width: 60px; flex-shrink: 0; }
@@ -540,6 +568,8 @@ a.news-item:hover .news-hed { color: #7ECFED; }
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#3b82f6"></div>Finn</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#ec4899"></div>Millie</div>
       <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#eab308"></div>Nolan</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#f0a500"></div>Holiday</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#e879c9"></div>Birthday</div>
     </div>
     <div id="cal" style="flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column;"><span class="sp"></span></div>
   </div>
@@ -620,6 +650,9 @@ const ICS_COLS = (window.SHARED_CALENDARS || []).map(c => ({
   color: c.color,
   raw: (c.urls || []).join(',') || c.raw || ''
 }));
+
+// Birthdays — same calendar feed as the family dashboard
+const BIRTHDAYS_ICS_URL = 'https://calendar.google.com/calendar/ical/466e840c4f688930c5f4d8bf52a79387994a5e07dec6422fa118873791e653f2%40group.calendar.google.com/public/basic.ics';
 
 // ── Quote ──
 const QUOTES=[
@@ -1107,13 +1140,33 @@ let _allEvents=null,_calView='today';
 const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
+// Today's holiday/birthday badge in the schedule card title
+function getTodayHolidays(){const todayStr=new Date().toDateString();return getHolidays().filter(h=>h.start.toDateString()===todayStr);}
+function getTodayBirthdays(){if(!Array.isArray(_allEvents))return[];const todayStr=new Date().toDateString();return _allEvents.filter(e=>e.isBirthday&&e.start&&e.start.toDateString()===todayStr);}
+function updateTodayHolidayBadge(){
+  const titleEl=document.getElementById('cal-title');
+  if(!titleEl||_calView!=='today')return;
+  const todays=getTodayHolidays(),bdays=getTodayBirthdays();
+  let html='📅 Today\'s schedule';
+  if(todays.length){
+    const icons=todays.map(h=>h.sm.split(' ')[0]).join(' ');
+    const names=todays.map(h=>h.sm.split(' ').slice(1).join(' ')).join(' & ');
+    html+=' <span class="today-holiday-badge">'+icons+' '+names+'</span>';
+  }
+  if(bdays.length){
+    const names=bdays.map(b=>b.sm.replace(/^\s*\u{1F382}\s*/u,'')).join(' & ');
+    html+=' <span class="today-birthday-badge">\u{1F382} '+names+'</span>';
+  }
+  titleEl.innerHTML=html;
+}
+
 function fmtTime(ev){if(ev.allDay||!ev.start)return'All day';const h=ev.start.getHours(),mn=String(ev.start.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn+(h<12?' AM':' PM');}
 
 function eventRow(ev,now){
   const isPast=ev.end?ev.end<now:ev.start<now;
   // Ongoing = started already and (has an end time we're still inside, or no end time but within 60 min of start)
   const isOngoing=!ev.allDay && ev.start && ev.start<=now && (ev.end ? now<=ev.end : now<new Date(ev.start.getTime()+60*60000));
-  const cls='cal-event'+(isPast&&!isOngoing?' past':'')+(ev.isHoliday?' holiday':'')+(isOngoing?' ongoing':'');
+  const cls='cal-event'+(isPast&&!isOngoing?' past':'')+(ev.isHoliday?' holiday':'')+(ev.isBirthday?' birthday':'')+(isOngoing?' ongoing':'');
   return'<div class="'+cls+'" style="border-left-color:'+ev.color+'"><span class="cal-ev-time">'+fmtTime(ev)+'</span><span class="cal-ev-title">'+ev.sm+'</span><span class="cal-ev-person">'+(ev.person||'')+'</span></div>';
 }
 
@@ -1151,7 +1204,7 @@ function renderCalView(view){
   }
 }
 
-function switchCalView(view){_calView=view;['today','week','month'].forEach(v=>{const b=document.getElementById('vbtn-'+v);if(b)b.classList.toggle('active',v===view);});const titles={today:"📅 Today's schedule",week:'📅 Next 7 days',month:'📅 Next 30 days'};document.getElementById('cal-title').textContent=titles[view];if(_allEvents)renderCalView(view);}
+function switchCalView(view){_calView=view;['today','week','month'].forEach(v=>{const b=document.getElementById('vbtn-'+v);if(b)b.classList.toggle('active',v===view);});const titles={today:"📅 Today's schedule",week:'📅 Next 7 days',month:'📅 Next 30 days'};if(view==='today'){updateTodayHolidayBadge();}else{document.getElementById('cal-title').textContent=titles[view];}if(_allEvents)renderCalView(view);}
 
 // ── Local cache so the calendar never shows blank, even on a fresh page load
 //    where the very first live fetch happens to fail (flaky free CORS proxies) ──
@@ -1179,16 +1232,32 @@ function saveCalCache(events){
 async function loadCal(){
   const el=document.getElementById('cal');
   try{
-    const perCol=await Promise.all(ICS_COLS.map(loadColEvents));
+    const [perCol,birthdaysRaw]=await Promise.all([
+      Promise.all(ICS_COLS.map(loadColEvents)),
+      loadColEvents({label:'Birthday',color:'#e879c9',raw:BIRTHDAYS_ICS_URL}),
+    ]);
     let all=[];perCol.forEach(list=>{if(Array.isArray(list))all=all.concat(list);});
     // add holidays
     const holidays=getHolidays();const existing=new Set(all.filter(e=>e.isHoliday).map(e=>e.start.toDateString()));
     holidays.forEach(h=>{if(!existing.has(h.start.toDateString()))all.push(h);});
+    // add birthdays
+    if(Array.isArray(birthdaysRaw)&&birthdaysRaw.length){
+      birthdaysRaw.forEach(ev=>{
+        all.push(Object.assign({},ev,{
+          allDay:true,
+          isBirthday:true,
+          person:'Birthday',
+          color:'#e879c9',
+          sm:/^\s*\u{1F382}/u.test(ev.sm)?ev.sm:'\u{1F382} '+ev.sm,
+        }));
+      });
+    }
     // Only replace the view if this fetch actually returned real data (or it's the very
     // first load). A flaky proxy on a periodic refresh shouldn't blank out an already
     // working calendar — just keep showing what was last successfully loaded.
     if(all.length>0 || _allEvents===null){
       _allEvents=all;
+      updateTodayHolidayBadge();
       renderCalView(_calView);
     }
     if(all.length>0)saveCalCache(all);

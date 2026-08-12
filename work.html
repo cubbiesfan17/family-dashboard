@@ -61,7 +61,7 @@ body {
 .net-dot.good { background: #22c55e; }
 .net-dot.fair { background: #eab308; }
 .net-dot.poor { background: #ef4444; }
-.net-ping { font-size: .62rem; color: #7BAFC4; }
+.net-ping { font-size: .56rem; color: #7BAFC4; line-height: 1.3; }
 .net-test-btn { margin-top: 6px; background: rgba(74,158,191,0.25); border: 1px solid rgba(74,158,191,0.5); color: #cde8f5; font-size: .62rem; font-weight: 700; padding: 3px 9px; border-radius: 12px; cursor: pointer; }
 .net-test-btn:hover { background: rgba(74,158,191,0.4); }
 .net-speed-result { font-size: .64rem; color: #fff; margin-top: 4px; line-height: 1.4; }
@@ -705,29 +705,52 @@ setInterval(function(){
 },60000);
 
 // ── Network status: lightweight automatic ping (negligible bandwidth), manual full speed test on demand ──
-async function pingCheck(){
+// ── Network status: burst of quick probes approximates jitter + packet loss
+//    (browsers can't do true ICMP ping, so this is an HTTP-layer proxy — still
+//    a meaningfully better signal than a single ping reading) ──
+async function connectionCheck(){
   const dot=document.getElementById('net-dot');
   const statusText=document.getElementById('net-status-text');
   const pingEl=document.getElementById('net-ping');
   if(!dot)return;
-  try{
+  const probes=10;
+  const rtts=[];
+  let failures=0;
+  for(let i=0;i<probes;i++){
     const start=performance.now();
-    await fetch('https://cloudflare.com/cdn-cgi/trace',{cache:'no-store',mode:'no-cors'});
-    const ms=Math.round(performance.now()-start);
-    let cls='good',label='Good';
-    if(ms>150){cls='poor';label='Poor';}
-    else if(ms>60){cls='fair';label='Fair';}
-    dot.className='net-dot '+cls;
-    statusText.textContent=label;
-    pingEl.textContent=ms+' ms';
-  }catch(e){
+    try{
+      await fetch('https://cloudflare.com/cdn-cgi/trace?_='+Date.now()+'_'+i,{cache:'no-store',mode:'no-cors',signal:AbortSignal.timeout(3000)});
+      rtts.push(performance.now()-start);
+    }catch(e){
+      failures++;
+    }
+  }
+  const lossPct=Math.round((failures/probes)*100);
+  if(rtts.length===0){
     dot.className='net-dot poor';
     statusText.textContent='Offline';
     pingEl.textContent='';
+    return;
   }
+  const avgPing=Math.round(rtts.reduce((a,b)=>a+b,0)/rtts.length);
+  let jitterSum=0;
+  for(let i=1;i<rtts.length;i++){jitterSum+=Math.abs(rtts[i]-rtts[i-1]);}
+  const jitter=rtts.length>1?Math.round(jitterSum/(rtts.length-1)):0;
+
+  // Thresholds per Microsoft's published Teams network targets:
+  // Good  = RTT <100ms, jitter <15ms, loss <1%
+  // Fair  = RTT <150ms, jitter <30ms, loss <2.5%
+  // Poor  = anything worse
+  let cls='good',label='Good';
+  if(lossPct>=2.5||jitter>=30||avgPing>=150){cls='poor';label='Poor';}
+  else if(lossPct>=1||jitter>=15||avgPing>=100){cls='fair';label='Fair';}
+
+  dot.className='net-dot '+cls;
+  statusText.textContent=label;
+  pingEl.textContent=avgPing+'ms avg · '+jitter+'ms jitter'+(lossPct>0?' · '+lossPct+'% loss':'');
 }
-pingCheck();
-setInterval(pingCheck,120000);
+connectionCheck();
+setInterval(connectionCheck,120000);
 
 async function runSpeedTest(){
   const btn=document.getElementById('net-test-btn');

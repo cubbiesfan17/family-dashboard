@@ -732,10 +732,15 @@ async function connectionCheck(){
     pingEl.textContent='';
     return;
   }
-  const avgPing=Math.round(rtts.reduce((a,b)=>a+b,0)/rtts.length);
+  // Discard the first successful probe — it pays the one-time cost of establishing
+  // a fresh connection (DNS + handshake) after the 2-minute idle gap, which is not
+  // representative of steady-state network conditions and otherwise creates one huge
+  // outlier gap that skews the jitter average dramatically (e.g. 4ms vs 400ms swings).
+  const steadyRtts=rtts.length>2?rtts.slice(1):rtts;
+  const avgPing=Math.round(steadyRtts.reduce((a,b)=>a+b,0)/steadyRtts.length);
   let jitterSum=0;
-  for(let i=1;i<rtts.length;i++){jitterSum+=Math.abs(rtts[i]-rtts[i-1]);}
-  const jitter=rtts.length>1?Math.round(jitterSum/(rtts.length-1)):0;
+  for(let i=1;i<steadyRtts.length;i++){jitterSum+=Math.abs(steadyRtts[i]-steadyRtts[i-1]);}
+  const jitter=steadyRtts.length>1?Math.round(jitterSum/(steadyRtts.length-1)):0;
 
   // Thresholds per Microsoft's published Teams network targets:
   // Good  = RTT <100ms, jitter <15ms, loss <1%

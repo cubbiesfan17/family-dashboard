@@ -712,7 +712,17 @@ setInterval(function(){
 //    a meaningfully better signal than a single ping reading) ──
 let _netHistory=[]; // last few raw classifications, used to soften isolated blips
 let _lastDipTime=null; // when we last saw a raw poor reading, for the dip note
+let _netCheckInProgress=false; // prevents overlapping runs from racing to update the DOM
 async function connectionCheck(){
+  if(_netCheckInProgress)return; // a previous check is still running (e.g. hit a slow/timing-out probe) — skip this tick rather than race it
+  _netCheckInProgress=true;
+  try{
+    await connectionCheckInner();
+  } finally {
+    _netCheckInProgress=false;
+  }
+}
+async function connectionCheckInner(){
   const dot=document.getElementById('net-dot');
   const statusText=document.getElementById('net-status-text');
   const pingEl=document.getElementById('net-ping');
@@ -746,13 +756,17 @@ async function connectionCheck(){
   for(let i=1;i<steadyRtts.length;i++){jitterSum+=Math.abs(steadyRtts[i]-steadyRtts[i-1]);}
   const jitter=steadyRtts.length>1?Math.round(jitterSum/(steadyRtts.length-1)):0;
 
-  // Thresholds per Microsoft's published Teams network targets:
-  // Good  = RTT <100ms, jitter <15ms, loss <1%
-  // Fair  = RTT <150ms, jitter <30ms, loss <2.5%
+  // Thresholds per Microsoft's published Teams network targets for ping/loss,
+  // but jitter was recalibrated after real-world testing: Microsoft's official
+  // "Good" jitter target (<15ms) is a tight enterprise ideal, not the point where
+  // problems actually start — a live Teams call with 50ms jitter showed no audible
+  // or visible issues, so the old <30ms "Poor" cutoff was flagging false alarms.
+  // Good  = RTT <100ms, jitter <25ms, loss <1%
+  // Fair  = RTT <150ms, jitter <60ms, loss <2.5%
   // Poor  = anything worse
   let cls='good',label='Good';
-  if(lossPct>=2.5||jitter>=30||avgPing>=150){cls='poor';label='Poor';}
-  else if(lossPct>=1||jitter>=15||avgPing>=100){cls='fair';label='Fair';}
+  if(lossPct>=2.5||jitter>=60||avgPing>=150){cls='poor';label='Poor';}
+  else if(lossPct>=1||jitter>=25||avgPing>=100){cls='fair';label='Fair';}
 
   // Soften isolated blips for the DISPLAYED dot color (avoids flagging pure
   // measurement noise as alarming red) — but don't fully hide that something

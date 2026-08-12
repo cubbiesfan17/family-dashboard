@@ -262,39 +262,62 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 
 /* ═══ Gameday view (v2 - MLB app style) ═══ */
-.card-gameday { background: linear-gradient(160deg, #1d4a2c, #0f2f1a); border: 2px solid #0b2814; position: relative; }
+.card-gameday { background: linear-gradient(165deg, #1a3324, #0c1c13); border: 1px solid #d8c9a3; border-top: 2px solid #2a4a35; position: relative; border-radius: 3px; overflow: hidden; }
+.card-gameday::after {
+  /* very subtle scoreboard-panel texture — faint horizontal seams */
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 26px);
+  mix-blend-mode: overlay;
+}
+.gd-ivy-corner { position: absolute; top: 0; right: 0; font-size: 1.1rem; opacity: .18; line-height: 1; padding: 4px 6px; pointer-events: none; }
 .gd-header {
-  font-size: .78rem;
-  font-weight: 400;
-  letter-spacing: 1px;
-  color: rgba(255,255,255,0.75);
+  padding-bottom: 8px;
   margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  border-bottom: 2px solid #16324a;
+  position: relative;
+}
+.gd-header-top { display: flex; justify-content: space-between; align-items: baseline; }
+.gd-matchup-line {
+  font-size: .95rem;
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  color: #f0e6c8;
   font-family: 'Anton', sans-serif;
   text-transform: uppercase;
 }
-.gd-live-badge {
-  background: #e11d48;
-  color: #fff;
+.gd-venue-line {
   font-size: .58rem;
-  font-weight: 800;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: rgba(240,230,200,0.5);
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+.gd-live-badge {
+  background: transparent;
+  color: #e8544a;
+  font-size: .58rem;
+  font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
-  letter-spacing: 1px;
+  border: 1px solid #e8544a;
+  border-radius: 2px;
+  letter-spacing: 1.5px;
   animation: gd-pulse 2s infinite;
   font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
 }
 .gd-warmup-badge {
-  background: #fbbf24;
-  color: #1a1a1a;
+  background: transparent;
+  color: #d4a94a;
   font-size: .58rem;
-  font-weight: 800;
+  font-weight: 700;
   padding: 2px 8px;
-  border-radius: 20px;
-  letter-spacing: 1px;
+  border: 1px solid #d4a94a;
+  border-radius: 2px;
+  letter-spacing: 1.5px;
   font-family: 'Inter', sans-serif;
+  flex-shrink: 0;
 }
 @keyframes gd-pulse { 0%,100% { opacity:1; } 50% { opacity: .55; } }
 
@@ -306,40 +329,42 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 }
 
 /* Left stacked scoreboard */
-.gd-scoreboard-stacked { display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+.gd-scoreboard-stacked { display: flex; flex-direction: column; gap: 0; justify-content: center; border: 1px solid rgba(240,230,200,0.15); }
 .gd-team-row {
   display: grid;
   grid-template-columns: 34px 1fr auto;
   gap: 9px;
   align-items: center;
-  padding: 5px 10px;
-  background: rgba(0,0,0,0.22);
-  border-radius: 7px;
-  border-left: 3px solid transparent;
+  padding: 7px 10px;
+  background: rgba(0,0,0,0.18);
+  border-radius: 0;
+  border-left: 4px solid transparent;
+  border-bottom: 1px solid rgba(240,230,200,0.12);
 }
-.gd-team-row.winning { border-left-color: #22c55e; }
-.gd-team-row.batting { border-left-color: #fbbf24; }
+.gd-team-row.winning { border-left-color: #16324a; }
+.gd-team-row.batting { border-left-color: #8a2a24; }
 .gd-team-logo { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 2px; }
 .gd-team-details { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.gd-team-name { font-size: .85rem; font-weight: 400; line-height: 1; color: #f5f0dc; letter-spacing: .5px; font-family: 'Anton', sans-serif; text-transform: uppercase; }
-.gd-team-rec { font-size: .55rem; color: rgba(255,255,255,0.55); }
-.gd-team-score { font-size: 2.1rem; font-weight: 400; line-height: 1; letter-spacing: 0; color: #f5f5f0; font-family: 'Anton', sans-serif; }
-.gd-team-score.winning { color: #ffffff; }
+.gd-team-name { font-size: .85rem; font-weight: 400; line-height: 1; color: #f0e6c8; letter-spacing: .5px; font-family: 'Anton', sans-serif; text-transform: uppercase; }
+.gd-team-rec { font-size: .55rem; color: rgba(240,230,200,0.5); }
+.gd-team-score { font-size: 2.1rem; font-weight: 400; line-height: 1; letter-spacing: 0; color: #e8dfc4; font-family: 'Anton', sans-serif; transition: color .3s ease; }
+.gd-team-score.winning { color: #fff8e6; }
 
 .gd-inning-strip {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 7px;
-  padding: 3px 0;
+  padding: 4px 0;
   font-size: .6rem;
-  color: rgba(255,255,255,0.55);
-  border-top: 1px dashed rgba(255,255,255,0.1);
-  border-bottom: 1px dashed rgba(255,255,255,0.1);
-  margin: 2px 0;
+  color: rgba(240,230,200,0.55);
+  border-top: none;
+  border-bottom: none;
+  margin: 0;
+  background: rgba(0,0,0,0.28);
 }
-.gd-inning-arrow { color: #ffd400; font-size: .85rem; font-weight: 800; }
-.gd-inning-num { color: #ffd400; font-weight: 400; font-size: .95rem; font-family: 'Anton', sans-serif; letter-spacing: .5px; }
+.gd-inning-arrow { color: #d4a94a; font-size: .85rem; font-weight: 800; }
+.gd-inning-num { color: #d4a94a; font-weight: 400; font-size: .95rem; font-family: 'Anton', sans-serif; letter-spacing: .5px; }
 
 /* Right game state */
 .gd-game-state {
@@ -348,11 +373,11 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   gap: 20px;
   align-items: center;
   padding: 10px 14px;
-  background: rgba(6,26,13,0.65); border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  background: rgba(0,0,0,0.22); border: 1px solid rgba(240,230,200,0.12);
+  border-radius: 0;
 }
 
-/* Base diamond */
+/* Base diamond (field layout kept as a diamond; individual base markers are plain squares) */
 .gd-diamond {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -363,16 +388,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 }
 .gd-base-cell { display: flex; align-items: center; justify-content: center; }
 .gd-base {
-  width: 28px;
-  height: 28px;
+  width: 22px;
+  height: 22px;
   background: transparent;
-  border: 3px solid rgba(255,255,255,0.32);
-  border-radius: 3px;
-  transform: rotate(45deg);
+  border: 2px solid rgba(240,230,200,0.4);
+  border-radius: 1px;
 }
-.gd-base { border-color: rgba(255,255,255,0.4) !important; }
-.gd-base.occupied { background: radial-gradient(circle at 35% 35%, #fff8e0, #ffcf5c); border-color: #ffdd88 !important; box-shadow: 0 0 10px 3px rgba(255,215,120,0.65); }
-.gd-base.gd-base-home { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.12); }
+.gd-base.occupied { background: #d4a94a; border-color: #e8c470; }
+.gd-base.gd-base-home { border-color: rgba(240,230,200,0.5); background: rgba(240,230,200,0.1); }
 /* Grid areas: second base top-middle, third base middle-left, first base middle-right, home bottom-middle */
 .gd-cell-second { grid-column: 2; grid-row: 1; }
 .gd-cell-third  { grid-column: 1; grid-row: 2; }
@@ -384,19 +407,18 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 /* Count section */
 .gd-count-big { display: flex; flex-direction: column; gap: 6px; }
 .gd-count-row { display: flex; align-items: center; gap: 10px; }
-.gd-count-label { font-size: .82rem; font-weight: 400; color: rgba(255,255,255,0.7); letter-spacing: 1.5px; min-width: 46px; font-family: 'VT323', monospace; text-transform: uppercase; }
+.gd-count-label { font-size: .82rem; font-weight: 400; color: rgba(240,230,200,0.65); letter-spacing: 1.5px; min-width: 46px; font-family: 'VT323', monospace; text-transform: uppercase; }
 .gd-count-dots { display: flex; gap: 5px; }
 .gd-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: rgba(0,0,0,0.35);
-  border: 1.5px solid rgba(255,255,255,0.22);
-  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  border: 1.5px solid rgba(240,230,200,0.25);
 }
-.gd-dot.on { background: radial-gradient(circle at 35% 35%, #fff8e0, #ffcf5c); border-color: #ffdd88; box-shadow: 0 0 7px 2px rgba(255,215,120,0.65); }
-.gd-dot.strike.on { background: radial-gradient(circle at 35% 35%, #fff0e0, #ff9a52); border-color: #ffb26b; box-shadow: 0 0 7px 2px rgba(255,154,82,0.6); }
-.gd-dot.out.on { background: radial-gradient(circle at 35% 35%, #ffe0d8, #ff6b4a); border-color: #ff8a66; box-shadow: 0 0 7px 2px rgba(255,107,74,0.55); }
+.gd-dot.on { background: #d4a94a; border-color: #e8c470; }
+.gd-dot.strike.on { background: #c47a3a; border-color: #d99458; }
+.gd-dot.out.on { background: #8a2a24; border-color: #a83a30; }
 
 /* Batter/Pitcher matchup */
 .gd-matchup {
@@ -408,27 +430,28 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-mp-role {
   font-size: .68rem;
   font-weight: 400;
-  color: rgba(255,255,255,0.6);
+  color: rgba(240,230,200,0.55);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   font-family: 'VT323', monospace;
 }
-.gd-mp-name { font-size: .95rem; font-weight: 800; color: #f5f0dc; }
-.gd-mp-stats { font-size: .58rem; color: rgba(255,255,255,0.6); }
-.gd-mp-stats.gd-mp-game { color: #ffd400; font-family: 'VT323', monospace; font-size: .68rem; letter-spacing: .3px; margin-top: 1px; }
+.gd-mp-name { font-size: .95rem; font-weight: 800; color: #f0e6c8; }
+.gd-mp-stats { font-size: .58rem; color: rgba(240,230,200,0.55); }
+.gd-mp-stats.gd-mp-game { color: #d4a94a; font-family: 'VT323', monospace; font-size: .68rem; letter-spacing: .3px; margin-top: 1px; }
 
 /* Last play strip */
 .gd-last-play {
   margin-top: 8px;
   padding: 6px 10px;
-  background: rgba(255,215,107,0.1);
-  border-radius: 6px;
+  background: rgba(0,0,0,0.22);
+  border-radius: 0;
   font-size: .7rem;
-  color: rgba(255,255,255,0.9);
-  border-left: 3px solid #fbbf24;
+  color: rgba(240,230,200,0.85);
+  border-left: 3px solid #16324a;
+  border-top: 1px solid rgba(240,230,200,0.1);
   line-height: 1.35;
 }
-.gd-last-play strong { color: #ffd400; margin-right: 8px; font-size: .78rem; letter-spacing: 1.5px; font-weight: 400; font-family: 'VT323', monospace; }
+.gd-last-play strong { color: #d4a94a; margin-right: 8px; font-size: .78rem; letter-spacing: 1.5px; font-weight: 400; font-family: 'VT323', monospace; }
 
 /* Warmup mode: hide game-state, show pregame view */
 .gd-pregame {
@@ -443,7 +466,37 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 }
 .gd-pregame-vs { font-size: 1.1rem; font-weight: 700; }
 .gd-pregame-time { font-size: .85rem; color: rgba(255,255,255,0.65); }
-.gd-pregame-countdown { font-size: .95rem; color: #fbbf24; font-weight: 700; margin-top: 4px; }
+.gd-pregame-countdown { font-size: .95rem; color: #d4a94a; font-weight: 700; margin-top: 4px; }
+
+/* Inning-by-inning linescore grid — classic scoreboard style */
+.gd-linescore {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 8px;
+  font-family: 'Anton', sans-serif;
+}
+.gd-ls-row { display: table-row; }
+.gd-ls-cell {
+  display: table-cell;
+  text-align: center;
+  padding: 3px 4px;
+  font-size: .68rem;
+  color: rgba(240,230,200,0.55);
+  border-bottom: 1px solid rgba(240,230,200,0.12);
+  border-right: 1px solid rgba(240,230,200,0.08);
+}
+.gd-ls-cell.gd-ls-team {
+  text-align: left;
+  font-weight: 400;
+  color: #f0e6c8;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+  padding-left: 6px;
+}
+.gd-ls-cell.gd-ls-score { color: #e8dfc4; font-weight: 400; }
+.gd-ls-cell.gd-ls-rhe { color: #d4a94a; border-left: 2px solid rgba(240,230,200,0.2); }
+.gd-ls-row.gd-ls-header .gd-ls-cell { color: rgba(240,230,200,0.4); font-size: .55rem; }
 
 
 
@@ -451,8 +504,8 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 /* Cubs scoring celebration */
 @keyframes gdCelebrateGlow {
-  0%,100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
-  50% { box-shadow: 0 0 45px 14px rgba(251,191,36,0.65); }
+  0%,100% { box-shadow: 0 0 0 rgba(212,169,74,0); }
+  50% { box-shadow: 0 0 30px 8px rgba(212,169,74,0.4); }
 }
 .card-gameday.gd-celebrate { animation: gdCelebrateGlow 0.9s ease-in-out 4; }
 .gd-score-banner {
@@ -460,13 +513,15 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   top: 8px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #1a1a1a;
-  font-weight: 900;
+  background: #16324a;
+  color: #f0e6c8;
+  font-weight: 700;
+  font-family: 'Anton', sans-serif;
+  letter-spacing: 1px;
   font-size: .95rem;
   padding: 6px 20px;
-  border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  border: 1px solid #d4a94a;
+  border-radius: 2px;
   z-index: 20;
   animation: gdBannerPop 4s ease-in-out forwards;
   white-space: nowrap;
@@ -774,8 +829,8 @@ async function loadGameday(){
       const gt=new Date(game.gameDate);
       const minsLeft=Math.max(0,Math.round(minsUntilStart));
       document.getElementById('gameday-content').innerHTML=
-        '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+' · '+venue+'</span>'+
-        '<span class="gd-warmup-badge">🟡 WARMUPS</span></div>'+
+        '<div class="gd-header"><span class="gd-ivy-corner">🌿</span><div class="gd-header-top"><div><div class="gd-matchup-line">Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+'</div><div class="gd-venue-line">'+venue+'</div></div>'+
+        '<span class="gd-warmup-badge">WARMUPS</span></div></div>'+
         '<div class="gd-pregame">'+
           '<div style="display:flex;align-items:center;gap:20px;">'+
             '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:60px;height:60px;border-radius:50%;background:#fff;padding:4px;"/>'+
@@ -915,9 +970,45 @@ async function loadGameday(){
       return s;
     }
 
+    // Classic inning-by-inning scoreboard grid — built entirely from data already
+    // fetched above (linescore.innings / linescore.teams). Omitted gracefully if
+    // that data isn't present in the feed.
+    function buildLinescoreGrid(){
+      const innings=linescore&&linescore.innings;
+      if(!innings||!innings.length)return '';
+      const numCols=Math.max(9,innings.length);
+      const awayAbbr=(awayIsCubs?'CHC':(oppTeam.abbreviation||oppLogo.toUpperCase()));
+      const homeAbbr=(homeIsCubs?'CHC':(oppTeam.abbreviation||oppLogo.toUpperCase()));
+      const teamsTotals=(linescore&&linescore.teams)||{};
+      const awayTotals=teamsTotals.away||{};
+      const homeTotals=teamsTotals.home||{};
+
+      let headerCells='<div class="gd-ls-cell gd-ls-team"></div>';
+      for(let i=1;i<=numCols;i++){headerCells+='<div class="gd-ls-cell">'+i+'</div>';}
+      headerCells+='<div class="gd-ls-cell gd-ls-rhe">R</div><div class="gd-ls-cell gd-ls-rhe">H</div><div class="gd-ls-cell gd-ls-rhe">E</div>';
+
+      function teamRow(abbr,side,totals){
+        let cells='<div class="gd-ls-cell gd-ls-team">'+abbr+'</div>';
+        for(let i=1;i<=numCols;i++){
+          const inn=innings[i-1];
+          const val=(inn&&inn[side]&&inn[side].runs!==undefined)?inn[side].runs:'';
+          cells+='<div class="gd-ls-cell gd-ls-score">'+val+'</div>';
+        }
+        cells+='<div class="gd-ls-cell gd-ls-rhe">'+(totals.runs!==undefined?totals.runs:'-')+'</div><div class="gd-ls-cell gd-ls-rhe">'+(totals.hits!==undefined?totals.hits:'-')+'</div><div class="gd-ls-cell gd-ls-rhe">'+(totals.errors!==undefined?totals.errors:'-')+'</div>';
+        return '<div class="gd-ls-row">'+cells+'</div>';
+      }
+
+      return '<div class="gd-linescore">'+
+        '<div class="gd-ls-row gd-ls-header">'+headerCells+'</div>'+
+        teamRow(awayAbbr,'away',awayTotals)+
+        teamRow(homeAbbr,'home',homeTotals)+
+      '</div>';
+    }
+
     document.getElementById('gameday-content').innerHTML=
-      '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+' · '+venue+'</span>'+
-      '<span class="gd-live-badge">🔴 LIVE</span></div>'+
+      '<div class="gd-header"><span class="gd-ivy-corner">🌿</span><div class="gd-header-top"><div><div class="gd-matchup-line">Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+'</div><div class="gd-venue-line">'+venue+'</div></div>'+
+      '<span class="gd-live-badge">LIVE</span></div></div>'+
+      buildLinescoreGrid()+
       '<div class="gd-body">'+
         '<div class="gd-scoreboard-stacked">'+
           scoreRow(topRow)+

@@ -51,11 +51,21 @@ body {
 /* ═══ Row 1: Motivation + Clock ═══ */
 .row-top {
   display: grid;
-  grid-template-columns: 1.25fr 1fr 0.85fr;
+  grid-template-columns: 1.15fr 0.8fr 0.8fr 0.7fr;
   gap: 6px;
   min-height: 0;
 }
 .card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
+.net-status-row { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: #fff; margin-top: 2px; }
+.net-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: #7BAFC4; }
+.net-dot.good { background: #22c55e; }
+.net-dot.fair { background: #eab308; }
+.net-dot.poor { background: #ef4444; }
+.net-ping { font-size: .62rem; color: #7BAFC4; }
+.net-test-btn { margin-top: 6px; background: rgba(74,158,191,0.25); border: 1px solid rgba(74,158,191,0.5); color: #cde8f5; font-size: .62rem; font-weight: 700; padding: 3px 9px; border-radius: 12px; cursor: pointer; }
+.net-test-btn:hover { background: rgba(74,158,191,0.4); }
+.net-speed-result { font-size: .64rem; color: #fff; margin-top: 4px; line-height: 1.4; }
+.net-last-tested { font-size: .5rem; color: #4A7A95; margin-top: 2px; }
 .card-exercise { background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.3); }
 .ex-item { display: flex; align-items: center; gap: 6px; font-size: .66rem; color: #fff; padding: 2px 0; margin-bottom: 1px; line-height: 1.15; }
 .ex-item input[type=checkbox] { accent-color: #22c55e; width: 12px; height: 12px; flex-shrink: 0; }
@@ -501,6 +511,14 @@ a.news-item:hover .news-hed { color: #7ECFED; }
     <div id="exercise-list" style="margin-top:2px;overflow:hidden;max-height:78px;"></div>
   </div>
   <div class="card card-work">
+    <div class="card-label">🌐 Network</div>
+    <div class="net-status-row"><span class="net-dot" id="net-dot"></span><span id="net-status-text">Checking…</span></div>
+    <div class="net-ping" id="net-ping"></div>
+    <div class="net-speed-result" id="net-speed-result"></div>
+    <button class="net-test-btn" id="net-test-btn" onclick="runSpeedTest()">Test speed</button>
+    <div class="net-last-tested" id="net-last-tested"></div>
+  </div>
+  <div class="card card-work">
     <div class="card-label">Time &amp; workday</div>
     <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
       <div class="clock-time" id="clock">--:--</div>
@@ -685,6 +703,66 @@ setInterval(function(){
   const today=new Date().toDateString();
   if(today!==_lastExerciseDate){_lastExerciseDate=today;renderExercises();}
 },60000);
+
+// ── Network status: lightweight automatic ping (negligible bandwidth), manual full speed test on demand ──
+async function pingCheck(){
+  const dot=document.getElementById('net-dot');
+  const statusText=document.getElementById('net-status-text');
+  const pingEl=document.getElementById('net-ping');
+  if(!dot)return;
+  try{
+    const start=performance.now();
+    await fetch('https://cloudflare.com/cdn-cgi/trace',{cache:'no-store',mode:'no-cors'});
+    const ms=Math.round(performance.now()-start);
+    let cls='good',label='Good';
+    if(ms>150){cls='poor';label='Poor';}
+    else if(ms>60){cls='fair';label='Fair';}
+    dot.className='net-dot '+cls;
+    statusText.textContent=label;
+    pingEl.textContent=ms+' ms';
+  }catch(e){
+    dot.className='net-dot poor';
+    statusText.textContent='Offline';
+    pingEl.textContent='';
+  }
+}
+pingCheck();
+setInterval(pingCheck,120000);
+
+async function runSpeedTest(){
+  const btn=document.getElementById('net-test-btn');
+  const resultEl=document.getElementById('net-speed-result');
+  const lastTestedEl=document.getElementById('net-last-tested');
+  if(!btn)return;
+  btn.disabled=true;
+  btn.textContent='Testing…';
+  resultEl.textContent='';
+  try{
+    // Download: fetch a known-size file from Cloudflare's public speed-test endpoint
+    const dlBytes=10000000; // 10MB
+    const dlStart=performance.now();
+    const dlResp=await fetch('https://speed.cloudflare.com/__down?bytes='+dlBytes,{cache:'no-store'});
+    await dlResp.arrayBuffer();
+    const dlSeconds=(performance.now()-dlStart)/1000;
+    const downloadMbps=(dlBytes*8/1e6)/dlSeconds;
+
+    // Upload: POST a known-size payload to the same service
+    const ulBytes=4000000; // 4MB
+    const ulData=new Uint8Array(ulBytes);
+    const ulStart=performance.now();
+    await fetch('https://speed.cloudflare.com/__up',{method:'POST',body:ulData,cache:'no-store'});
+    const ulSeconds=(performance.now()-ulStart)/1000;
+    const uploadMbps=(ulBytes*8/1e6)/ulSeconds;
+
+    resultEl.textContent='↓ '+downloadMbps.toFixed(1)+' Mbps · ↑ '+uploadMbps.toFixed(1)+' Mbps';
+    const now=new Date();
+    lastTestedEl.textContent='Tested '+now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  }catch(e){
+    resultEl.textContent='Test failed — check connection';
+  }
+  btn.disabled=false;
+  btn.textContent='Test speed';
+}
 
 
 // ── Clock ──

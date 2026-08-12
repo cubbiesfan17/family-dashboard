@@ -51,21 +51,21 @@ body {
 /* ═══ Row 1: Motivation + Clock ═══ */
 .row-top {
   display: grid;
-  grid-template-columns: 1.15fr 0.8fr 0.8fr 0.7fr;
+  grid-template-columns: 1.15fr 0.8fr 0.55fr 0.95fr;
   gap: 6px;
   min-height: 0;
 }
 .card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
-.net-status-row { display: flex; align-items: center; gap: 6px; font-size: .72rem; color: #fff; margin-top: 2px; }
-.net-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; background: #7BAFC4; }
-.net-dot.good { background: #22c55e; }
-.net-dot.fair { background: #eab308; }
-.net-dot.poor { background: #ef4444; }
-.net-ping { font-size: .56rem; color: #7BAFC4; line-height: 1.3; }
-.net-test-btn { margin-top: 6px; background: rgba(74,158,191,0.25); border: 1px solid rgba(74,158,191,0.5); color: #cde8f5; font-size: .62rem; font-weight: 700; padding: 3px 9px; border-radius: 12px; cursor: pointer; }
+.net-status-row { display: flex; align-items: center; gap: 7px; font-size: .78rem; font-weight: 700; color: #fff; margin-top: 3px; }
+.net-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; background: #7BAFC4; box-shadow: 0 0 6px 1px rgba(255,255,255,0.15); }
+.net-dot.good { background: #22c55e; box-shadow: 0 0 8px 2px rgba(34,197,94,0.5); }
+.net-dot.fair { background: #eab308; box-shadow: 0 0 8px 2px rgba(234,179,8,0.5); }
+.net-dot.poor { background: #ef4444; box-shadow: 0 0 8px 2px rgba(239,68,68,0.5); }
+.net-ping { font-size: .5rem; color: #7BAFC4; line-height: 1.25; margin-top: 2px; }
+.net-test-btn { margin-top: 5px; background: rgba(74,158,191,0.25); border: 1px solid rgba(74,158,191,0.5); color: #cde8f5; font-size: .56rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; cursor: pointer; }
 .net-test-btn:hover { background: rgba(74,158,191,0.4); }
-.net-speed-result { font-size: .64rem; color: #fff; margin-top: 4px; line-height: 1.4; }
-.net-last-tested { font-size: .5rem; color: #4A7A95; margin-top: 2px; }
+.net-speed-result { font-size: .56rem; color: #fff; margin-top: 3px; line-height: 1.3; }
+.net-last-tested { font-size: .44rem; color: #4A7A95; margin-top: 1px; }
 .card-exercise { background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.3); }
 .ex-item { display: flex; align-items: center; gap: 6px; font-size: .66rem; color: #fff; padding: 2px 0; margin-bottom: 1px; line-height: 1.15; }
 .ex-item input[type=checkbox] { accent-color: #22c55e; width: 12px; height: 12px; flex-shrink: 0; }

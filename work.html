@@ -8,7 +8,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
 <title>Work Dashboard</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Anton&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Anton&family=VT323&family=Archivo+Black&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
 body {
@@ -262,7 +262,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 
 
 /* ═══ Gameday view (v2 - MLB app style) ═══ */
-.card-gameday { background: linear-gradient(160deg, #1d4a2c, #0f2f1a); border: 2px solid #0b2814; position: relative; }
+.card-gameday { background: linear-gradient(165deg, #1a3324, #0c1c13); border: 1px solid #d8c9a3; border-top: 2px solid #2a4a35; position: relative; }
 .gd-header {
   font-size: .78rem;
   font-weight: 400;
@@ -272,7 +272,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Anton', sans-serif;
+  font-family: 'Archivo Black', sans-serif;
   text-transform: uppercase;
 }
 .gd-live-badge {
@@ -321,7 +321,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-team-row.batting { border-left-color: #fbbf24; }
 .gd-team-logo { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 2px; }
 .gd-team-details { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
-.gd-team-name { font-size: .85rem; font-weight: 400; line-height: 1; color: #f5f0dc; letter-spacing: .5px; font-family: 'Anton', sans-serif; text-transform: uppercase; }
+.gd-team-name { font-size: .85rem; font-weight: 400; line-height: 1; color: #f5f0dc; letter-spacing: .5px; font-family: 'Archivo Black', sans-serif; text-transform: uppercase; }
 .gd-team-rec { font-size: .55rem; color: rgba(255,255,255,0.55); }
 .gd-team-score { font-size: 2.1rem; font-weight: 400; line-height: 1; letter-spacing: 0; color: #f5f5f0; font-family: 'Anton', sans-serif; }
 .gd-team-score.winning { color: #ffffff; }
@@ -841,7 +841,7 @@ async function loadGameday(){
         if(bplayer&&bplayer.stats&&bplayer.stats.batting){
           const bat=bplayer.stats.batting;
           const hits=bat.hits||0,ab=bat.atBats||0,rbi=bat.rbi||0;
-          batterGameStats='Today: '+hits+'-'+ab+', '+rbi+' RBI'+(rbi!==1?'s':'');
+          batterGameStats=hits+'-'+ab+', '+rbi+' RBI'+(rbi!==1?'s':'');
         }
       }
       if(p&&bs){
@@ -854,7 +854,7 @@ async function loadGameday(){
         if(pplayer&&pplayer.stats&&pplayer.stats.pitching){
           const pit=pplayer.stats.pitching;
           const pitches=pit.numberOfPitches||0,strikesT=pit.strikes||0,ballsT=pit.balls||0;
-          pitcherGameStats='Today: '+pitches+' P · '+strikesT+' S · '+ballsT+' B';
+          pitcherGameStats=pitches+' P · '+strikesT+' S · '+ballsT+' B';
         }
       }
     }

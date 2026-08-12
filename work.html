@@ -66,6 +66,7 @@ body {
 .net-test-btn:hover { background: rgba(74,158,191,0.4); }
 .net-speed-result { font-size: .56rem; color: #fff; margin-top: 3px; line-height: 1.3; }
 .net-last-tested { font-size: .44rem; color: #4A7A95; margin-top: 1px; }
+.net-dip-note { font-size: .48rem; color: #eab308; margin-top: 2px; font-weight: 700; }
 .card-exercise { background: rgba(34,197,94,0.10); border-color: rgba(34,197,94,0.3); }
 .ex-item { display: flex; align-items: center; gap: 6px; font-size: .66rem; color: #fff; padding: 2px 0; margin-bottom: 1px; line-height: 1.15; }
 .ex-item input[type=checkbox] { accent-color: #22c55e; width: 12px; height: 12px; flex-shrink: 0; }
@@ -514,6 +515,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
     <div class="card-label">🌐 Network</div>
     <div class="net-status-row"><span class="net-dot" id="net-dot"></span><span id="net-status-text">Checking…</span></div>
     <div class="net-ping" id="net-ping"></div>
+    <div class="net-dip-note" id="net-dip-note" style="display:none;"></div>
     <div class="net-speed-result" id="net-speed-result"></div>
     <button class="net-test-btn" id="net-test-btn" onclick="runSpeedTest()">Test speed</button>
     <div class="net-last-tested" id="net-last-tested"></div>
@@ -708,6 +710,8 @@ setInterval(function(){
 // ── Network status: burst of quick probes approximates jitter + packet loss
 //    (browsers can't do true ICMP ping, so this is an HTTP-layer proxy — still
 //    a meaningfully better signal than a single ping reading) ──
+let _netHistory=[]; // last few raw classifications, used to soften isolated blips
+let _lastDipTime=null; // when we last saw a raw poor reading, for the dip note
 async function connectionCheck(){
   const dot=document.getElementById('net-dot');
   const statusText=document.getElementById('net-status-text');
@@ -750,12 +754,35 @@ async function connectionCheck(){
   if(lossPct>=2.5||jitter>=30||avgPing>=150){cls='poor';label='Poor';}
   else if(lossPct>=1||jitter>=15||avgPing>=100){cls='fair';label='Fair';}
 
+  // Soften isolated blips for the DISPLAYED dot color (avoids flagging pure
+  // measurement noise as alarming red) — but don't fully hide that something
+  // happened. A brief real dip still gets recorded and surfaced as a small note
+  // for a while, since Teams-affecting hiccups can be as short as ~30 seconds,
+  // easy to miss and easy to fully mask if we only show the smoothed status.
+  const rawWasPoor=(cls==='poor');
+  _netHistory.push(cls);
+  if(_netHistory.length>3)_netHistory.shift();
+  if(cls==='poor'){
+    const poorCount=_netHistory.filter(s=>s==='poor').length;
+    if(poorCount<2){cls='fair';label='Fair';}
+  }
+  if(rawWasPoor){_lastDipTime=new Date();}
+  const dipNoteEl=document.getElementById('net-dip-note');
+  if(dipNoteEl){
+    if(_lastDipTime && (Date.now()-_lastDipTime.getTime())<10*60000){
+      dipNoteEl.textContent='⚠ Dip at '+_lastDipTime.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+      dipNoteEl.style.display='block';
+    }else{
+      dipNoteEl.style.display='none';
+    }
+  }
+
   dot.className='net-dot '+cls;
   statusText.textContent=label;
   pingEl.textContent=avgPing+'ms avg · '+jitter+'ms jitter'+(lossPct>0?' · '+lossPct+'% loss':'');
 }
 connectionCheck();
-setInterval(connectionCheck,120000);
+setInterval(connectionCheck,30000);
 
 async function runSpeedTest(){
   const btn=document.getElementById('net-test-btn');

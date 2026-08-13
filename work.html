@@ -413,33 +413,33 @@ a.news-item:hover .news-hed { color: #7ECFED; }
 .gd-matchup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
-.gd-mp-cell { display: flex; flex-direction: column; gap: 1px; }
+.gd-mp-cell { display: flex; flex-direction: column; gap: 2px; }
 .gd-mp-role {
-  font-size: .68rem;
-  font-weight: 400;
-  color: rgba(255,255,255,0.6);
+  font-size: .62rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.65);
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  font-family: 'VT323', monospace;
+  letter-spacing: 1px;
+  font-family: 'Archivo Black', sans-serif;
 }
 .gd-mp-name { font-size: .95rem; font-weight: 800; color: #f5f0dc; }
-.gd-mp-stats { font-size: .58rem; color: rgba(255,255,255,0.6); }
-.gd-mp-stats.gd-mp-game { color: #ffd400; font-family: 'VT323', monospace; font-size: .68rem; letter-spacing: .3px; margin-top: 1px; }
+.gd-mp-stats { font-size: .6rem; color: rgba(255,255,255,0.6); }
+.gd-mp-stats.gd-mp-game { color: #ffd400; font-family: 'VT323', monospace; font-size: .7rem; letter-spacing: .3px; margin-top: 1px; }
 
 /* Last play strip */
 .gd-last-play {
-  margin-top: 8px;
-  padding: 6px 10px;
+  margin-top: 10px;
+  padding: 8px 12px;
   background: rgba(255,215,107,0.1);
   border-radius: 6px;
-  font-size: .7rem;
+  font-size: .72rem;
   color: rgba(255,255,255,0.9);
   border-left: 3px solid #fbbf24;
-  line-height: 1.35;
+  line-height: 1.4;
 }
-.gd-last-play strong { color: #ffd400; margin-right: 8px; font-size: .78rem; letter-spacing: 1.5px; font-weight: 400; font-family: 'VT323', monospace; }
+.gd-last-play strong { color: #ffd400; margin-right: 8px; font-size: .68rem; letter-spacing: 1px; font-weight: 800; font-family: 'Archivo Black', sans-serif; }
 
 /* Warmup mode: hide game-state, show pregame view */
 .gd-pregame {
@@ -1385,7 +1385,6 @@ function renderNewsItems(container,items){
     const d=document.createElement('a');
     d.className='news-item';
     d.href=it.link;
-    d.target='_blank';
     d.rel='noopener';
     d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
     d.innerHTML='<div class="news-hed">'+it.hed+'</div><div class="news-src">'+it.src+'</div>';

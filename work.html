@@ -750,23 +750,27 @@ async function connectionCheckInner(){
   // a fresh connection (DNS + handshake) after the 2-minute idle gap, which is not
   // representative of steady-state network conditions and otherwise creates one huge
   // outlier gap that skews the jitter average dramatically (e.g. 4ms vs 400ms swings).
-  const steadyRtts=rtts.length>2?rtts.slice(1):rtts;
+  // Discard the first several probes, not just one — on this tablet/browser the
+  // connection-establishment cost appears to bleed into more than just probe #1,
+  // producing readings way out of line with real experienced call quality. Using
+  // only the later, truly-warmed-up probes gives a cleaner steady-state signal.
+  const steadyRtts=rtts.length>6?rtts.slice(4):rtts;
   const avgPing=Math.round(steadyRtts.reduce((a,b)=>a+b,0)/steadyRtts.length);
   let jitterSum=0;
   for(let i=1;i<steadyRtts.length;i++){jitterSum+=Math.abs(steadyRtts[i]-steadyRtts[i-1]);}
   const jitter=steadyRtts.length>1?Math.round(jitterSum/(steadyRtts.length-1)):0;
 
-  // Thresholds per Microsoft's published Teams network targets for ping/loss,
-  // but jitter was recalibrated after real-world testing: Microsoft's official
-  // "Good" jitter target (<15ms) is a tight enterprise ideal, not the point where
-  // problems actually start — a live Teams call with 50ms jitter showed no audible
-  // or visible issues, so the old <30ms "Poor" cutoff was flagging false alarms.
-  // Good  = RTT <100ms, jitter <25ms, loss <1%
-  // Fair  = RTT <150ms, jitter <60ms, loss <2.5%
+  // Thresholds recalibrated from a day of real Teams-call ground truth: readings up
+  // to ~600ms avg / ~900ms jitter never once caused an audible/visible call issue —
+  // strong evidence those spikes were a measurement artifact (repeated connection
+  // setup cost), not real network problems. Set with margin above the clean baseline
+  // (~125ms avg / ~60ms jitter) actually observed on this tablet/network.
+  // Good  = RTT <200ms, jitter <100ms, loss <1%
+  // Fair  = RTT <400ms, jitter <250ms, loss <2.5%
   // Poor  = anything worse
   let cls='good',label='Good';
-  if(lossPct>=2.5||jitter>=60||avgPing>=150){cls='poor';label='Poor';}
-  else if(lossPct>=1||jitter>=25||avgPing>=100){cls='fair';label='Fair';}
+  if(lossPct>=2.5||jitter>=250||avgPing>=400){cls='poor';label='Poor';}
+  else if(lossPct>=1||jitter>=100||avgPing>=200){cls='fair';label='Fair';}
 
   // Soften isolated blips for the DISPLAYED dot color (avoids flagging pure
   // measurement noise as alarming red) — but don't fully hide that something

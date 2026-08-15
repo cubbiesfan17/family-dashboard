@@ -205,22 +205,12 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
       <label>City (for weather)</label>
       <input id="sc" type="text" placeholder="e.g. McHenry,US"/>
     </div>
-    <div style="font-size:.78rem;font-weight:600;color:#6b7280;margin-bottom:8px;">CALENDAR COLUMNS — paste .ics URL(s) per person, comma-separated for multiple</div>
     <div class="field">
-      <label style="color:#5b21b6">&#9632; Family</label>
-      <input id="si0" type="text" placeholder="webcal:// or https://..."/>
-    </div>
-    <div class="field">
-      <label style="color:#1e40af">&#9632; Finn</label>
-      <input id="si1" type="text" placeholder="webcal:// or https://..."/>
-    </div>
-    <div class="field">
-      <label style="color:#9d174d">&#9632; Millie</label>
-      <input id="si2" type="text" placeholder="webcal:// or https://..."/>
-    </div>
-    <div class="field">
-      <label style="color:#065f46">&#9632; Nolan</label>
-      <input id="si3" type="text" placeholder="webcal:// or https://..."/>
+      <div class="hint" style="font-size:.78rem;line-height:1.6;">
+        Family/Finn/Millie/Nolan calendars are now managed centrally in
+        <code>shared-calendars.js</code> on GitHub, so every device stays in sync automatically —
+        edit that file to change a calendar link instead of typing it in here on each device.
+      </div>
     </div>
     <div class="field">
       <label style="color:#c026d3">&#127874; Birthdays</label>
@@ -234,6 +224,7 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
   </div>
 </div>
 
+<script src="shared-calendars.js"></script>
 <script>
 const cfg = {
   get: k => localStorage.getItem(k) || '',
@@ -243,10 +234,6 @@ const cfg = {
 function openM() {
   document.getElementById('sk').value = cfg.get('owm_key');
   document.getElementById('sc').value = cfg.get('owm_city');
-  document.getElementById('si0').value = cfg.get('ics_0');
-  document.getElementById('si1').value = cfg.get('ics_1');
-  document.getElementById('si2').value = cfg.get('ics_2');
-  document.getElementById('si3').value = cfg.get('ics_3');
   document.getElementById('siB').value = cfg.get('ics_birthdays');
   document.getElementById('modal').classList.add('open');
 }
@@ -254,10 +241,6 @@ function closeM() { document.getElementById('modal').classList.remove('open'); }
 function saveM() {
   cfg.set('owm_key',  document.getElementById('sk').value.trim());
   cfg.set('owm_city', document.getElementById('sc').value.trim());
-  cfg.set('ics_0', document.getElementById('si0').value.trim());
-  cfg.set('ics_1', document.getElementById('si1').value.trim());
-  cfg.set('ics_2', document.getElementById('si2').value.trim());
-  cfg.set('ics_3', document.getElementById('si3').value.trim());
   cfg.set('ics_birthdays', document.getElementById('siB').value.trim());
   closeM();
   init();
@@ -1142,12 +1125,22 @@ function switchCalView(view) {
   renderCalView(view);
 }
 
+// ── Calendar URLs: read from shared-calendars.js (single source of truth, same
+// file work.html uses) so every device shows the same calendars with zero
+// per-device setup. Falls back to the old localStorage/Configure values for
+// any column shared-calendars.js doesn't define, so nothing breaks if that
+// file is ever missing or incomplete. ──
+const _SHARED_CAL = window.SHARED_CALENDARS || [];
 const _CAL_COLS = [
-  { key: 'ics_0', label: 'Family',  cls: 'col-family' },
-  { key: 'ics_1', label: 'Finn',    cls: 'col-finn' },
-  { key: 'ics_2', label: 'Millie',  cls: 'col-millie' },
-  { key: 'ics_3', label: 'Nolan',   cls: 'col-nolan' },
-];
+  { label: 'Family',  cls: 'col-family',  legacyKey: 'ics_0' },
+  { label: 'Finn',    cls: 'col-finn',    legacyKey: 'ics_1' },
+  { label: 'Millie',  cls: 'col-millie',  legacyKey: 'ics_2' },
+  { label: 'Nolan',   cls: 'col-nolan',   legacyKey: 'ics_3' },
+].map((c, i) => {
+  const shared = _SHARED_CAL[i];
+  const raw = shared ? (shared.urls || []).join(',') : (cfg.get(c.legacyKey) || '');
+  return { ...c, raw };
+});
 
 function renderCalView(view) {
   const el = document.getElementById('cal');
@@ -1196,15 +1189,15 @@ function renderCalView(view) {
 
 async function loadCal() {
   const el = document.getElementById('cal');
-  const anyConfigured = _CAL_COLS.some(c => cfg.get(c.key));
+  const anyConfigured = _CAL_COLS.some(c => c.raw);
   if (!anyConfigured) {
-    el.innerHTML = '<div class="cal-setup-box"><strong>Setup needed:</strong> tap <strong>Configure</strong> and assign calendar URLs to each family member.</div>';
+    el.innerHTML = '<div class="cal-setup-box"><strong>Setup needed:</strong> add calendar URLs to shared-calendars.js (or tap <strong>Configure</strong> for Birthdays).</div>';
     return;
   }
   // Don't show spinner - update silently in background
   try {
     const [results, birthdaysRaw] = await Promise.all([
-      Promise.all(_CAL_COLS.map(c => loadColEvents(cfg.get(c.key)))),
+      Promise.all(_CAL_COLS.map(c => loadColEvents(c.raw))),
       loadColEvents(cfg.get('ics_birthdays')),
     ]);
     // Inject holidays into Family column (index 0)
@@ -1780,15 +1773,12 @@ function init() {
   }
 })();
 
-// Pre-populated settings — only applied the first time (won't clobber saved Configure changes)
+// Pre-populated settings — only applied the first time (won't clobber saved Configure changes).
+// Note: Family/Finn/Millie/Nolan calendars now come from shared-calendars.js, not from here.
 (function() {
   const defaults = {
     owm_key: '0a8a6459b1878ca1ae03d67760014d85',
     owm_city: 'Algonquin,US',
-    ics_0: 'https://p28-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-Y_oxrvj7OUL6doLu0XVM5LffLtbHb-juvfbtRPh3Uf4cGgMbJj2TKJC8QxUlJsCC0',
-    ics_1: 'https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-YpLuyKf2fp0YCpAEexxO6hIaxyr9GvUf4GYyt-QDryidhoqM4ZgM3TYe3nQBn4EJU,https://www.gomotionapp.com/rest/ics/system/5/Events.ics?key=m1%2FTYjpXm54ufZNPynZ94Q%3D%3D&enabled=false&tz=America%2FChicago',
-    ics_2: 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f120c7-6715-b03e-9571-92d13fd9be2b&v=1775395850915,https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZDIY3sF_WNgNC_fNUwSPBTg6eYMaE7OWrf77WWhn061RyX0RKXPnnUh_qRFoDfF5I',
-    ics_3: 'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f12aaf-7ff7-d162-9387-b24078612aeb&v=1774796141241,https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZEIHTZTHF1m31gnMOQWBL9lLZ9XTQ8SM0ZiX97pr9dcfu_4DsjxwSoHjBTRSFRwDA',
     ics_birthdays: 'https://calendar.google.com/calendar/ical/466e840c4f688930c5f4d8bf52a79387994a5e07dec6422fa118873791e653f2%40group.calendar.google.com/public/basic.ics',
   };
   Object.keys(defaults).forEach(k => {

@@ -1,11 +1,10 @@
 // shared-calendars.js
 // ────────────────────────────────────────────────────────────
-// Define your family calendar URLs ONCE here. Both the home
-// dashboard and the work dashboard can import this file so you
-// never have to paste the URLs in two places.
-//
-// Each person can have one or more .ics URLs (comma-separated in
-// `raw`, or listed in the `urls` array — both are supported).
+// Family calendar URLs. Managed automatically via the dashboard's
+// Settings (gear icon) — edits made there are committed here by
+// api/calendars.js, so the home and work dashboards (and every
+// device) stay in sync without retyping anything.
+// Last updated: 2026-08-15T15:45:26.386Z
 // ────────────────────────────────────────────────────────────
 
 window.SHARED_CALENDARS = [
@@ -36,7 +35,7 @@ window.SHARED_CALENDARS = [
     label: 'Nolan',
     color: '#eab308',
     urls: [
-      'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f12aaf-7ff7-d162-9387-b24078612aeb&v=1774796141241',
+      'webcal://ical.sportngin.com/v3/calendar/ical?team_ids=11f19653-e453-4988-a3ee-de43a8ea4699',
       'https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZEIHTZTHF1m31gnMOQWBL9lLZ9XTQ8SM0ZiX97pr9dcfu_4DsjxwSoHjBTRSFRwDA',
     ],
   },

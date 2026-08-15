@@ -205,21 +205,33 @@ body{font-family:'Inter',sans-serif;background:#0d1f2d;color:#F0F4F7;height:100v
       <label>City (for weather)</label>
       <input id="sc" type="text" placeholder="e.g. McHenry,US"/>
     </div>
+    <div style="font-size:.78rem;font-weight:600;color:#6b7280;margin-bottom:8px;">CALENDAR COLUMNS — paste .ics URL(s) per person, comma-separated for multiple</div>
+    <div class="hint" style="margin-bottom:10px;">Saved here, these sync to every device automatically (takes ~30-60 sec to go live).</div>
     <div class="field">
-      <div class="hint" style="font-size:.78rem;line-height:1.6;">
-        Family/Finn/Millie/Nolan calendars are now managed centrally in
-        <code>shared-calendars.js</code> on GitHub, so every device stays in sync automatically —
-        edit that file to change a calendar link instead of typing it in here on each device.
-      </div>
+      <label style="color:#5b21b6">&#9632; Family</label>
+      <input id="si0" type="text" placeholder="webcal:// or https://..."/>
+    </div>
+    <div class="field">
+      <label style="color:#1e40af">&#9632; Finn</label>
+      <input id="si1" type="text" placeholder="webcal:// or https://..."/>
+    </div>
+    <div class="field">
+      <label style="color:#9d174d">&#9632; Millie</label>
+      <input id="si2" type="text" placeholder="webcal:// or https://..."/>
+    </div>
+    <div class="field">
+      <label style="color:#065f46">&#9632; Nolan</label>
+      <input id="si3" type="text" placeholder="webcal:// or https://..."/>
     </div>
     <div class="field">
       <label style="color:#c026d3">&#127874; Birthdays</label>
       <input id="siB" type="text" placeholder="webcal:// or https://..."/>
       <div class="hint">Shown alongside holidays at the top of the Family column</div>
     </div>
+    <div id="save-status" style="font-size:.8rem;color:#7BAFC4;margin-top:4px;min-height:1.2em;"></div>
     <div class="mactions">
       <button class="btn-cancel" onclick="closeM()">Cancel</button>
-      <button class="btn-save" onclick="saveM()">Save &amp; Refresh</button>
+      <button class="btn-save" id="btn-save-m" onclick="saveM()">Save &amp; Refresh</button>
     </div>
   </div>
 </div>
@@ -235,15 +247,52 @@ function openM() {
   document.getElementById('sk').value = cfg.get('owm_key');
   document.getElementById('sc').value = cfg.get('owm_city');
   document.getElementById('siB').value = cfg.get('ics_birthdays');
+  // Prefill Family/Finn/Millie/Nolan from the calendars currently loaded on
+  // this page (shared-calendars.js) — reflects the latest saved values as of
+  // this page's last load/refresh.
+  const shared = window.SHARED_CALENDARS || [];
+  ['si0','si1','si2','si3'].forEach((id, i) => {
+    const col = shared[i];
+    document.getElementById(id).value = col ? (col.urls || []).join(',') : '';
+  });
+  document.getElementById('save-status').textContent = '';
   document.getElementById('modal').classList.add('open');
 }
 function closeM() { document.getElementById('modal').classList.remove('open'); }
-function saveM() {
+async function saveM() {
   cfg.set('owm_key',  document.getElementById('sk').value.trim());
   cfg.set('owm_city', document.getElementById('sc').value.trim());
   cfg.set('ics_birthdays', document.getElementById('siB').value.trim());
-  closeM();
-  init();
+
+  const btn = document.getElementById('btn-save-m');
+  const status = document.getElementById('save-status');
+  const payload = {
+    family: document.getElementById('si0').value.trim(),
+    finn:   document.getElementById('si1').value.trim(),
+    millie: document.getElementById('si2').value.trim(),
+    nolan:  document.getElementById('si3').value.trim(),
+  };
+
+  btn.disabled = true;
+  status.style.color = '#7BAFC4';
+  status.textContent = 'Saving to GitHub…';
+  try {
+    const r = await fetch('/api/calendars', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Save failed (' + r.status + ')'));
+    status.style.color = '#4ade80';
+    status.textContent = 'Saved! Redeploying — this device and others will show the update in about a minute.';
+    setTimeout(() => { closeM(); init(); }, 1800);
+  } catch (e) {
+    status.style.color = '#ef4444';
+    status.textContent = 'Could not save calendars: ' + e.message;
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 let _lastDate = new Date().toDateString();

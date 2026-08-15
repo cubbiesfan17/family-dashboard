@@ -4,7 +4,7 @@
 // Settings (gear icon) — edits made there are committed here by
 // api/calendars.js, so the home and work dashboards (and every
 // device) stay in sync without retyping anything.
-// Last updated: 2026-08-15T15:45:26.386Z
+// Last updated: 2026-08-15T15:45:48.930Z
 // ────────────────────────────────────────────────────────────
 
 window.SHARED_CALENDARS = [

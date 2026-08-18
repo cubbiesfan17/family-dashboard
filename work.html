@@ -138,7 +138,7 @@ body {
 .cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
 .cal-event.ongoing .cal-ev-title { color: #eab308; font-weight: 800; }
 .cal-event.ongoing .cal-ev-time { color: #eab308; }
-.cal-ev-time { font-size: .62rem; font-weight: 600; color: #7BAFC4; min-width: 60px; flex-shrink: 0; }
+.cal-ev-time { font-size: .58rem; font-weight: 600; color: #7BAFC4; min-width: 82px; flex-shrink: 0; }
 .cal-ev-title { font-size: .72rem; font-weight: 600; color: #fff; flex: 1; line-height: 1.2; }
 .cal-ev-person { font-size: .55rem; color: #7BAFC4; flex-shrink: 0; }
 .wm-day-label { font-size: .54rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4A9EBF; padding: 3px 0 2px; border-bottom: 1px solid rgba(74,158,191,0.2); margin-top: 3px; }
@@ -656,8 +656,19 @@ const QUOTES=[
   {q:"Hard work beats talent when talent doesn't work hard.",a:"Tim Notke"},
   {q:"Push yourself because no one else is going to do it for you.",a:"Unknown"},
 ];
-// ── Populate quote ──
-(function(){const now=new Date(),doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);const fb=QUOTES[doy%QUOTES.length];document.getElementById('quote-text').textContent='\u201c'+fb.q+'\u201d';document.getElementById('quote-author').textContent=fb.a?'\u2014 '+fb.a:'';})();
+// ── Populate quote (re-checked at midnight rollover, not just on page load) ──
+function renderQuote(){
+  const now=new Date(),doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);
+  const fb=QUOTES[doy%QUOTES.length];
+  document.getElementById('quote-text').textContent='\u201c'+fb.q+'\u201d';
+  document.getElementById('quote-author').textContent=fb.a?'\u2014 '+fb.a:'';
+}
+renderQuote();
+let _lastQuoteDate=new Date().toDateString();
+setInterval(function(){
+  const today=new Date().toDateString();
+  if(today!==_lastQuoteDate){_lastQuoteDate=today;renderQuote();}
+},60000);
 
 // ── Daily movement break checklist ──
 const EXERCISE_POOL=[
@@ -1268,7 +1279,21 @@ let _allEvents=null,_calView='today';
 const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function fmtTime(ev){if(ev.allDay||!ev.start)return'All day';const h=ev.start.getHours(),mn=String(ev.start.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn+(h<12?' AM':' PM');}
+function fmtClock(d){const h=d.getHours(),mn=String(d.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn+(h<12?' AM':' PM');}
+function fmtTime(ev){
+  if(ev.allDay||!ev.start)return'All day';
+  const startStr=fmtClock(ev.start);
+  // Show a range only when there's a genuine, distinct end time (skip point-in-time events)
+  if(ev.end && ev.end.getTime()!==ev.start.getTime() && ev.end.toDateString()===ev.start.toDateString()){
+    // Trim the AM/PM off the start time when both start and end share the same period,
+    // e.g. "1:00 – 2:00 PM" instead of the more cluttered "1:00 PM – 2:00 PM"
+    const startAmPm=ev.start.getHours()<12?'AM':'PM';
+    const endAmPm=ev.end.getHours()<12?'AM':'PM';
+    const startTrimmed=startAmPm===endAmPm?startStr.replace(/ (AM|PM)$/,''):startStr;
+    return startTrimmed+' – '+fmtClock(ev.end);
+  }
+  return startStr;
+}
 
 function eventRow(ev,now){
   const isPast=ev.end?ev.end<now:ev.start<now;

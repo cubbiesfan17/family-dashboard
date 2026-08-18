@@ -1279,18 +1279,13 @@ let _allEvents=null,_calView='today';
 const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-function fmtClock(d){const h=d.getHours(),mn=String(d.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn+(h<12?' AM':' PM');}
+function fmtClock(d){const h=d.getHours(),mn=String(d.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn;}
 function fmtTime(ev){
   if(ev.allDay||!ev.start)return'All day';
   const startStr=fmtClock(ev.start);
   // Show a range only when there's a genuine, distinct end time (skip point-in-time events)
   if(ev.end && ev.end.getTime()!==ev.start.getTime() && ev.end.toDateString()===ev.start.toDateString()){
-    // Trim the AM/PM off the start time when both start and end share the same period,
-    // e.g. "1:00 – 2:00 PM" instead of the more cluttered "1:00 PM – 2:00 PM"
-    const startAmPm=ev.start.getHours()<12?'AM':'PM';
-    const endAmPm=ev.end.getHours()<12?'AM':'PM';
-    const startTrimmed=startAmPm===endAmPm?startStr.replace(/ (AM|PM)$/,''):startStr;
-    return startTrimmed+' – '+fmtClock(ev.end);
+    return startStr+' – '+fmtClock(ev.end);
   }
   return startStr;
 }

@@ -4,7 +4,7 @@
 // Settings (gear icon) — edits made there are committed here by
 // api/calendars.js, so the home and work dashboards (and every
 // device) stay in sync without retyping anything.
-// Last updated: 2026-08-15T15:45:48.930Z
+// Last updated: 2026-08-19T02:58:19.996Z
 // ────────────────────────────────────────────────────────────
 
 window.SHARED_CALENDARS = [
@@ -27,7 +27,7 @@ window.SHARED_CALENDARS = [
     label: 'Millie',
     color: '#ec4899',
     urls: [
-      'https://ical.sportsengine.com/v3/calendar/ical?team_ids=11f120c7-6715-b03e-9571-92d13fd9be2b&v=1775395850915',
+      'https://api.team-manager.gc.com/ics-calendar-documents/user/8831aa03-725d-4fba-b5fa-33572642c832.ics?teamId=fbf49a5b-149f-47c1-b7be-7a19d7f7d25f&token=73b47329df89a3bf2f6669c741debc1f764b9b6bd7cca529911ba269e17f86f1',
       'https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZDIY3sF_WNgNC_fNUwSPBTg6eYMaE7OWrf77WWhn061RyX0RKXPnnUh_qRFoDfF5I',
     ],
   },

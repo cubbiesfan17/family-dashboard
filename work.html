@@ -87,7 +87,7 @@ body {
 */
 .row-main {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.15fr);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.25fr);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 6px;
   min-height: 0;
@@ -663,7 +663,7 @@ function renderQuote(){
   document.getElementById('quote-text').textContent='\u201c'+fb.q+'\u201d';
   document.getElementById('quote-author').textContent=fb.a?'\u2014 '+fb.a:'';
 }
-renderQuote();
+try{renderQuote();}catch(e){console.error('Quote render failed (non-fatal):',e);}
 let _lastQuoteDate=new Date().toDateString();
 setInterval(function(){
   const today=new Date().toDateString();
@@ -709,7 +709,7 @@ function toggleExercise(i){
   saveExerciseState();
   renderExercises();
 }
-renderExercises();
+try{renderExercises();}catch(e){console.error('Exercise render failed (non-fatal):',e);}
 // Re-render when the date rolls over so the checklist refreshes with new exercises and cleared checkboxes
 let _lastExerciseDate=new Date().toDateString();
 setInterval(function(){
@@ -1145,7 +1145,7 @@ async function loadWeather(){
     const aftn=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=12&&x<18;}).map(h=>h.p));
     const evng=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=18&&x<24;}).map(h=>h.p));
     const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const fc=daily.time.slice(1,5).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
+    const fc=daily.time.slice(1,4).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
     const pbar=p=>'<div class="precip-bar-wrap"><div class="precip-bar" style="width:'+p+'%"></div></div>';
     // Determine when precip happens (morning/afternoon/evening) for the timing hint
     const windows=[];
@@ -1380,8 +1380,12 @@ async function loadCal(){
 // Paint instantly from cache (if any) so there's never a blank moment on page load,
 // then the live fetch above runs in the background and updates when ready.
 (function(){
-  const cached=loadCalCache();
-  if(cached&&cached.length){_allEvents=cached;renderCalView(_calView);}
+  try{
+    const cached=loadCalCache();
+    if(cached&&cached.length){_allEvents=cached;renderCalView(_calView);}
+  }catch(e){
+    console.error('Calendar cache-paint failed (non-fatal):',e);
+  }
 })();
 loadCal();setInterval(loadCal,300000);
 
@@ -1459,12 +1463,15 @@ async function loadHeadlines(){
       const src=dashIdx>0?title.slice(dashIdx+3):'';
       return {hed,src,link};
     }).filter(it=>it.hed);
-    if(parsed.length){
+    // Require at least 3 usable items before trusting this fetch enough to replace
+    // what's already showing — a suspiciously sparse result (1-2 items) is more
+    // likely a truncated/partial response from a struggling proxy under a rough
+    // network moment than a genuine "only 1 headline today" situation. Keep the
+    // existing good content rather than overwrite it with something thin.
+    if(parsed.length>=3){
       renderNewsItems(container,parsed);
       saveNewsCache(parsed);
     }
-    // If parsing produced zero usable items, silently keep existing content —
-    // don't wipe good headlines over a parsing hiccup.
   }catch(e){
     // Keep showing existing headlines rather than replacing with an error
     if(!container.children.length){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Could not parse headlines</div></div>';}
@@ -1472,9 +1479,13 @@ async function loadHeadlines(){
 }
 // Paint instantly from cache so there's never a blank moment on page load
 (function(){
-  const cached=loadNewsCache();
-  const container=document.getElementById('news-list');
-  if(cached&&cached.length&&container){renderNewsItems(container,cached);}
+  try{
+    const cached=loadNewsCache();
+    const container=document.getElementById('news-list');
+    if(cached&&cached.length&&container){renderNewsItems(container,cached);}
+  }catch(e){
+    console.error('Headlines cache-paint failed (non-fatal):',e);
+  }
 })();
 loadHeadlines();setInterval(loadHeadlines,900000);
 

@@ -1048,7 +1048,7 @@ function renderCol(evts, colorClass) {
   if (evts === null) return '<div class="err" style="font-size:.75rem">Could not load</div>';
   const today = new Date().toDateString();
   const now = new Date();
-  const allToday = (evts || []).filter(e => e.start && e.start.toDateString() === today);
+  const allToday = (evts || []).filter(e => e.start && e.start.toDateString() === today && !e.isHoliday && !e.isBirthday);
   const nowT = new Date();
   const upcoming = allToday.filter(e => !e.end ? e.start >= nowT : e.end >= nowT).sort((a,b) => a.start - b.start);
   const past = allToday.filter(e => !e.end ? e.start < nowT : e.end < nowT).sort((a,b) => a.start - b.start);

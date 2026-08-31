@@ -4,7 +4,7 @@
 // Settings (gear icon) — edits made there are committed here by
 // api/calendars.js, so the home and work dashboards (and every
 // device) stay in sync without retyping anything.
-// Last updated: 2026-08-19T02:58:19.996Z
+// Last updated: 2026-08-31T17:15:45.099Z
 // ────────────────────────────────────────────────────────────
 
 window.SHARED_CALENDARS = [
@@ -37,6 +37,7 @@ window.SHARED_CALENDARS = [
     urls: [
       'webcal://ical.sportngin.com/v3/calendar/ical?team_ids=11f19653-e453-4988-a3ee-de43a8ea4699',
       'https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZEIHTZTHF1m31gnMOQWBL9lLZ9XTQ8SM0ZiX97pr9dcfu_4DsjxwSoHjBTRSFRwDA',
+      'webcal://ical.sportngin.com/v3/calendar/ical?team_ids=11f185c9-5a9d-c0e6-9102-5e90a0f98d4b',
     ],
   },
 ];

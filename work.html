@@ -173,6 +173,18 @@ a.news-item:hover .news-hed { color: #7ECFED; }
   color: #F0F4F7;
   white-space: nowrap;
 }
+.siriusxm-btn {
+  font-size: .62rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #1a1a1a;
+  border: 1px solid #f05a28;
+  color: #f05a28;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.siriusxm-btn:hover { background: #f05a28; color: #1a1a1a; }
 .shortcut-pill:hover { background: rgba(255,255,255,0.15); }
 .spotify-search-row { display: flex; gap: 6px; margin-bottom: 6px; }
 .spotify-search-row input {
@@ -591,6 +603,7 @@ a.news-item:hover .news-hed { color: #7ECFED; }
           <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
           <button class="shortcut-pill sp-tab" data-tab="recent" onclick="spTab('recent')">Recently played</button>
           <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
+          <button class="siriusxm-btn" onclick="openSiriusXM()">📻 SiriusXM</button>
         </div>
         <div id="sp-personal-list"></div>
       </div>
@@ -1530,6 +1543,21 @@ function openInChrome(uri){
     window.location.href=appUri;
     // If the plain URI silently fails to hand off (some WebViews just no-op), try the intent form shortly after
     setTimeout(function(){ try{ window.location.href=intentUrl; }catch(e){} }, 400);
+  }catch(e){
+    window.location.href=httpsUrl;
+  }
+}
+
+// SiriusXM has no public API and no documented custom URL scheme (unlike spotify:),
+// so this targets the app by its Android package name directly, falling back to
+// the SiriusXM listen-live web page if the app isn't installed. This can only
+// launch the app generally — no now-playing info or channel deep-linking is
+// possible without an official API SiriusXM doesn't offer.
+function openSiriusXM(){
+  const httpsUrl='https://www.siriusxm.com/player';
+  const intentUrl='intent://open#Intent;package=com.sirius;S.browser_fallback_url='+encodeURIComponent(httpsUrl)+';end';
+  try{
+    window.location.href=intentUrl;
   }catch(e){
     window.location.href=httpsUrl;
   }

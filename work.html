@@ -1548,18 +1548,17 @@ function openInChrome(uri){
   }
 }
 
-// SiriusXM has no public API and no confirmed custom URL scheme (unlike spotify:),
-// so this uses Android's android-app:// scheme, which launches an installed app
-// generically by its package name alone — it doesn't require the app to register
-// any special deep-link handling, just that it's installed. Falls back to the
-// web player if the app isn't found. This can only launch the app generally —
-// no now-playing info or channel deep-linking is possible without an official
-// API SiriusXM doesn't offer.
+// SiriusXM has no public API and no confirmed custom URL scheme (unlike spotify:).
+// The android-app:// shorthand for a generic package launch was blocked by Fully
+// Kiosk ("failed to start another app"), so this uses the same standard
+// intent://...#Intent;...;end format that already works reliably for Spotify in
+// this environment, configured to launch SiriusXM by package name via the
+// standard Android MAIN/LAUNCHER intent rather than a specific link scheme.
 function openSiriusXM(){
   const httpsUrl='https://www.siriusxm.com/player';
+  const intentUrl='intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.sirius;S.browser_fallback_url='+encodeURIComponent(httpsUrl)+';end';
   try{
-    window.location.href='android-app://com.sirius';
-    setTimeout(function(){ window.location.href=httpsUrl; }, 800);
+    window.location.href=intentUrl;
   }catch(e){
     window.location.href=httpsUrl;
   }

@@ -1651,10 +1651,12 @@ async function loadSports() {
     // Team name + logo
     parts.push('<span style="color:#FFFFFF;font-weight:800;font-size:.95rem;letter-spacing:.5px;display:inline-flex;align-items:center;gap:5px;vertical-align:middle;">' + logo + ' ' + name.toUpperCase() + '</span>');
 
-    // Latest score within 3 days
+    // Latest score within 3 days (or 8 days for weekly sports like NFL — otherwise
+    // a Sunday result disappears mid-week even though it's still the most recent game)
+    const recentCutoff = teamAbbr === 'CHI' ? new Date(now - 8*24*60*60*1000) : yesterday;
     const recent = games.filter(g => {
       if (g.status !== 'closed') return false;
-      return new Date(g.start_time) >= yesterday;
+      return new Date(g.start_time) >= recentCutoff;
     }).sort((a,b) => new Date(b.start_time) - new Date(a.start_time))[0];
 
     if (recent) {
@@ -1747,9 +1749,19 @@ async function loadSports() {
   const items = [
     buildTeamTicker('Cubs', '<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>', cubsGames, 'CHC', cubsStandings),
     buildTeamTicker('Bears', '<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>', bearsGames, 'CHI', bearsStandings),
-  ].filter(Boolean);
+  ];
 
-  if (!items.length) {
+  // Fail-safe: if this refresh produced FEWER populated team segments than the
+  // last successful build had (e.g. a team's data transiently came back empty),
+  // keep showing the last good ticker instead of silently dropping that team.
+  const populatedCount = items.filter(Boolean).length;
+  if (window._lastGoodTickerCount !== undefined && populatedCount < window._lastGoodTickerCount) {
+    return; // keep whatever's already on screen; don't regress to fewer teams shown
+  }
+  window._lastGoodTickerCount = populatedCount;
+  const filteredItems = items.filter(Boolean);
+
+  if (!filteredItems.length) {
     // Show a placeholder instead of hiding
     const inner2 = document.getElementById('sports-ticker-inner');
     inner2.innerHTML = '<span style="color:#9BB5C5;padding:0 20px;font-size:.85rem;">No sports data available</span>';
@@ -1757,7 +1769,7 @@ async function loadSports() {
   }
 
   const separator = '<span style="color:#4A7A95;margin:0 30px;font-size:1.2rem;">◆</span>';
-  const tickerContent = '<span style="padding:0 40px;">' + items.join(separator) + '</span>';
+  const tickerContent = '<span style="padding:0 40px;">' + filteredItems.join(separator) + '</span>';
 
   const inner = document.getElementById('sports-ticker-inner');
   // Fill the ticker with enough copies to cover the full screen width seamlessly

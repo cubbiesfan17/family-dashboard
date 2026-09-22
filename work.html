@@ -1715,7 +1715,13 @@ function parseESPNGames(data,teamAbbr){
     const away=comp.competitors.find(c=>c.homeAway==='away');
     const homeAbbr=home.team.abbreviation,awayAbbr=away.team.abbreviation;
     const status=e.status.type.name;
-    const game={start_time:e.date,home:homeAbbr,away:awayAbbr,status:status==='STATUS_FINAL'?'closed':status==='STATUS_SCHEDULED'?'scheduled':'live',score:{},situation:e.status.type.shortDetail||'',pitchers:{}};
+    // Only map explicitly recognized statuses — anything unrecognized was
+    // previously defaulting to 'live', which incorrectly hijacked the whole
+    // ticker display (the live-game branch returns early, skipping past the
+    // recent/next-game sections entirely) whenever ESPN reported a status
+    // string other than exactly STATUS_FINAL or STATUS_SCHEDULED.
+    const mappedStatus=status==='STATUS_FINAL'?'closed':status==='STATUS_SCHEDULED'?'scheduled':status==='STATUS_IN_PROGRESS'?'live':'other';
+    const game={start_time:e.date,home:homeAbbr,away:awayAbbr,status:mappedStatus,score:{},situation:e.status.type.shortDetail||'',pitchers:{}};
     if(comp.probables){comp.probables.forEach(p=>{const side=p.homeAway;const name=p.athlete?p.athlete.shortName||p.athlete.displayName:'TBD';game.pitchers[side]=name;});}
     if(status==='STATUS_FINAL'||status==='STATUS_IN_PROGRESS'){game.score[homeAbbr]=parseInt(home.score)||0;game.score[awayAbbr]=parseInt(away.score)||0;}
     return game;

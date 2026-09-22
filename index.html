@@ -1320,11 +1320,17 @@ function parseESPNGames(data, teamAbbr) {
     const awayAbbr = away.team.abbreviation;
     const status = e.status.type.name;
     const isHome = homeAbbr === teamAbbr;
+    // Only map explicitly recognized statuses — anything unrecognized was
+    // previously defaulting to 'live', which incorrectly hijacked the whole
+    // ticker display (the live-game branch returns early, skipping past the
+    // recent/next-game sections entirely) whenever ESPN reported a status
+    // string other than exactly STATUS_FINAL or STATUS_SCHEDULED.
+    const mappedStatus = status === 'STATUS_FINAL' ? 'closed' : status === 'STATUS_SCHEDULED' ? 'scheduled' : status === 'STATUS_IN_PROGRESS' ? 'live' : 'other';
     const game = {
       start_time: e.date,
       home: homeAbbr,
       away: awayAbbr,
-      status: status === 'STATUS_FINAL' ? 'closed' : status === 'STATUS_SCHEDULED' ? 'scheduled' : 'live',
+      status: mappedStatus,
       score: {},
       situation: e.status.type.shortDetail || '',
       pitchers: {}

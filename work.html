@@ -1795,8 +1795,26 @@ async function loadSports(){
       for(const g of all){const key=g.start_time;if(!map.has(key)){map.set(key,g);}else{const existing=map.get(key);const priority=s=>s==='live'?3:s==='closed'?2:1;if(priority(g.status)>priority(existing.status))map.set(key,g);}}
       return Array.from(map.values());
     }
-    const cubsGames=mergeGames(cubsLive,cubsScores,cubsSchedule,'CHC');
-    const bearsGames=mergeGames(bearsLive,bearsScores,bearsSchedule,'CHI');
+    // Self-healing cache: if any ONE of the three parallel fetches above has a
+    // rough moment, that specific piece (e.g. Cubs' "recent" game, or Bears'
+    // "next" game) has no other source to fall back on within this cycle alone.
+    // Merging in what we successfully learned last cycle heals over that —
+    // fresh data always wins when available, but a transient gap no longer
+    // silently erases a piece we already knew.
+    function loadGamesCache(key){try{const raw=localStorage.getItem(key);const arr=raw?JSON.parse(raw):[];const cutoff=Date.now()-21*24*60*60*1000;return arr.filter(g=>new Date(g.start_time).getTime()>=cutoff);}catch(e){return[];}}
+    function saveGamesCache(key,games){try{localStorage.setItem(key,JSON.stringify(games));}catch(e){}}
+    function mergeWithCache(freshGames,cacheKey){
+      const cached=loadGamesCache(cacheKey);
+      const all=[...freshGames,...cached];
+      const map=new Map();
+      const priority=s=>s==='live'?3:s==='closed'?2:s==='scheduled'?1:0;
+      for(const g of all){const key=g.start_time;if(!map.has(key)){map.set(key,g);}else{const existing=map.get(key);if(priority(g.status)>priority(existing.status))map.set(key,g);}}
+      const merged=Array.from(map.values());
+      saveGamesCache(cacheKey,merged);
+      return merged;
+    }
+    const cubsGames=mergeWithCache(mergeGames(cubsLive,cubsScores,cubsSchedule,'CHC'),'sports_cache_cubs_v1');
+    const bearsGames=mergeWithCache(mergeGames(bearsLive,bearsScores,bearsSchedule,'CHI'),'sports_cache_bears_v1');
     const cubsStandings=getMLBStandings(cubsTeam,112);
     const bearsStandings=getTeamStandings(bearsTeam);
     function buildTeamTicker(name,logo,games,teamAbbr,standings){

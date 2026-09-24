@@ -158,6 +158,20 @@ export default async function handler(req, res) {
       cubs: { name: 'Cubs', logoId: 'chc', sport: 'mlb', ...cubsRN, standings: cubsStandings },
       bears: { name: 'Bears', logoId: 'chi', sport: 'nfl', ...bearsRN, standings: bearsStandings },
       updatedAt: now.toISOString(),
+      // TEMPORARY diagnostics — remove once the real issue is found. Shows
+      // exactly where the pipeline is breaking: did each fetch even return
+      // data, and how many raw events / parsed games came out of it.
+      _debug: {
+        pastRange, futureRange,
+        cubsPastFetchOk: !!cubsPast, cubsPastEventCount: cubsPast && cubsPast.events ? cubsPast.events.length : null,
+        cubsFutureFetchOk: !!cubsFuture, cubsFutureEventCount: cubsFuture && cubsFuture.events ? cubsFuture.events.length : null,
+        bearsPastFetchOk: !!bearsPast, bearsPastEventCount: bearsPast && bearsPast.events ? bearsPast.events.length : null,
+        bearsFutureFetchOk: !!bearsFuture, bearsFutureEventCount: bearsFuture && bearsFuture.events ? bearsFuture.events.length : null,
+        cubsGamesParsed: cubsGames.length,
+        bearsGamesParsed: bearsGames.length,
+        cubsGamesSample: cubsGames.slice(0, 2),
+        bearsGamesSample: bearsGames.slice(0, 2),
+      },
     };
 
     res.setHeader('Cache-Control', 's-maxage=120, stale-while-revalidate=180');

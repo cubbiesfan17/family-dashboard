@@ -133,17 +133,23 @@ export default async function handler(req, res) {
     const now = new Date();
     const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
     const threeWeeksOut = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
-    const dateRange = fmtDate(tenDaysAgo) + '-' + fmtDate(threeWeeksOut);
+    // Two separate, narrower-range queries per team (matching the pattern proven
+    // to work previously) rather than one wide combined range — ESPN's scoreboard
+    // endpoint may not reliably support a ~31-day span in a single query.
+    const pastRange = fmtDate(tenDaysAgo) + '-' + fmtDate(now);
+    const futureRange = fmtDate(now) + '-' + fmtDate(threeWeeksOut);
 
-    const [cubsScoreboard, bearsScoreboard, cubsStandings, bearsStandings] = await Promise.all([
-      fetchJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + dateRange + '&limit=50'),
-      fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=' + dateRange + '&limit=50'),
+    const [cubsPast, cubsFuture, bearsPast, bearsFuture, cubsStandings, bearsStandings] = await Promise.all([
+      fetchJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + pastRange + '&limit=50'),
+      fetchJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + futureRange + '&limit=50'),
+      fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=' + pastRange + '&limit=50'),
+      fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=' + futureRange + '&limit=50'),
       getMLBStandings(112), // Cubs MLB team ID
       getNFLStandings(3),   // Bears ESPN team ID
     ]);
 
-    const cubsGames = parseEvents(cubsScoreboard, 'CHC');
-    const bearsGames = parseEvents(bearsScoreboard, 'CHI');
+    const cubsGames = [...parseEvents(cubsPast, 'CHC'), ...parseEvents(cubsFuture, 'CHC')];
+    const bearsGames = [...parseEvents(bearsPast, 'CHI'), ...parseEvents(bearsFuture, 'CHI')];
 
     const cubsRN = pickRecentAndNext(cubsGames);
     const bearsRN = pickRecentAndNext(bearsGames);

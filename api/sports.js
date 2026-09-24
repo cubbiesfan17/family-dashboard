@@ -17,11 +17,22 @@
 
 async function fetchJSON(url) {
   try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(8000) });
-    if (!r.ok) return null;
-    return await r.json();
+    const r = await fetch(url, {
+      signal: AbortSignal.timeout(8000),
+      headers: {
+        // ESPN's scoreboard endpoint appears to reject bare server-side requests
+        // with no User-Agent — standings endpoints worked fine without this,
+        // but scoreboard calls were failing outright. Mimicking a real browser
+        // request here.
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json,text/plain,*/*',
+      },
+    });
+    if (!r.ok) return { ok: false, data: null, error: 'HTTP ' + r.status + ' ' + r.statusText };
+    const data = await r.json();
+    return { ok: true, data, error: null };
   } catch (e) {
-    return null;
+    return { ok: false, data: null, error: String(e && e.message || e) };
   }
 }
 
@@ -83,7 +94,8 @@ function pickRecentAndNext(games) {
 
 async function getMLBStandings(teamId) {
   const year = new Date().getFullYear();
-  const data = await fetchJSON('https://statsapi.mlb.com/api/v1/standings?leagueId=104&season=' + year + '&standingsTypes=regularSeason&hydrate=team');
+  const res = await fetchJSON('https://statsapi.mlb.com/api/v1/standings?leagueId=104&season=' + year + '&standingsTypes=regularSeason&hydrate=team');
+  const data = res.data;
   if (!data || !data.records) return null;
   const divLookup = {200:'AL West',201:'AL East',202:'AL Central',203:'NL West',204:'NL East',205:'NL Central'};
   for (const rec of data.records) {
@@ -101,7 +113,8 @@ async function getMLBStandings(teamId) {
 }
 
 async function getNFLStandings(teamId) {
-  const data = await fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/' + teamId);
+  const res = await fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/' + teamId);
+  const data = res.data;
   if (!data) return null;
   try {
     const team = data.team || data;
@@ -139,7 +152,7 @@ export default async function handler(req, res) {
     const pastRange = fmtDate(tenDaysAgo) + '-' + fmtDate(now);
     const futureRange = fmtDate(now) + '-' + fmtDate(threeWeeksOut);
 
-    const [cubsPast, cubsFuture, bearsPast, bearsFuture, cubsStandings, bearsStandings] = await Promise.all([
+    const [cubsPastRes, cubsFutureRes, bearsPastRes, bearsFutureRes, cubsStandings, bearsStandings] = await Promise.all([
       fetchJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + pastRange + '&limit=50'),
       fetchJSON('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=' + futureRange + '&limit=50'),
       fetchJSON('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=' + pastRange + '&limit=50'),
@@ -147,6 +160,7 @@ export default async function handler(req, res) {
       getMLBStandings(112), // Cubs MLB team ID
       getNFLStandings(3),   // Bears ESPN team ID
     ]);
+    const cubsPast = cubsPastRes.data, cubsFuture = cubsFutureRes.data, bearsPast = bearsPastRes.data, bearsFuture = bearsFutureRes.data;
 
     const cubsGames = [...parseEvents(cubsPast, 'CHC'), ...parseEvents(cubsFuture, 'CHC')];
     const bearsGames = [...parseEvents(bearsPast, 'CHI'), ...parseEvents(bearsFuture, 'CHI')];
@@ -159,18 +173,16 @@ export default async function handler(req, res) {
       bears: { name: 'Bears', logoId: 'chi', sport: 'nfl', ...bearsRN, standings: bearsStandings },
       updatedAt: now.toISOString(),
       // TEMPORARY diagnostics — remove once the real issue is found. Shows
-      // exactly where the pipeline is breaking: did each fetch even return
-      // data, and how many raw events / parsed games came out of it.
+      // exactly where the pipeline is breaking, including the ACTUAL error
+      // (HTTP status or exception message) for each fetch, not just ok/fail.
       _debug: {
         pastRange, futureRange,
-        cubsPastFetchOk: !!cubsPast, cubsPastEventCount: cubsPast && cubsPast.events ? cubsPast.events.length : null,
-        cubsFutureFetchOk: !!cubsFuture, cubsFutureEventCount: cubsFuture && cubsFuture.events ? cubsFuture.events.length : null,
-        bearsPastFetchOk: !!bearsPast, bearsPastEventCount: bearsPast && bearsPast.events ? bearsPast.events.length : null,
-        bearsFutureFetchOk: !!bearsFuture, bearsFutureEventCount: bearsFuture && bearsFuture.events ? bearsFuture.events.length : null,
+        cubsPast: { ok: cubsPastRes.ok, error: cubsPastRes.error, eventCount: cubsPast && cubsPast.events ? cubsPast.events.length : null },
+        cubsFuture: { ok: cubsFutureRes.ok, error: cubsFutureRes.error, eventCount: cubsFuture && cubsFuture.events ? cubsFuture.events.length : null },
+        bearsPast: { ok: bearsPastRes.ok, error: bearsPastRes.error, eventCount: bearsPast && bearsPast.events ? bearsPast.events.length : null },
+        bearsFuture: { ok: bearsFutureRes.ok, error: bearsFutureRes.error, eventCount: bearsFuture && bearsFuture.events ? bearsFuture.events.length : null },
         cubsGamesParsed: cubsGames.length,
         bearsGamesParsed: bearsGames.length,
-        cubsGamesSample: cubsGames.slice(0, 2),
-        bearsGamesSample: bearsGames.slice(0, 2),
       },
     };
 

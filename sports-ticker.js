@@ -37,6 +37,31 @@ function parseESPNGames(data,teamAbbr){
     return game;
   });
 }
+// MLB Stats API's own schedule endpoint — a proven-reliable alternative to
+// ESPN's scoreboard endpoint for Cubs' games specifically. ESPN's dated
+// scoreboard queries have shown persistent, hard-to-pin-down intermittent
+// failures (confirmed via direct debug testing), while statsapi.mlb.com has
+// been rock solid for standings — so game data for Cubs now comes from here
+// too, sidestepping the flaky endpoint entirely rather than continuing to
+// patch around it.
+const mlbAbbrMap={108:'LAA',109:'ARI',110:'BAL',111:'BOS',112:'CHC',113:'CIN',114:'CLE',115:'COL',116:'DET',117:'HOU',118:'KC',119:'LAD',120:'WSH',121:'NYM',133:'OAK',134:'PIT',135:'SD',136:'SEA',137:'SF',138:'STL',139:'TB',140:'TEX',141:'TOR',142:'MIN',143:'PHI',144:'ATL',145:'CWS',146:'MIA',147:'NYY',158:'MIL'};
+function parseMLBStatsGames(data,teamAbbr){
+  if(!data||!data.dates)return[];
+  const out=[];
+  for(const d of data.dates){
+    for(const g of (d.games||[])){
+      const homeId=g.teams.home.team.id,awayId=g.teams.away.team.id;
+      const homeAbbr=mlbAbbrMap[homeId]||String(homeId),awayAbbr=mlbAbbrMap[awayId]||String(awayId);
+      if(homeAbbr!==teamAbbr&&awayAbbr!==teamAbbr)continue;
+      const state=g.status&&g.status.abstractGameState;
+      const mappedStatus=state==='Final'?'closed':state==='Preview'?'scheduled':state==='Live'?'live':'other';
+      const game={start_time:g.gameDate,home:homeAbbr,away:awayAbbr,status:mappedStatus,score:{},situation:'',pitchers:{}};
+      if(mappedStatus==='closed'||mappedStatus==='live'){game.score[homeAbbr]=g.teams.home.score||0;game.score[awayAbbr]=g.teams.away.score||0;}
+      out.push(game);
+    }
+  }
+  return out;
+}
 function getMLBStandings(standingsData,teamId){
   if(!standingsData||!standingsData.records)return null;
   try{
@@ -90,10 +115,8 @@ async function loadSports(){
     const fmt=d=>d.toISOString().slice(0,10).replace(/-/g,'');
     const threeDaysAgo=new Date(now-3*24*60*60*1000);
     const year=now.getFullYear();
-    const [cubsScores,cubsSchedule,cubsLive,bearsScores,bearsSchedule,bearsLive,cubsTeam,bearsTeam]=await Promise.all([
-      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates='+fmt(threeDaysAgo)+'-'+fmt(now)+'&limit=30'),
-      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates='+fmt(now)+'-'+fmt(twoWeeks)+'&limit=30'),
-      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard'),
+    const [cubsSchedRaw,bearsScores,bearsSchedule,bearsLive,cubsTeam,bearsTeam]=await Promise.all([
+      fetchESPN('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=112&startDate='+threeDaysAgo.toISOString().slice(0,10)+'&endDate='+twoWeeks.toISOString().slice(0,10)),
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+fmt(threeDaysAgo)+'-'+fmt(now)+'&limit=30'),
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+fmt(now)+'-'+fmt(twoWeeks)+'&limit=30'),
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'),
@@ -116,7 +139,7 @@ async function loadSports(){
       saveGamesCache(cacheKey,merged);
       return merged;
     }
-    const cubsGames=mergeWithCache(mergeGames(cubsLive,cubsScores,cubsSchedule,'CHC'),'sports_cache_cubs_v1');
+    const cubsGames=mergeWithCache(parseMLBStatsGames(cubsSchedRaw,'CHC'),'sports_cache_cubs_v1');
     const bearsGames=mergeWithCache(mergeGames(bearsLive,bearsScores,bearsSchedule,'CHI'),'sports_cache_bears_v1');
     const cubsStandings=getMLBStandings(cubsTeam,112);
     const bearsStandings=getTeamStandings(bearsTeam);

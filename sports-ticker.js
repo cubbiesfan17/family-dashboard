@@ -190,11 +190,7 @@ async function loadSports(){
     const filteredItems=items.filter(Boolean);
     if(!filteredItems.length){inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">No sports data</span>';return;}
     const separator='<span style="color:#4A7A95;margin:0 24px;">◆</span>';
-    // TEMPORARY diagnostic tag — shows fetch success + raw event counts so we
-    // can pinpoint exactly which fetch is failing without needing dev-console
-    // access. Remove once the real issue is found.
-    const dbg='<span style="color:#FFD400;font-size:.6rem;margin-left:20px;">DBG cubsScores='+(cubsScores?'OK('+(cubsScores.events?cubsScores.events.length:'?')+'ev)':'FAIL')+' cubsSched='+(cubsSchedule?'OK('+(cubsSchedule.events?cubsSchedule.events.length:'?')+'ev)':'FAIL')+' cubsLive='+(cubsLive?'OK('+(cubsLive.events?cubsLive.events.length:'?')+'ev)':'FAIL')+' cubsGames='+cubsGames.length+' recentFound='+(cubsGames.some(g=>g.status==='closed')?'Y':'N')+'</span>';
-    const tickerContent='<span style="padding:0 30px;">'+filteredItems.join(separator)+dbg+'</span>';
+    const tickerContent='<span style="padding:0 30px;">'+filteredItems.join(separator)+'</span>';
     inner.innerHTML=tickerContent+tickerContent+tickerContent+tickerContent;
     if(window._tickerRAF)cancelAnimationFrame(window._tickerRAF);
     inner.style.transform='translateX(0)';

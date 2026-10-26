@@ -4,7 +4,7 @@
 // Settings (gear icon) — edits made there are committed here by
 // api/calendars.js, so the home and work dashboards (and every
 // device) stay in sync without retyping anything.
-// Last updated: 2026-08-31T17:15:45.099Z
+// Last updated: 2026-10-26T11:59:26.737Z
 // ────────────────────────────────────────────────────────────
 
 window.SHARED_CALENDARS = [
@@ -29,6 +29,7 @@ window.SHARED_CALENDARS = [
     urls: [
       'https://api.team-manager.gc.com/ics-calendar-documents/user/8831aa03-725d-4fba-b5fa-33572642c832.ics?teamId=fbf49a5b-149f-47c1-b7be-7a19d7f7d25f&token=73b47329df89a3bf2f6669c741debc1f764b9b6bd7cca529911ba269e17f86f1',
       'https://p118-caldav.icloud.com/published/2/MTU4NDAxMjYzMTU4NDAxMmVeW3xPa8ZLAQAQSla4x-ZDIY3sF_WNgNC_fNUwSPBTg6eYMaE7OWrf77WWhn061RyX0RKXPnnUh_qRFoDfF5I',
+      'https://api.team-manager.gc.com/ics-calendar-documents/user/8831aa03-725d-4fba-b5fa-33572642c832.ics?teamId=d38f3e9c-357e-40d9-a1f2-ed5097b4fe8d&token=ad5c0e2da5a19767435437316395fead606c105a173645b28fdb86060b435a79',
     ],
   },
   {

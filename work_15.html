@@ -1,0 +1,1657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Work Dashboard</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Anton&family=VT323&family=Archivo+Black&display=swap');
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  font-family: 'Inter', sans-serif;
+  background: #0d1f2d;
+  color: #F0F4F7;
+  padding: 5px;
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid-template-rows: 112px 1fr 28px;
+  gap: 5px;
+  font-size: 14px;
+}
+
+/* Card base */
+.card {
+  background: rgba(255,255,255,0.10);
+  border-radius: 9px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  overflow: hidden;
+  min-height: 0;
+}
+.card-label {
+  font-size: .6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #7BAFC4;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.icon-btn { background: none; border: none; cursor: pointer; color: #7BAFC4; font-size: 13px; padding: 0; line-height: 1; }
+.icon-btn:hover { color: #fff; }
+.status-msg { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
+
+/* ═══ Row 1: Motivation + Clock ═══ */
+.row-top {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr 1.1fr;
+  gap: 6px;
+  min-height: 0;
+}
+.card-work { background: rgba(74,158,191,0.13); border-color: rgba(74,158,191,0.35); }
+.net-status-row { display: flex; align-items: center; gap: 7px; font-size: .78rem; font-weight: 700; color: #fff; margin-top: 3px; }
+.net-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; background: #7BAFC4; box-shadow: 0 0 6px 1px rgba(255,255,255,0.15); }
+.net-dot.good { background: #22c55e; box-shadow: 0 0 8px 2px rgba(34,197,94,0.5); }
+.net-dot.fair { background: #eab308; box-shadow: 0 0 8px 2px rgba(234,179,8,0.5); }
+.net-dot.poor { background: #ef4444; box-shadow: 0 0 8px 2px rgba(239,68,68,0.5); }
+.net-ping { font-size: .5rem; color: #7BAFC4; line-height: 1.25; margin-top: 2px; }
+.net-test-btn { margin-top: 5px; background: rgba(74,158,191,0.25); border: 1px solid rgba(74,158,191,0.5); color: #cde8f5; font-size: .56rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; cursor: pointer; }
+.net-test-btn:hover { background: rgba(74,158,191,0.4); }
+.net-speed-result { font-size: .56rem; color: #fff; margin-top: 3px; line-height: 1.3; }
+.net-last-tested { font-size: .44rem; color: #4A7A95; margin-top: 1px; }
+.net-dip-note { font-size: .48rem; color: #eab308; margin-top: 2px; font-weight: 700; }
+.quote-text { font-size: .82rem; font-style: italic; color: #fff; line-height: 1.35; }
+.quote-author { font-size: .7rem; color: #7ECFED; margin-top: 4px; }
+.clock-time { font-size: 2.6rem; font-weight: 800; letter-spacing: -2px; line-height: 1; color: #fff; }
+.clock-date { font-size: 1rem; color: #7BAFC4; font-weight: 500; position: relative; top: -4px; }
+.progress-wrap { background: rgba(255,255,255,0.1); border-radius: 3px; height: 3px; margin-top: 8px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; background: #4A9EBF; transition: width 1s linear; }
+.progress-label { font-size: .62rem; color: #7BAFC4; margin-top: 3px; }
+
+/* ═══ Row 2: Main grid ═══
+   Column layout:
+     [Weather | Schedule | Headlines]   (row A)
+     [   Music/Gameday    | Headlines]  (row B — music spans weather+schedule, headlines continues)
+*/
+.row-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.8fr) minmax(0, 1.25fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 6px;
+  min-height: 0;
+}
+.card-news    { grid-column: 1; grid-row: 1; display: flex; flex-direction: column; align-self: start; }
+.card-weather { grid-column: 2; grid-row: 1; align-self: stretch; }
+.card-cal     { grid-column: 3; grid-row: 1; display: flex; flex-direction: column; align-self: stretch; }
+.card-music   { grid-column: 1 / span 3; grid-row: 2; }
+
+/* Weather */
+.weather-main { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.weather-icon { font-size: 1.8rem; line-height: 1; }
+.weather-temp { font-size: 1.7rem; font-weight: 800; letter-spacing: -1px; line-height: 1; color: #fff; }
+.weather-desc { font-size: .7rem; color: #7BAFC4; text-transform: capitalize; }
+.weather-detail-line { font-size: .7rem; color: #fff; margin-top: 2px; }
+.weather-dress {
+  padding: 3px 8px;
+  border-radius: 7px;
+  background: rgba(74,158,191,0.2);
+  font-size: .64rem;
+  font-weight: 700;
+  color: #fff;
+  border: 1px solid rgba(74,158,191,0.3);
+  margin-top: 5px;
+  display: inline-block;
+}
+.forecast-strip { display: flex; border-top: 1px solid rgba(255,255,255,.1); padding-top: 6px; margin-top: 6px; }
+.forecast-day { flex: 1; text-align: center; padding: 0 2px; border-right: 1px solid rgba(255,255,255,.08); }
+.forecast-day:last-child { border-right: none; }
+.fc-dow { font-size: .52rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 2px; }
+.fc-icon { font-size: .95rem; margin-bottom: 1px; }
+.fc-high { font-size: .7rem; font-weight: 600; color: #fff; }
+.fc-precip { font-size: .58rem; color: #4A9EBF; }
+
+/* Calendar */
+.view-toggle { display: flex; gap: 3px; }
+.view-btn { font-size: .5rem; font-weight: 700; padding: 2px 6px; border-radius: 20px; border: 1px solid rgba(74,158,191,0.4); background: transparent; color: #7BAFC4; cursor: pointer; letter-spacing: .5px; }
+.view-btn.active { background: #4A9EBF; color: #fff; border-color: #4A9EBF; }
+.cal-legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+.cal-legend-item { display: flex; align-items: center; gap: 4px; font-size: .58rem; color: #7BAFC4; }
+.cal-legend-bar { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+.cal-list { display: flex; flex-direction: column; gap: 2px; overflow-y: scroll; scrollbar-width: none; flex: 1; min-height: 0; max-height: 260px; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; }
+.cal-list::-webkit-scrollbar { display: none; }
+.cal-event { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 6px; background: rgba(13,25,45,0.6); border-left: 3px solid #4A9EBF; }
+.cal-event.past { opacity: .4; }
+.cal-event.next { background: rgba(74,158,191,0.15); box-shadow: 0 0 6px rgba(74,158,191,0.4); }
+.cal-event.holiday { border-left-color: #f0a500; }
+.cal-event.holiday .cal-ev-title { color: #f0d080; font-style: italic; }
+.cal-event.ongoing .cal-ev-title { color: #eab308; font-weight: 800; }
+.cal-event.ongoing .cal-ev-time { color: #eab308; }
+.cal-ev-time { font-size: .58rem; font-weight: 600; color: #7BAFC4; min-width: 64px; flex-shrink: 0; }
+.cal-ev-title { font-size: .72rem; font-weight: 600; color: #fff; flex: 1; line-height: 1.2; }
+.cal-ev-person { font-size: .55rem; color: #7BAFC4; flex-shrink: 0; }
+.wm-day-label { font-size: .54rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #4A9EBF; padding: 3px 0 2px; border-bottom: 1px solid rgba(74,158,191,0.2); margin-top: 3px; }
+.wm-day-label.today-label { color: #7ECFED; }
+.no-events { font-size: .7rem; color: #7BAFC4; padding: 6px 0; text-align: center; }
+
+/* Headlines - full height right column */
+#news-list { flex: 1; min-height: 0; overflow-y: scroll; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: none; }
+#news-list::-webkit-scrollbar { display: none; }
+.news-item { padding: 5px 3px; border-bottom: 1px solid rgba(255,255,255,0.08); border-radius: 4px; display: block; text-decoration: none; }
+.news-item:last-of-type { border-bottom: none; }
+a.news-item:hover { background: rgba(74,158,191,0.12); }
+a.news-item:hover .news-hed { color: #7ECFED; }
+.news-hed { font-size: .68rem; color: #F0F4F7; line-height: 1.3; }
+.news-src { font-size: .55rem; color: #7BAFC4; margin-top: 1px; }
+
+/* Music / Gameday (spans below weather + schedule) */
+.card-music { display: flex; flex-direction: column; }
+.card-gameday { background: rgba(19,58,32,0.85); border-color: rgba(11,40,20,0.9); }
+.card-gameday .card-label { color: rgba(255,255,255,.55); }
+.gameday-vs { font-size: 1rem; font-weight: 700; color: #fff; margin: 2px 0 3px; }
+.gameday-time { font-size: .72rem; color: rgba(255,255,255,.65); margin-bottom: 6px; }
+.no-game { font-size: .72rem; color: rgba(255,255,255,.6); line-height: 1.4; margin-top: 2px; }
+.spotify-shortcuts { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.shortcut-pill {
+  font-size: .62rem;
+  padding: 3px 9px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  cursor: pointer;
+  color: #F0F4F7;
+  white-space: nowrap;
+}
+.siriusxm-btn {
+  font-size: .62rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: #1a1a1a;
+  border: 1px solid #f05a28;
+  color: #f05a28;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.siriusxm-btn:hover { background: #f05a28; color: #1a1a1a; }
+.shortcut-pill:hover { background: rgba(255,255,255,0.15); }
+.spotify-search-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.spotify-search-row input {
+  flex: 1;
+  font-size: .72rem;
+  padding: 5px 9px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+  outline: none;
+}
+.spotify-search-row button { padding: 5px 12px; border-radius: 6px; border: none; background: #1db954; color: #fff; font-size: .7rem; cursor: pointer; }
+.spotify-placeholder { background: rgba(255,255,255,0.05); border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); padding: 8px; text-align: center; }
+.spotify-placeholder p { font-size: .68rem; color: #7BAFC4; }
+.spotify-big-icon { font-size: 1.3rem; color: #1db954; margin-bottom: 3px; }
+#sp-connect { font-size: .7rem; color: #7BAFC4; margin-bottom: 6px; }
+#sp-personal-list { display: grid; grid-template-rows: repeat(2, auto); grid-auto-flow: column; grid-auto-columns: 200px; gap: 8px; overflow-x: scroll; overflow-y: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-x; overscroll-behavior-x: contain; scrollbar-width: none; padding-bottom: 2px; }
+#sp-personal-list::-webkit-scrollbar { display: none; }
+.sp-tile { background: rgba(255,255,255,0.05); border-radius: 6px; padding: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.08); text-decoration: none; }
+#sp-personal-list .sp-tile { flex: 0 0 200px; width: 200px; }
+.sp-tile:hover { background: rgba(255,255,255,0.12); }
+.sp-tile img { width: 34px; height: 34px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.sp-tile-text { min-width: 0; flex: 1; }
+.sp-tile-name { font-size: .68rem; font-weight: 700; color: #fff; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tile-sub { font-size: .58rem; color: #7BAFC4; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sp-tab { font-size: .56rem !important; padding: 2px 8px !important; }
+.sp-tab.active { background: #1db954 !important; border-color: #1db954 !important; color: #fff !important; }
+
+/* ═══ Row 3: Sports ticker (same style as home dashboard) ═══ */
+#sports-ticker {
+  background: rgba(13,25,45,0.90);
+  border-radius: 7px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  height: 28px;
+  line-height: 28px;
+}
+#sports-ticker > div:first-child {
+  background: #0f1e28;
+  color: #E8F4F8;
+  font-size: .6rem;
+  font-weight: 700;
+  padding: 0 12px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  letter-spacing: 1.5px;
+  flex-shrink: 0;
+}
+#sports-ticker-inner { display: flex; align-items: center; height: 100%; white-space: nowrap; will-change: transform; line-height: 1; font-size: .75rem; }
+
+.sp { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(74,158,191,0.3); border-top-color: #4A9EBF; border-radius: 50%; animation: spin .7s linear infinite; vertical-align: middle; margin-right: 4px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.err { color: #ef4444; font-size: .7rem; line-height: 1.4; }
+
+
+/* Force Weather + Schedule to only take content height (not stretch) */
+.card-weather, .card-cal { align-self: start; }
+/* Music/gameday fills remaining vertical space */
+.card-music { align-self: stretch; display: flex; flex-direction: column; }
+.card-music #spotify-embed { flex: 1; min-height: 0; overflow: hidden; }
+.card-music .spotify-placeholder { height: 100%; display: flex; flex-direction: column; justify-content: center; }
+#np-bar { flex-shrink: 0; margin-bottom: 6px; }
+#np-bar-empty { font-size: .68rem; color: #7BAFC4; padding: 10px 8px; text-align: center; background: rgba(255,255,255,0.04); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.12); }
+.np-now-row { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 7px 9px; }
+.np-now-img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #222; }
+.np-now-info { flex: 1; min-width: 0; }
+.np-now-title { font-size: .8rem; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-now-artist { font-size: .66rem; color: #7BAFC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-now-device { font-size: .56rem; color: #4A7A95; margin-top: 1px; }
+.np-now-progress-wrap { background: rgba(255,255,255,0.15); height: 3px; border-radius: 2px; margin-top: 5px; overflow: hidden; }
+.np-now-progress { height: 100%; background: #1db954; }
+.np-controls { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+.np-ctrl-btn { background: rgba(74,158,191,0.18); border: 1px solid rgba(74,158,191,0.35); border-radius: 50%; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; color: #cde8f5; font-size: 1.1rem; cursor: pointer; flex-shrink: 0; }
+.np-ctrl-btn:hover { background: rgba(74,158,191,0.3); }
+.np-ctrl-btn.play-pause { width: 48px; height: 48px; background: #4A9EBF; border-color: #4A9EBF; color: #fff; font-size: 1.25rem; }
+.np-ctrl-btn.play-pause:hover { background: #5cb3d6; }
+.np-shuffle-note { font-size: .52rem; color: #ffd400; font-weight: 400; text-transform: none; letter-spacing: 0; }
+.icon-play { width: 0; height: 0; border-style: solid; border-width: 9px 0 9px 15px; border-color: transparent transparent transparent #fff; margin-left: 3px; display: inline-block; }
+.icon-pause { display: inline-flex; gap: 5px; align-items: center; }
+.icon-pause span { width: 5px; height: 17px; background: #fff; border-radius: 1px; display: block; }
+.np-queue { margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+.np-queue-title { font-size: .58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: #7BAFC4; margin-bottom: 5px; }
+.np-queue-list { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px 8px; }
+.np-queue-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 6px; background: rgba(255,255,255,0.04); text-decoration: none; }
+.np-queue-item:hover { background: rgba(255,255,255,0.1); }
+.np-queue-item img { width: 26px; height: 26px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
+.np-queue-text { min-width: 0; flex: 1; }
+.np-queue-name { font-size: .68rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-queue-sub { font-size: .58rem; color: #7BAFC4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.music-scroll { flex: 1; min-height: 0; overflow-y: scroll; overflow-x: hidden; -webkit-overflow-scrolling: touch; touch-action: pan-y; overscroll-behavior: contain; scrollbar-width: none; }
+.music-scroll::-webkit-scrollbar { display: none; }
+#sp-personal-list { max-height: none; }
+
+
+/* ═══ Gameday view (v2 - MLB app style) ═══ */
+.card-gameday { background: linear-gradient(165deg, #1a3324, #0c1c13); border: 1px solid #d8c9a3; border-top: 2px solid #2a4a35; position: relative; }
+.gd-header {
+  font-size: .78rem;
+  font-weight: 400;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Archivo Black', sans-serif;
+  text-transform: uppercase;
+}
+.gd-live-badge {
+  background: #e11d48;
+  color: #fff;
+  font-size: .58rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  animation: gd-pulse 2s infinite;
+  font-family: 'Inter', sans-serif;
+}
+.gd-warmup-badge {
+  background: #fbbf24;
+  color: #1a1a1a;
+  font-size: .58rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  font-family: 'Inter', sans-serif;
+}
+@keyframes gd-pulse { 0%,100% { opacity:1; } 50% { opacity: .55; } }
+
+.gd-body {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 16px;
+  align-items: stretch;
+}
+
+/* Left stacked scoreboard */
+.gd-scoreboard-stacked { display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+.gd-team-row {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  gap: 9px;
+  align-items: center;
+  padding: 5px 10px;
+  background: rgba(0,0,0,0.22);
+  border-radius: 7px;
+  border-left: 3px solid transparent;
+}
+.gd-team-row.winning { border-left-color: #22c55e; }
+.gd-team-row.batting { border-left-color: #fbbf24; }
+.gd-team-logo { width: 30px; height: 30px; border-radius: 50%; background: #fff; padding: 2px; }
+.gd-team-details { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.gd-team-name { font-size: .85rem; font-weight: 400; line-height: 1; color: #f5f0dc; letter-spacing: .5px; font-family: 'Archivo Black', sans-serif; text-transform: uppercase; }
+.gd-team-rec { font-size: .55rem; color: rgba(255,255,255,0.55); }
+.gd-team-score { font-size: 2.1rem; font-weight: 400; line-height: 1; letter-spacing: 0; color: #f5f5f0; font-family: 'Anton', sans-serif; }
+.gd-team-score.winning { color: #ffffff; }
+
+.gd-inning-strip {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 0;
+  font-size: .6rem;
+  color: rgba(255,255,255,0.55);
+  border-top: 1px dashed rgba(255,255,255,0.1);
+  border-bottom: 1px dashed rgba(255,255,255,0.1);
+  margin: 2px 0;
+}
+.gd-inning-arrow { color: #ffd400; font-size: .85rem; font-weight: 800; }
+.gd-inning-num { color: #ffd400; font-weight: 400; font-size: .95rem; font-family: 'Anton', sans-serif; letter-spacing: .5px; }
+
+/* Right game state */
+.gd-game-state {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 20px;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(6,26,13,0.65); border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+}
+
+/* Base diamond */
+.gd-diamond {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  width: 128px;
+  height: 128px;
+  flex-shrink: 0;
+}
+.gd-base-cell { display: flex; align-items: center; justify-content: center; }
+.gd-base {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: 3px solid rgba(255,255,255,0.32);
+  border-radius: 3px;
+  transform: rotate(45deg);
+}
+.gd-base { border-color: rgba(255,255,255,0.4) !important; }
+.gd-base.occupied { background: radial-gradient(circle at 35% 35%, #fff8e0, #ffcf5c); border-color: #ffdd88 !important; box-shadow: 0 0 10px 3px rgba(255,215,120,0.65); }
+.gd-base.gd-base-home { border-color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.12); }
+/* Grid areas: second base top-middle, third base middle-left, first base middle-right, home bottom-middle */
+.gd-cell-second { grid-column: 2; grid-row: 1; }
+.gd-cell-third  { grid-column: 1; grid-row: 2; }
+.gd-cell-first  { grid-column: 3; grid-row: 2; }
+.gd-cell-home   { grid-column: 2; grid-row: 3; align-items: flex-end; }
+
+
+
+/* Count section */
+.gd-count-big { display: flex; flex-direction: column; gap: 6px; }
+.gd-count-row { display: flex; align-items: center; gap: 10px; }
+.gd-count-label { font-size: .82rem; font-weight: 400; color: rgba(255,255,255,0.7); letter-spacing: 1.5px; min-width: 46px; font-family: 'VT323', monospace; text-transform: uppercase; }
+.gd-count-dots { display: flex; gap: 5px; }
+.gd-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.35);
+  border: 1.5px solid rgba(255,255,255,0.22);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+}
+.gd-dot.on { background: radial-gradient(circle at 35% 35%, #fff8e0, #ffcf5c); border-color: #ffdd88; box-shadow: 0 0 7px 2px rgba(255,215,120,0.65); }
+.gd-dot.strike.on { background: radial-gradient(circle at 35% 35%, #fff0e0, #ff9a52); border-color: #ffb26b; box-shadow: 0 0 7px 2px rgba(255,154,82,0.6); }
+.gd-dot.out.on { background: radial-gradient(circle at 35% 35%, #ffe0d8, #ff6b4a); border-color: #ff8a66; box-shadow: 0 0 7px 2px rgba(255,107,74,0.55); }
+
+/* Batter/Pitcher matchup */
+.gd-matchup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.gd-mp-cell { display: flex; flex-direction: column; gap: 2px; }
+.gd-mp-role {
+  font-size: .62rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.65);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-family: 'Archivo Black', sans-serif;
+}
+.gd-mp-name { font-size: 1.05rem; font-weight: 800; color: #f5f0dc; }
+.gd-mp-stats { font-size: .66rem; color: rgba(255,255,255,0.6); }
+.gd-mp-stats.gd-mp-game { color: #ffd400; font-family: 'Archivo Black', sans-serif; font-size: .68rem; letter-spacing: .2px; margin-top: 2px; }
+
+/* Last play strip */
+.gd-last-play {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(255,215,107,0.1);
+  border-radius: 6px;
+  font-size: .72rem;
+  color: rgba(255,255,255,0.9);
+  border-left: 3px solid #fbbf24;
+  line-height: 1.4;
+}
+.gd-last-play strong { color: #ffd400; margin-right: 8px; font-size: .68rem; letter-spacing: 1px; font-weight: 800; font-family: 'Archivo Black', sans-serif; }
+
+/* Warmup mode: hide game-state, show pregame view */
+.gd-pregame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #fff;
+  text-align: center;
+  gap: 8px;
+}
+.gd-pregame-vs { font-size: 1.1rem; font-weight: 700; }
+.gd-pregame-time { font-size: .85rem; color: rgba(255,255,255,0.65); }
+.gd-pregame-countdown { font-size: .95rem; color: #fbbf24; font-weight: 700; margin-top: 4px; }
+
+
+
+
+
+/* Cubs scoring celebration */
+@keyframes gdCelebrateGlow {
+  0%,100% { box-shadow: 0 0 0 rgba(251,191,36,0); }
+  50% { box-shadow: 0 0 45px 14px rgba(251,191,36,0.65); }
+}
+.card-gameday.gd-celebrate { animation: gdCelebrateGlow 0.9s ease-in-out 4; }
+.gd-score-banner {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a1a;
+  font-weight: 900;
+  font-size: .95rem;
+  padding: 6px 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  z-index: 20;
+  animation: gdBannerPop 4s ease-in-out forwards;
+  white-space: nowrap;
+}
+@keyframes gdBannerPop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0.8); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+  15% { transform: translateX(-50%) translateY(0) scale(1); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-6px) scale(0.95); }
+}
+
+/* EOD banner (only shows near 5pm) */
+#eod-banner { display: none; position: fixed; top: 6px; left: 50%; transform: translateX(-50%); background: rgba(245,158,11,0.9); border-radius: 8px; padding: 6px 14px; font-size: .75rem; color: #1a1a1a; font-weight: 600; z-index: 100; }
+</style>
+</head>
+<body>
+
+<!-- ═══ Row 1: Motivation + Clock ═══ -->
+<div class="row-top">
+  <div class="card card-work">
+    <div class="card-label">✦ Motivation of the day</div>
+    <div style="display:flex;align-items:center;height:calc(100% - 20px);">
+      <div>
+        <span class="quote-text" id="quote-text"></span>
+        <div class="quote-author" id="quote-author"></div>
+      </div>
+    </div>
+  </div>
+  <div class="card card-work">
+    <div class="card-label">🌐 Network</div>
+    <div class="net-status-row"><span class="net-dot" id="net-dot"></span><span id="net-status-text">Checking…</span></div>
+    <div class="net-ping" id="net-ping"></div>
+    <div class="net-dip-note" id="net-dip-note" style="display:none;"></div>
+    <div class="net-speed-result" id="net-speed-result"></div>
+    <button class="net-test-btn" id="net-test-btn" onclick="runSpeedTest()">Test speed</button>
+    <div class="net-last-tested" id="net-last-tested"></div>
+  </div>
+  <div class="card card-work">
+    <div class="card-label">Time &amp; workday</div>
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+      <div class="clock-time" id="clock">--:--</div>
+      <div class="clock-date" id="clock-date"></div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="day-bar" style="width:0%"></div></div>
+    <div class="progress-label" id="day-pct">Workday progress</div>
+  </div>
+</div>
+
+<!-- ═══ Row 2: Main grid — Weather + Schedule (top row) / Music (spans below) / Headlines (full height right) ═══ -->
+<div class="row-main">
+  <!-- Weather (top-left) -->
+  <div class="card card-weather">
+    <div class="card-label">
+      <span>Weather — Algonquin</span>
+      <button class="icon-btn" onclick="loadWeather()" title="Refresh">↻</button>
+    </div>
+    <div id="weather-body"><span class="sp"></span> Loading…</div>
+  </div>
+
+  <!-- Calendar (top-center) -->
+  <div class="card card-cal">
+    <div class="card-label">
+      <span id="cal-title">📅 Today's schedule</span>
+      <span style="display:flex;gap:6px;align-items:center;">
+        <span class="view-toggle">
+          <button class="view-btn active" id="vbtn-today" onclick="switchCalView('today')">TODAY</button>
+          <button class="view-btn" id="vbtn-week" onclick="switchCalView('week')">WEEK</button>
+          <button class="view-btn" id="vbtn-month" onclick="switchCalView('month')">MONTH</button>
+        </span>
+        <button class="icon-btn" onclick="loadCal()" title="Refresh">↻</button>
+      </span>
+    </div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#2e9e5b"></div>Family</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#3b82f6"></div>Finn</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#ec4899"></div>Millie</div>
+      <div class="cal-legend-item"><div class="cal-legend-bar" style="background:#eab308"></div>Nolan</div>
+    </div>
+    <div id="cal" style="flex:1;overflow:hidden;min-height:0;display:flex;flex-direction:column;"><span class="sp"></span></div>
+  </div>
+
+  <!-- Headlines (full-height right column) -->
+  <div class="card card-news">
+    <div class="card-label">Headlines</div>
+    <div id="news-list"></div>
+  </div>
+
+  <!-- Music/Gameday (spans Weather+Schedule columns) -->
+  <div class="card card-music" id="music-card">
+    <div class="card-label">
+      <span>🎵 Music &amp; audio</span>
+      <span id="sp-status" style="font-size:.55rem;color:#7BAFC4;"></span>
+    </div>
+
+    <!-- PRIORITY 1: Now Playing — always visible, never scrolls away -->
+    <div id="np-bar">
+      <div id="np-bar-empty">Nothing playing, tap track below</div>
+    </div>
+
+    <!-- Scrollable content: Up Next, browsing list, shortcuts, search — all scroll together -->
+    <div class="music-scroll" id="music-browse-section">
+      <div id="np-queue-container"></div>
+      <div id="sp-personal" style="display:none;margin-bottom:6px;">
+        <div style="display:flex;gap:5px;margin-bottom:5px;">
+          <button class="shortcut-pill sp-tab active" data-tab="shows" onclick="spTab('shows')">Podcasts</button>
+          <button class="shortcut-pill sp-tab" data-tab="playlists" onclick="spTab('playlists')">Your playlists</button>
+          <button class="shortcut-pill sp-tab" data-tab="recent" onclick="spTab('recent')">Recently played</button>
+          <button class="shortcut-pill sp-tab" data-tab="top" onclick="spTab('top')">Top tracks</button>
+          <button class="siriusxm-btn" onclick="openSiriusXM()">📻 SiriusXM</button>
+        </div>
+        <div id="sp-personal-list"></div>
+      </div>
+      <div id="sp-connect" style="display:none;">
+        <a href="/api/spotify/auth" style="color:#1db954;">Connect Spotify ↗</a> to see your playlists and recently played
+      </div>
+      <div class="spotify-search-row">
+        <input type="text" id="spotify-search" placeholder="Search Spotify…" onkeydown="if(event.key==='Enter')spotifySearch()"/>
+        <button onclick="spotifySearch()">Search</button>
+      </div>
+      <div id="spotify-embed" style="display:none;">
+        <div class="spotify-placeholder"><div class="spotify-big-icon">♫</div><p>Search results appear here</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gameday card (hidden until game active — replaces music-card in same slot) -->
+  <div class="card card-music card-gameday" id="gameday-card" style="display:none;">
+    <div class="card-label">⚾ Cubs Gameday</div>
+    <div id="gameday-content"></div>
+  </div>
+</div>
+
+<!-- ═══ Row 3: Sports ticker (same as home dashboard) ═══ -->
+<div id="sports-ticker">
+  <div>🏆 SCORES</div>
+  <div style="overflow:hidden;flex:1;position:relative;height:100%;">
+    <div id="sports-ticker-inner">
+      <span style="color:#c7d2fe;padding:0 20px;">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div id="eod-banner">⏰ Almost 4:30 — wrap up, write your done list!</div>
+
+
+</div>
+
+<script src="shared-calendars.js"></script>
+<script src="/sports-ticker.js"></script>
+<script>
+
+
+// ── Calendar config: read from shared-calendars.js (single source of truth) ──
+// Falls back to inline defaults if the shared file didn't load.
+const ICS_COLS = (window.SHARED_CALENDARS || []).map(c => ({
+  label: c.label,
+  color: c.color,
+  raw: (c.urls || []).join(',') || c.raw || ''
+}));
+
+// ── Quote ──
+const QUOTES=[
+  {q:"The secret of getting ahead is getting started.",a:"Mark Twain"},
+  {q:"It always seems impossible until it's done.",a:"Nelson Mandela"},
+  {q:"Believe you can and you're halfway there.",a:"Theodore Roosevelt"},
+  {q:"The only way to do great work is to love what you do.",a:"Steve Jobs"},
+  {q:"Focus on being productive instead of busy.",a:"Tim Ferriss"},
+  {q:"You don't have to be great to start, but you have to start to be great.",a:"Zig Ziglar"},
+  {q:"Do the hard jobs first. The easy jobs will take care of themselves.",a:"Dale Carnegie"},
+  {q:"Small daily improvements are the key to staggering long-term results.",a:"Robin Sharma"},
+  {q:"Motivation is what gets you started. Habit is what keeps you going.",a:"Jim Ryun"},
+  {q:"Don't watch the clock; do what it does. Keep going.",a:"Sam Levenson"},
+  {q:"Hard work beats talent when talent doesn't work hard.",a:"Tim Notke"},
+  {q:"Push yourself because no one else is going to do it for you.",a:"Unknown"},
+];
+// ── Populate quote (re-checked at midnight rollover, not just on page load) ──
+function renderQuote(){
+  const now=new Date(),doy=Math.floor((now-(new Date(now.getFullYear(),0,0)))/86400000);
+  const fb=QUOTES[doy%QUOTES.length];
+  document.getElementById('quote-text').textContent='\u201c'+fb.q+'\u201d';
+  document.getElementById('quote-author').textContent=fb.a?'\u2014 '+fb.a:'';
+}
+try{renderQuote();}catch(e){console.error('Quote render failed (non-fatal):',e);}
+let _lastQuoteDate=new Date().toDateString();
+setInterval(function(){
+  const today=new Date().toDateString();
+  if(today!==_lastQuoteDate){_lastQuoteDate=today;renderQuote();}
+},60000);
+
+// ── Network status: lightweight automatic ping (negligible bandwidth), manual full speed test on demand ──
+// ── Network status: burst of quick probes approximates jitter + packet loss
+//    (browsers can't do true ICMP ping, so this is an HTTP-layer proxy — still
+//    a meaningfully better signal than a single ping reading) ──
+let _netHistory=[]; // last few raw classifications, used to soften isolated blips
+let _lastDipTime=null; // when we last saw a raw poor reading, for the dip note
+let _netCheckInProgress=false; // prevents overlapping runs from racing to update the DOM
+async function connectionCheck(){
+  if(_netCheckInProgress)return; // a previous check is still running (e.g. hit a slow/timing-out probe) — skip this tick rather than race it
+  _netCheckInProgress=true;
+  try{
+    await connectionCheckInner();
+  } finally {
+    _netCheckInProgress=false;
+  }
+}
+async function connectionCheckInner(){
+  const dot=document.getElementById('net-dot');
+  const statusText=document.getElementById('net-status-text');
+  const pingEl=document.getElementById('net-ping');
+  if(!dot)return;
+  const probes=10;
+  const rtts=[];
+  let failures=0;
+  for(let i=0;i<probes;i++){
+    const start=performance.now();
+    try{
+      await fetch('https://cloudflare.com/cdn-cgi/trace?_='+Date.now()+'_'+i,{cache:'no-store',mode:'no-cors',signal:AbortSignal.timeout(3000)});
+      rtts.push(performance.now()-start);
+    }catch(e){
+      failures++;
+    }
+  }
+  const lossPct=Math.round((failures/probes)*100);
+  if(rtts.length===0){
+    dot.className='net-dot poor';
+    statusText.textContent='Offline';
+    pingEl.textContent='';
+    return;
+  }
+  // Discard the first successful probe — it pays the one-time cost of establishing
+  // a fresh connection (DNS + handshake) after the 2-minute idle gap, which is not
+  // representative of steady-state network conditions and otherwise creates one huge
+  // outlier gap that skews the jitter average dramatically (e.g. 4ms vs 400ms swings).
+  // Discard the first several probes, not just one — on this tablet/browser the
+  // connection-establishment cost appears to bleed into more than just probe #1,
+  // producing readings way out of line with real experienced call quality. Using
+  // only the later, truly-warmed-up probes gives a cleaner steady-state signal.
+  const steadyRtts=rtts.length>6?rtts.slice(4):rtts;
+  const avgPing=Math.round(steadyRtts.reduce((a,b)=>a+b,0)/steadyRtts.length);
+  let jitterSum=0;
+  for(let i=1;i<steadyRtts.length;i++){jitterSum+=Math.abs(steadyRtts[i]-steadyRtts[i-1]);}
+  const jitter=steadyRtts.length>1?Math.round(jitterSum/(steadyRtts.length-1)):0;
+
+  // Thresholds recalibrated from a day of real Teams-call ground truth: readings up
+  // to ~600ms avg / ~900ms jitter never once caused an audible/visible call issue —
+  // strong evidence those spikes were a measurement artifact (repeated connection
+  // setup cost), not real network problems. Set with margin above the clean baseline
+  // (~125ms avg / ~60ms jitter) actually observed on this tablet/network.
+  // Good  = RTT <200ms, jitter <100ms, loss <1%
+  // Fair  = RTT <400ms, jitter <250ms, loss <2.5%
+  // Poor  = anything worse
+  let cls='good',label='Good';
+  if(lossPct>=2.5||jitter>=250||avgPing>=400){cls='poor';label='Poor';}
+  else if(lossPct>=1||jitter>=100||avgPing>=200){cls='fair';label='Fair';}
+
+  // Soften isolated blips for the DISPLAYED dot color (avoids flagging pure
+  // measurement noise as alarming red) — but don't fully hide that something
+  // happened. A brief real dip still gets recorded and surfaced as a small note
+  // for a while, since Teams-affecting hiccups can be as short as ~30 seconds,
+  // easy to miss and easy to fully mask if we only show the smoothed status.
+  const rawWasPoor=(cls==='poor');
+  _netHistory.push(cls);
+  if(_netHistory.length>3)_netHistory.shift();
+  if(cls==='poor'){
+    const poorCount=_netHistory.filter(s=>s==='poor').length;
+    if(poorCount<2){cls='fair';label='Fair';}
+  }
+  if(rawWasPoor){_lastDipTime=new Date();}
+  const dipNoteEl=document.getElementById('net-dip-note');
+  if(dipNoteEl){
+    if(_lastDipTime && (Date.now()-_lastDipTime.getTime())<10*60000){
+      dipNoteEl.textContent='⚠ Dip at '+_lastDipTime.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+      dipNoteEl.style.display='block';
+    }else{
+      dipNoteEl.style.display='none';
+    }
+  }
+
+  dot.className='net-dot '+cls;
+  statusText.textContent=label;
+  pingEl.textContent=avgPing+'ms avg · '+jitter+'ms jitter'+(lossPct>0?' · '+lossPct+'% loss':'');
+}
+connectionCheck();
+setInterval(connectionCheck,30000);
+
+async function runSpeedTest(){
+  const btn=document.getElementById('net-test-btn');
+  const resultEl=document.getElementById('net-speed-result');
+  const lastTestedEl=document.getElementById('net-last-tested');
+  if(!btn)return;
+  btn.disabled=true;
+  btn.textContent='Testing…';
+  resultEl.textContent='';
+  try{
+    // Download: fetch a known-size file from Cloudflare's public speed-test endpoint
+    const dlBytes=10000000; // 10MB
+    const dlStart=performance.now();
+    const dlResp=await fetch('https://speed.cloudflare.com/__down?bytes='+dlBytes,{cache:'no-store'});
+    await dlResp.arrayBuffer();
+    const dlSeconds=(performance.now()-dlStart)/1000;
+    const downloadMbps=(dlBytes*8/1e6)/dlSeconds;
+
+    // Upload: POST a known-size payload to the same service
+    const ulBytes=4000000; // 4MB
+    const ulData=new Uint8Array(ulBytes);
+    const ulStart=performance.now();
+    await fetch('https://speed.cloudflare.com/__up',{method:'POST',body:ulData,cache:'no-store'});
+    const ulSeconds=(performance.now()-ulStart)/1000;
+    const uploadMbps=(ulBytes*8/1e6)/ulSeconds;
+
+    resultEl.textContent='↓ '+downloadMbps.toFixed(1)+' Mbps · ↑ '+uploadMbps.toFixed(1)+' Mbps';
+    const now=new Date();
+    lastTestedEl.textContent='Tested '+now.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'});
+  }catch(e){
+    resultEl.textContent='Test failed — check connection';
+  }
+  btn.disabled=false;
+  btn.textContent='Test speed';
+}
+
+
+// ── Clock ──
+let _lastDate=new Date().toDateString();
+function tick(){
+  const n=new Date(),h=n.getHours(),m=String(n.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent=(h%12||12)+':'+m+(h<12?' AM':' PM');
+  const D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('clock-date').textContent=D[n.getDay()]+', '+M[n.getMonth()]+' '+n.getDate();
+  const pct=Math.min(100,Math.max(0,Math.round(((h*60+parseInt(m))-480)/510*100)));
+  document.getElementById('day-bar').style.width=pct+'%';
+  document.getElementById('day-pct').textContent='Workday: '+pct+'% complete';
+  document.getElementById('eod-banner').style.display=(h===16&&parseInt(m)>=15&&parseInt(m)<30)?'block':'none';
+}
+setInterval(tick,1000);tick();
+
+
+
+// ── Cubs Gameday (MLB-app style): fetch live game data and render rich view ──
+function showMusicMode(){
+  document.getElementById('gameday-card').style.display='none';
+  document.getElementById('music-card').style.display='block';
+  window._lastCubsScore=undefined;
+  window._cubsJustScored=false;
+}
+function showGamedayMode(){
+  document.getElementById('gameday-card').style.display='flex';
+  document.getElementById('gameday-card').style.flexDirection='column';
+  document.getElementById('music-card').style.display='none';
+}
+
+// Fetch detailed game state from MLB Stats API (has bases, count, outs, batter, pitcher)
+async function fetchMLBLive(gamePk){
+  try{
+    const r=await fetch('https://statsapi.mlb.com/api/v1.1/game/'+gamePk+'/feed/live',{signal:AbortSignal.timeout(6000)});
+    if(!r.ok)return null;
+    return await r.json();
+  }catch{return null;}
+}
+
+
+
+async function loadGameday(){
+  try{
+    const today=new Date();
+    const todayStr=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
+    // Get today's Cubs game via MLB schedule (teamId 112 = Cubs)
+    const schedR=await fetch('https://statsapi.mlb.com/api/v1/schedule?teamId=112&sportId=1&date='+todayStr);
+    if(!schedR.ok)throw new Error('schedule fetch failed');
+    const sched=await schedR.json();
+    const games=(sched.dates&&sched.dates[0]&&sched.dates[0].games)||[];
+    if(!games.length){showMusicMode();return;}
+
+    const game=games[0];
+    const gameTime=new Date(game.gameDate);
+    const now=new Date();
+    const minsUntilStart=(gameTime-now)/60000;
+    const status=game.status.abstractGameState; // 'Preview', 'Live', 'Final'
+    const detailedState=game.status.detailedState;
+
+    // Show gameday view ONLY IF live OR within 45 min of first pitch
+    const isLive=status==='Live';
+    const isWarmup=status==='Preview'&&minsUntilStart<=20&&minsUntilStart>=-5;
+
+    if(!isLive&&!isWarmup){showMusicMode();return;}
+
+    // Determine who's home/away
+    const homeTeam=game.teams.home.team;
+    const awayTeam=game.teams.away.team;
+    const homeIsCubs=homeTeam.id===112;
+    const oppTeam=homeIsCubs?awayTeam:homeTeam;
+    const oppAbbrMap={
+      'Arizona Diamondbacks':'ari','Atlanta Braves':'atl','Baltimore Orioles':'bal','Boston Red Sox':'bos',
+      'Chicago White Sox':'cws','Cincinnati Reds':'cin','Cleveland Guardians':'cle','Colorado Rockies':'col',
+      'Detroit Tigers':'det','Houston Astros':'hou','Kansas City Royals':'kc','Los Angeles Angels':'laa',
+      'Los Angeles Dodgers':'lad','Miami Marlins':'mia','Milwaukee Brewers':'mil','Minnesota Twins':'min',
+      'New York Mets':'nym','New York Yankees':'nyy','Oakland Athletics':'oak','Philadelphia Phillies':'phi',
+      'Pittsburgh Pirates':'pit','San Diego Padres':'sd','Seattle Mariners':'sea','San Francisco Giants':'sf',
+      'St. Louis Cardinals':'stl','Tampa Bay Rays':'tb','Texas Rangers':'tex','Toronto Blue Jays':'tor',
+      'Washington Nationals':'wsh'
+    };
+    const oppLogo=oppAbbrMap[oppTeam.name]||oppTeam.name.toLowerCase().replace(/\s/g,'').slice(0,3);
+    const venue=game.venue.name;
+
+    if(isWarmup){
+      const gt=new Date(game.gameDate);
+      const minsLeft=Math.max(0,Math.round(minsUntilStart));
+      document.getElementById('gameday-content').innerHTML=
+        '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+' · '+venue+'</span>'+
+        '<span class="gd-warmup-badge">🟡 WARMUPS</span></div>'+
+        '<div class="gd-pregame">'+
+          '<div style="display:flex;align-items:center;gap:20px;">'+
+            '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:60px;height:60px;border-radius:50%;background:#fff;padding:4px;"/>'+
+            '<div style="font-size:1.6rem;font-weight:900;">VS</div>'+
+            '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/'+oppLogo+'.png" style="width:60px;height:60px;border-radius:50%;background:#fff;padding:4px;"/>'+
+          '</div>'+
+          '<div class="gd-pregame-time">First pitch '+gt.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',timeZone:'America/Chicago'})+' CT</div>'+
+          (minsLeft>0?'<div class="gd-pregame-countdown">⏱ '+minsLeft+' min to first pitch</div>':'')+
+        '</div>';
+      showGamedayMode();
+      return;
+    }
+
+    // LIVE — get detailed feed
+    const live=await fetchMLBLive(game.gamePk);
+    const linescore=live&&live.liveData&&live.liveData.linescore;
+    const plays=live&&live.liveData&&live.liveData.plays;
+    const currentPlay=plays&&plays.currentPlay;
+
+    const cubsScore=homeIsCubs?(linescore?linescore.teams.home.runs:0):(linescore?linescore.teams.away.runs:0);
+    const oppScore=homeIsCubs?(linescore?linescore.teams.away.runs:0):(linescore?linescore.teams.home.runs:0);
+    const cubsWinning=cubsScore>oppScore;
+    const oppWinning=oppScore>cubsScore;
+
+    // Detect Cubs scoring a run since last check — trigger a celebration
+    if(typeof window._lastCubsScore==='number' && cubsScore>window._lastCubsScore){
+      window._cubsJustScored=true;
+    }
+    window._lastCubsScore=cubsScore;
+
+    // Inning info
+    const inning=linescore?linescore.currentInning:1;
+    const inningHalf=linescore?linescore.inningHalf:'Top';
+    const inningOrdinal=linescore?linescore.currentInningOrdinal:(inning+'th');
+    const cubsBatting=(homeIsCubs&&inningHalf==='Bottom')||(!homeIsCubs&&inningHalf==='Top');
+
+    // Bases (from linescore.offense — 1B/2B/3B objects present if runners on)
+    const offense=linescore&&linescore.offense;
+    const on1=!!(offense&&offense.first);
+    const on2=!!(offense&&offense.second);
+    const on3=!!(offense&&offense.third);
+
+    // Count + outs
+    const balls=(linescore&&linescore.balls)||0;
+    const strikes=(linescore&&linescore.strikes)||0;
+    const outs=(linescore&&linescore.outs)||0;
+
+    // Batter + Pitcher
+    let batterName='',batterSeasonStats='',batterGameStats='',pitcherName='',pitcherSeasonStats='',pitcherGameStats='';
+    if(currentPlay&&currentPlay.matchup){
+      const b=currentPlay.matchup.batter,p=currentPlay.matchup.pitcher;
+      if(b)batterName=b.fullName.split(' ').slice(-1)[0]; // last name
+      if(p)pitcherName=p.fullName.split(' ').slice(-1)[0];
+      // Stats from boxscore if available
+      const bs=live.liveData.boxscore;
+      if(b&&bs){
+        const bteam=cubsBatting?(homeIsCubs?bs.teams.home:bs.teams.away):(homeIsCubs?bs.teams.away:bs.teams.home);
+        const bplayer=bteam&&bteam.players&&bteam.players['ID'+b.id];
+        if(bplayer&&bplayer.seasonStats&&bplayer.seasonStats.batting){
+          const bat=bplayer.seasonStats.batting;
+          batterSeasonStats=(bat.avg||'.---')+' · '+(bat.homeRuns||0)+' HR';
+        }
+        if(bplayer&&bplayer.stats&&bplayer.stats.batting){
+          const bat=bplayer.stats.batting;
+          const hits=bat.hits||0,ab=bat.atBats||0,rbi=bat.rbi||0;
+          batterGameStats=hits+'-'+ab+', '+rbi+' RBI'+(rbi!==1?'s':'');
+        }
+      }
+      if(p&&bs){
+        const pteam=cubsBatting?(homeIsCubs?bs.teams.away:bs.teams.home):(homeIsCubs?bs.teams.home:bs.teams.away);
+        const pplayer=pteam&&pteam.players&&pteam.players['ID'+p.id];
+        if(pplayer&&pplayer.seasonStats&&pplayer.seasonStats.pitching){
+          const pit=pplayer.seasonStats.pitching;
+          pitcherSeasonStats=(pit.era||'-.--')+' ERA';
+        }
+        if(pplayer&&pplayer.stats&&pplayer.stats.pitching){
+          const pit=pplayer.stats.pitching;
+          const pitches=pit.numberOfPitches||0,strikesT=pit.strikes||0,ballsT=pit.balls||0;
+          pitcherGameStats=pitches+' P · '+strikesT+' S · '+ballsT+' B';
+        }
+      }
+    }
+
+    // Last play description — scan backwards through all plays for the most recent one with a description
+    let lastPlay='';
+    if(plays&&plays.allPlays&&plays.allPlays.length){
+      for(let pi=plays.allPlays.length-1;pi>=0;pi--){
+        const p=plays.allPlays[pi];
+        if(p&&p.result&&p.result.description){lastPlay=p.result.description;break;}
+      }
+    }
+    if(!lastPlay)lastPlay='No completed play yet this inning';
+
+    // Team records
+    const cubsRec=(homeIsCubs?game.teams.home.leagueRecord:game.teams.away.leagueRecord);
+    const oppRec=(homeIsCubs?game.teams.away.leagueRecord:game.teams.home.leagueRecord);
+    const cubsRecStr=cubsRec?cubsRec.wins+'-'+cubsRec.losses:'';
+    const oppRecStr=oppRec?oppRec.wins+'-'+oppRec.losses:'';
+
+    // Build inning arrow
+    const inningArrow=inningHalf==='Top'?'▲':'▼';
+    // inningLabel removed per request — arrow + ordinal is sufficient
+
+    // Away team is always on top of stacked scoreboard (baseball convention)
+    const awayIsCubs=!homeIsCubs;
+    const topRow={
+      name:awayIsCubs?'Cubs':(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent'),
+      logo:awayIsCubs?'chc':oppLogo,
+      score:awayIsCubs?cubsScore:oppScore,
+      rec:awayIsCubs?cubsRecStr:oppRecStr,
+      winning:awayIsCubs?cubsWinning:oppWinning,
+      batting:inningHalf==='Top',
+    };
+    const botRow={
+      name:homeIsCubs?'Cubs':(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent'),
+      logo:homeIsCubs?'chc':oppLogo,
+      score:homeIsCubs?cubsScore:oppScore,
+      rec:homeIsCubs?cubsRecStr:oppRecStr,
+      winning:homeIsCubs?cubsWinning:oppWinning,
+      batting:inningHalf==='Bottom',
+    };
+
+    function scoreRow(t){
+      const classes=['gd-team-row'];
+      if(t.winning)classes.push('winning');
+      if(t.batting)classes.push('batting');
+      return '<div class="'+classes.join(' ')+'">'+
+        '<img src="https://a.espncdn.com/i/teamlogos/mlb/500/'+t.logo+'.png" class="gd-team-logo"/>'+
+        '<div class="gd-team-details"><div class="gd-team-name">'+t.name+'</div><div class="gd-team-rec">'+t.rec+'</div></div>'+
+        '<div class="gd-team-score'+(t.winning?' winning':'')+'">'+t.score+'</div>'+
+      '</div>';
+    }
+
+    function dots(count,max,extraClass){
+      let s='';
+      for(let i=0;i<max;i++){s+='<div class="gd-dot '+(extraClass||'')+' '+(i<count?'on':'')+'"></div>';}
+      return s;
+    }
+
+    document.getElementById('gameday-content').innerHTML=
+      '<div class="gd-header"><span>⚾ Cubs '+(homeIsCubs?'vs.':'@')+' '+(oppTeam.teamName||oppTeam.clubName||oppTeam.name||'Opponent')+' · '+venue+'</span>'+
+      '<span class="gd-live-badge">🔴 LIVE</span></div>'+
+      '<div class="gd-body">'+
+        '<div class="gd-scoreboard-stacked">'+
+          scoreRow(topRow)+
+          '<div class="gd-inning-strip"><span class="gd-inning-arrow">'+inningArrow+'</span><span class="gd-inning-num">'+inningOrdinal+'</span></div>'+
+          scoreRow(botRow)+
+        '</div>'+
+        '<div>'+
+          '<div class="gd-game-state">'+
+            '<div class="gd-diamond">'+
+              '<div class="gd-base-cell gd-cell-second"><div class="gd-base'+(on2?' occupied':'')+'"></div></div>'+
+              '<div class="gd-base-cell gd-cell-third"><div class="gd-base'+(on3?' occupied':'')+'"></div></div>'+
+              '<div class="gd-base-cell gd-cell-first"><div class="gd-base'+(on1?' occupied':'')+'"></div></div>'+
+              '<div class="gd-base-cell gd-cell-home"><div class="gd-base gd-base-home"></div></div>'+
+            '</div>'+
+            '<div class="gd-count-big">'+
+              '<div class="gd-count-row"><span class="gd-count-label">BALLS</span><div class="gd-count-dots">'+dots(balls,4,'')+'</div></div>'+
+              '<div class="gd-count-row"><span class="gd-count-label">STRIKES</span><div class="gd-count-dots">'+dots(strikes,3,'strike')+'</div></div>'+
+              '<div class="gd-count-row"><span class="gd-count-label">OUTS</span><div class="gd-count-dots">'+dots(outs,3,'out')+'</div></div>'+
+            '</div>'+
+            (batterName||pitcherName?'<div class="gd-matchup">'+
+              '<div class="gd-mp-cell"><div class="gd-mp-role">⚾ At bat</div><div class="gd-mp-name">'+(batterName||'—')+'</div>'+(batterSeasonStats?'<div class="gd-mp-stats">'+batterSeasonStats+'</div>':'')+(batterGameStats?'<div class="gd-mp-stats gd-mp-game">'+batterGameStats+'</div>':'')+'</div>'+
+              '<div class="gd-mp-cell"><div class="gd-mp-role">🥎 Pitching</div><div class="gd-mp-name">'+(pitcherName||'—')+'</div>'+(pitcherSeasonStats?'<div class="gd-mp-stats">'+pitcherSeasonStats+'</div>':'')+(pitcherGameStats?'<div class="gd-mp-stats gd-mp-game">'+pitcherGameStats+'</div>':'')+'</div>'+
+            '</div>':'')+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="gd-last-play"><strong>LAST PLAY</strong>'+lastPlay+'</div>';
+
+    showGamedayMode();
+
+    if(window._cubsJustScored){
+      window._cubsJustScored=false;
+      const gc=document.getElementById('gameday-card');
+      gc.classList.add('gd-celebrate');
+      setTimeout(function(){gc.classList.remove('gd-celebrate');},3600);
+      const banner=document.createElement('div');
+      banner.className='gd-score-banner';
+      banner.textContent='⚾ CUBS SCORE! 🎉';
+      gc.appendChild(banner);
+      setTimeout(function(){if(banner&&banner.parentNode)banner.parentNode.removeChild(banner);},4000);
+    }
+  }catch(e){
+    console.error('Gameday error:',e);
+    showMusicMode();
+  }
+}
+loadGameday();setInterval(loadGameday,30000);
+
+// ── Weather (Open-Meteo) ──
+async function loadWeather(){
+  const body=document.getElementById('weather-body');
+  body.innerHTML='<span class="sp"></span> Loading…';
+  try{
+    const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=42.1656&longitude=-88.2834&current=temperature_2m,weathercode&hourly=precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=5');
+    if(!res.ok)throw new Error('fail');
+    const d=await res.json();
+    function wmo(c){if(c===0)return{i:'☀️',l:'Clear'};if(c<=2)return{i:'⛅',l:'Partly Cloudy'};if(c===3)return{i:'☁️',l:'Overcast'};if(c<=49)return{i:'🌫️',l:'Foggy'};if(c<=59)return{i:'🌦',l:'Drizzle'};if(c<=69)return{i:'🌧',l:'Rain'};if(c<=79)return{i:'🌨',l:'Snow'};if(c<=82)return{i:'🌧',l:'Showers'};if(c<=99)return{i:'⛈',l:'Storm'};return{i:'🌤',l:'Mixed'};}
+    const cur=d.current,daily=d.daily,hourly=d.hourly,cw=wmo(cur.weathercode);
+    const todayStr=new Date().toISOString().slice(0,10);
+    const hrs=hourly.time.map((t,i)=>({t,p:hourly.precipitation_probability[i]})).filter(h=>h.t.startsWith(todayStr));
+    const avg=a=>a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):0;
+    const morn=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=6&&x<12;}).map(h=>h.p));
+    const aftn=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=12&&x<18;}).map(h=>h.p));
+    const evng=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=18&&x<24;}).map(h=>h.p));
+    const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const fc=daily.time.slice(1,4).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
+    const pbar=p=>'<div class="precip-bar-wrap"><div class="precip-bar" style="width:'+p+'%"></div></div>';
+    // Determine when precip happens (morning/afternoon/evening) for the timing hint
+    const windows=[];
+    if(morn>=30)windows.push('morning');
+    if(aftn>=30)windows.push('afternoon');
+    if(evng>=30)windows.push('evening');
+    const maxPrecip=Math.max(morn,aftn,evng);
+    const precipTiming=windows.length?' ('+windows.join(' & ')+')':'';
+    const isSnowy=[71,73,75,77,85,86].includes(cur.weathercode);
+    const precipType=isSnowy?'snow':'rain';
+    const temp=Math.round(cur.temperature_2m);
+    const hi=Math.round(daily.temperature_2m_max[0]);
+    const lo=Math.round(daily.temperature_2m_min[0]);
+    // Dress tip
+    let dressTip='';
+    if(temp<=20)dressTip='🧥 Heavy coat, hat & gloves!';
+    else if(temp<=32)dressTip='🧥 Heavy coat & gloves!';
+    else if(temp<=45)dressTip='🧣 Warm coat & scarf!';
+    else if(temp<=55)dressTip='🧥 Light jacket today!';
+    else if(temp<=65)dressTip='👕 Light layer recommended!';
+    else if(temp<=75)dressTip='👕 Comfortable outside!';
+    else if(temp<=85)dressTip='😎 T-shirt weather!';
+    else dressTip='🥵 Hot — stay cool & hydrated!';
+    if(maxPrecip>=40){if(isSnowy)dressTip+=' ❄️ Snow gear!';else dressTip+=' ☂️ Raincoat!';}
+    body.innerHTML=`<div class="weather-main"><span class="weather-icon">${cw.i}</span><span class="weather-temp">${temp}°F</span><span class="weather-desc">${cw.l.toLowerCase()}</span></div>
+    <div class="weather-detail-line">H <span class="feels">${hi}°</span> · L <span class="feels">${lo}°</span> &nbsp;·&nbsp; 🌧 ${maxPrecip}% ${precipType}${precipTiming}</div>
+    <div class="weather-dress">${dressTip}</div>
+    <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-icon">${f.icon}</div><div class="fc-high">${f.high}°</div><div class="fc-precip">${f.precip}%</div></div>`).join('')}</div>`;
+  }catch(e){body.innerHTML='<div class="err">Could not load weather. <button class="btn" onclick="loadWeather()">Retry</button></div>';}
+}
+loadWeather();setInterval(loadWeather,600000);
+
+// ── Match Today's Schedule card height exactly to Weather's actual rendered height ──
+function matchScheduleHeightToWeather(){
+  const weatherCard=document.querySelector('.card-weather');
+  const calCard=document.querySelector('.card-cal');
+  const newsCard=document.querySelector('.card-news');
+  if(!weatherCard)return;
+  const h=weatherCard.offsetHeight;
+  if(h>20){
+    if(calCard){
+      calCard.style.height=h+'px';
+      calCard.style.maxHeight=h+'px';
+      calCard.style.overflow='hidden';
+    }
+    if(newsCard){
+      newsCard.style.height=h+'px';
+      newsCard.style.maxHeight=h+'px';
+      newsCard.style.overflow='hidden';
+    }
+  }
+}
+// Run repeatedly for the first few seconds while weather/calendar are still loading in,
+// then settle into a slower recheck in case content reflows later (e.g. forecast icons wrap differently)
+[300,800,1500,2500,4000].forEach(function(delay){ setTimeout(matchScheduleHeightToWeather, delay); });
+setInterval(matchScheduleHeightToWeather, 60000);
+
+// ════ ICS CALENDAR ENGINE (ported from home dashboard) ════
+function parseICS(txt,person,color){
+  const pd=(v)=>{if(!v)return null;const c=v.replace(/[TZ]/g,'');if(c.length===8)return new Date(c.slice(0,4),c.slice(4,6)-1,c.slice(6,8));if(v.endsWith('Z'))return new Date(Date.UTC(+c.slice(0,4),c.slice(4,6)-1,+c.slice(6,8),+c.slice(8,10)||0,+c.slice(10,12)||0));const iso=c.slice(0,4)+'-'+c.slice(4,6)+'-'+c.slice(6,8)+'T'+(c.slice(8,10)||'00')+':'+(c.slice(10,12)||'00')+':00';try{const cd=new Date(new Date(iso).toLocaleString('en-US',{timeZone:'America/Chicago'}));return new Date(new Date(iso).getTime()+(new Date(iso)-cd));}catch{return new Date(iso);}};
+  const parseRRule=(s)=>{if(!s)return null;const r={};s.split(';').forEach(p=>{const[k,v]=p.split('=');r[k.trim()]=v?v.trim():'';});return r;};
+  const DOW={SU:0,MO:1,TU:2,WE:3,TH:4,FR:5,SA:6};
+  const NOW=new Date();const EXPAND_FROM=new Date(NOW);EXPAND_FROM.setHours(0,0,0,0);const EXPAND_TO=new Date(NOW);EXPAND_TO.setDate(EXPAND_TO.getDate()+45);
+  function expandRecurrence(bs,be,rrule,exdates,sm,allDay){
+    const rr=parseRRule(rrule);if(!rr||!rr.FREQ)return[];
+    const freq=rr.FREQ,interval=parseInt(rr.INTERVAL||'1',10),count=rr.COUNT?parseInt(rr.COUNT,10):null,until=rr.UNTIL?pd(rr.UNTIL):null,byDay=rr.BYDAY?rr.BYDAY.split(',').map(s=>s.trim()):null;
+    const durMs=(be&&bs)?(be-bs):0;
+    const exSet=new Set((exdates||[]).map(d=>{const x=pd(d);return x?x.toDateString():null;}).filter(Boolean));
+    const results=[];let cur=new Date(bs),n=0,iter=0;
+    while(iter++<5000){
+      if(until&&cur>until)break;if(count!==null&&n>=count)break;if(cur>EXPAND_TO)break;
+      if(cur>=EXPAND_FROM&&cur<=EXPAND_TO&&!exSet.has(cur.toDateString())){const evtEnd=durMs>0?new Date(cur.getTime()+durMs):null;results.push({sm,start:new Date(cur),end:evtEnd,allDay,person,color});}
+      n++;
+      if(freq==='DAILY'){cur=new Date(cur);cur.setDate(cur.getDate()+interval);}
+      else if(freq==='WEEKLY'){if(byDay&&byDay.length>0){const days=byDay.map(bd=>DOW[bd.replace(/[+-\d]/g,'').toUpperCase()]).filter(d=>d!==undefined);cur=new Date(cur);cur.setDate(cur.getDate()+1);let found=false;for(let dd=0;dd<7*interval;dd++){if(days.includes(cur.getDay())){found=true;break;}cur.setDate(cur.getDate()+1);}if(!found)break;}else{cur=new Date(cur);cur.setDate(cur.getDate()+7*interval);}}
+      else if(freq==='MONTHLY'){cur=new Date(cur);cur.setMonth(cur.getMonth()+interval);}
+      else if(freq==='YEARLY'){cur=new Date(cur);cur.setFullYear(cur.getFullYear()+interval);}
+      else break;
+    }
+    return results;
+  }
+  const evts=[];txt=txt.replace(/\r\n[ \t]/g,'').replace(/\r/g,'');
+  txt.split('BEGIN:VEVENT').slice(1).forEach(b=>{
+    const gv=k=>{const m=b.match(new RegExp('(?:^|\\n)'+k+'[^:\\n]*:([^\\n]+)',''));return m?m[1].trim():'';};
+    const sm=gv('SUMMARY'),ds=gv('DTSTART'),de=gv('DTEND');if(!sm)return;
+    const allDay=ds.replace(/[^0-9]/g,'').length===8;const baseStart=pd(ds),baseEnd=pd(de);
+    const exdates=[];const exRe=/(?:^|\n)EXDATE[^\n]*:([^\n]+)/g;let exMatch;while((exMatch=exRe.exec(b))!==null){exMatch[1].split(',').forEach(v=>exdates.push(v.trim()));}
+    const rruleRaw=gv('RRULE');
+    if(rruleRaw){const occ=expandRecurrence(baseStart,baseEnd,rruleRaw,exdates,sm,allDay);occ.forEach(o=>evts.push(o));if(baseStart&&baseStart>=EXPAND_FROM&&baseStart<=EXPAND_TO){const exSet=new Set(exdates.map(d=>{const x=pd(d);return x?x.toDateString():null;}).filter(Boolean));if(!exSet.has(baseStart.toDateString())&&!occ.some(o=>o.start.toDateString()===baseStart.toDateString()))evts.push({sm,start:baseStart,end:baseEnd,allDay,person,color});}}
+    else{if(baseStart&&baseStart>=EXPAND_FROM)evts.push({sm,start:baseStart,end:baseEnd,allDay,person,color});}
+  });
+  return evts;
+}
+
+async function fetchICS(rawUrl){
+  const url=rawUrl.trim().replace(/^webcal:\/\//i,'https://');
+  // Race every fallback simultaneously instead of trying them one at a time —
+  // on a slow (not fully dead) network, sequential timeouts could stack up to
+  // 30-40+ seconds before finally succeeding. Racing bounds the wait to ~8s.
+  const candidates=[
+    ()=>fetch('/api/proxy?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)}),
+    ()=>fetch(url,{signal:AbortSignal.timeout(8000)}),
+    ()=>fetch('https://corsproxy.io/?'+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)}),
+    ()=>fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)}),
+    ()=>fetch('https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)}),
+  ];
+  const attempts=candidates.map(async(fn)=>{
+    const r=await fn();
+    if(!r.ok)throw new Error('bad status');
+    const t=await r.text();
+    if(!t.includes('BEGIN:VCALENDAR'))throw new Error('not ics');
+    return t;
+  });
+  try{ return await Promise.any(attempts); }catch(e){ return null; }
+}
+
+async function loadColEvents(col){
+  const urls=col.raw.split(',').map(s=>s.trim()).filter(Boolean);
+  const results=await Promise.all(urls.map(fetchICS));
+  const allText=results.filter(Boolean).join('\n');
+  if(!allText)return null;
+  return parseICS(allText,col.label,col.color);
+}
+
+// Holidays
+function getNthWeekday(y,m,nth,dow){if(nth===-1){const last=new Date(y,m+1,0);return new Date(y,m,last.getDate()-(last.getDay()-dow+7)%7);}const first=new Date(y,m,1);return new Date(y,m,1+(dow-first.getDay()+7)%7+(nth-1)*7);}
+function getEaster(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,mm=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*mm+114)/31)-1,day=((h+l-7*mm+114)%31)+1;return new Date(y,mo,day);}
+function getHolidays(){const hs=[];for(const y of[new Date().getFullYear(),new Date().getFullYear()+1]){const h=(m,d,n,ic)=>({sm:ic+' '+n,start:new Date(y,m,d),end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'});const wd=(m,nth,dow,n,ic)=>({sm:ic+' '+n,start:getNthWeekday(y,m,nth,dow),end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'});const tg=getNthWeekday(y,10,4,4);hs.push(h(0,1,"New Year's Day",'🎆'),wd(0,3,1,'MLK Day','🇺🇸'),wd(1,3,1,"Presidents' Day",'🇺🇸'),h(1,14,"Valentine's Day",'💝'),h(2,17,"St. Patrick's Day",'🍀'),{sm:"🐣 Easter",start:getEaster(y),end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'},wd(4,2,0,"Mother's Day",'🌷'),wd(4,-1,1,'Memorial Day','🇺🇸'),h(5,19,'Juneteenth','🇺🇸'),wd(5,3,0,"Father's Day",'👨'),h(6,4,'Independence Day','🇺🇸'),wd(8,1,1,'Labor Day','🇺🇸'),h(9,31,'Halloween','👻'),h(10,11,'Veterans Day','🇺🇸'),{sm:'🦃 Thanksgiving',start:tg,end:null,allDay:true,isHoliday:true,person:'Holiday',color:'#f0a500'},h(11,24,'Christmas Eve','🎄'),h(11,25,'Christmas Day','🎄'),h(11,31,"New Year's Eve",'🎆'));}return hs;}
+
+let _allEvents=null,_calView='today';
+const DAY_NAMES=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTH_NAMES=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function fmtClock(d){const h=d.getHours(),mn=String(d.getMinutes()).padStart(2,'0');return(h%12||12)+':'+mn;}
+function fmtTime(ev){
+  if(ev.allDay||!ev.start)return'All day';
+  const startStr=fmtClock(ev.start);
+  // Show a range only when there's a genuine, distinct end time (skip point-in-time events)
+  if(ev.end && ev.end.getTime()!==ev.start.getTime() && ev.end.toDateString()===ev.start.toDateString()){
+    return startStr+' – '+fmtClock(ev.end);
+  }
+  return startStr;
+}
+
+function eventRow(ev,now){
+  const isPast=ev.end?ev.end<now:ev.start<now;
+  // Ongoing = started already and (has an end time we're still inside, or no end time but within 60 min of start)
+  const isOngoing=!ev.allDay && ev.start && ev.start<=now && (ev.end ? now<=ev.end : now<new Date(ev.start.getTime()+60*60000));
+  const cls='cal-event'+(isPast&&!isOngoing?' past':'')+(ev.isHoliday?' holiday':'')+(isOngoing?' ongoing':'');
+  return'<div class="'+cls+'" style="border-left-color:'+ev.color+'"><span class="cal-ev-time">'+fmtTime(ev)+'</span><span class="cal-ev-title">'+ev.sm+'</span><span class="cal-ev-person">'+(ev.person||'')+'</span></div>';
+}
+
+function renderCalView(view){
+  const el=document.getElementById('cal');if(!el||!_allEvents)return;
+  const now=new Date();
+  const sortFn=(a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return a.start-b.start;};
+  // Move events that have already ended to the bottom of the list (same as the home dashboard)
+  function orderWithPastLast(events){
+    const isEventPast=e=>e.end?e.end<now:e.start<now;
+    const upcoming=events.filter(e=>!isEventPast(e)).sort(sortFn);
+    const past=events.filter(e=>isEventPast(e)).sort(sortFn);
+    return [...upcoming,...past];
+  }
+  if(view==='today'){
+    const today=now.toDateString();
+    let todayEv=_allEvents.filter(e=>e.start&&e.start.toDateString()===today);
+    todayEv=orderWithPastLast(todayEv);
+    if(!todayEv.length){el.innerHTML='<div class="no-events">No events today — open schedule!</div>';return;}
+    el.innerHTML='<div class="cal-list">'+todayEv.map(e=>eventRow(e,now)).join('')+'</div>';
+  } else {
+    const start=new Date(now);start.setHours(0,0,0,0);
+    const end=new Date(start);end.setDate(start.getDate()+(view==='week'?6:29));end.setHours(23,59,59,999);
+    const inRange=_allEvents.filter(e=>{if(!e.start)return false;const ed=new Date(e.start);ed.setHours(0,0,0,0);return ed>=start&&ed<=end;});
+    if(!inRange.length){el.innerHTML='<div class="no-events">No events in the next '+(view==='week'?'7':'30')+' days</div>';return;}
+    let html='<div class="cal-list">';const cur=new Date(start);
+    while(cur<=end){
+      const ds=cur.toDateString();
+      let dayEv=inRange.filter(e=>e.start&&e.start.toDateString()===ds);
+      dayEv=orderWithPastLast(dayEv);
+      if(dayEv.length){const isToday=ds===now.toDateString();const lbl=isToday?'Today — '+DAY_NAMES[cur.getDay()]+' '+MONTH_NAMES[cur.getMonth()]+' '+cur.getDate():DAY_NAMES[cur.getDay()]+', '+MONTH_NAMES[cur.getMonth()]+' '+cur.getDate();html+='<div class="wm-day-label'+(isToday?' today-label':'')+'">'+lbl+'</div>'+dayEv.map(e=>eventRow(e,now)).join('');}
+      cur.setDate(cur.getDate()+1);
+    }
+    html+='</div>';el.innerHTML=html;
+  }
+}
+
+function switchCalView(view){_calView=view;['today','week','month'].forEach(v=>{const b=document.getElementById('vbtn-'+v);if(b)b.classList.toggle('active',v===view);});const titles={today:"📅 Today's schedule",week:'📅 Next 7 days',month:'📅 Next 30 days'};document.getElementById('cal-title').textContent=titles[view];if(_allEvents)renderCalView(view);}
+
+// ── Local cache so the calendar never shows blank, even on a fresh page load
+//    where the very first live fetch happens to fail (flaky free CORS proxies) ──
+function loadCalCache(){
+  try{
+    const raw=localStorage.getItem('cal_cache_v1');
+    if(!raw)return null;
+    const parsed=JSON.parse(raw);
+    return parsed.map(function(e){return Object.assign({},e,{
+      start:e.start?new Date(e.start):null,
+      end:e.end?new Date(e.end):null,
+    });});
+  }catch(e){return null;}
+}
+function saveCalCache(events){
+  try{
+    const serializable=events.map(function(e){return Object.assign({},e,{
+      start:e.start?e.start.toISOString():null,
+      end:e.end?e.end.toISOString():null,
+    });});
+    localStorage.setItem('cal_cache_v1',JSON.stringify(serializable));
+  }catch(e){}
+}
+
+async function loadCal(){
+  const el=document.getElementById('cal');
+  try{
+    const perCol=await Promise.all(ICS_COLS.map(loadColEvents));
+    let all=[];perCol.forEach(list=>{if(Array.isArray(list))all=all.concat(list);});
+    // add holidays
+    const holidays=getHolidays();const existing=new Set(all.filter(e=>e.isHoliday).map(e=>e.start.toDateString()));
+    holidays.forEach(h=>{if(!existing.has(h.start.toDateString()))all.push(h);});
+    // Only replace the view if this fetch actually returned real data (or it's the very
+    // first load). A flaky proxy on a periodic refresh shouldn't blank out an already
+    // working calendar — just keep showing what was last successfully loaded.
+    if(all.length>0 || _allEvents===null){
+      _allEvents=all;
+      renderCalView(_calView);
+    }
+    if(all.length>0)saveCalCache(all);
+  }catch(e){
+    if(_allEvents===null){el.innerHTML='<div class="err">Could not load calendar: '+e.message+'</div>';}
+  }
+}
+// Paint instantly from cache (if any) so there's never a blank moment on page load,
+// then the live fetch above runs in the background and updates when ready.
+(function(){
+  try{
+    const cached=loadCalCache();
+    if(cached&&cached.length){_allEvents=cached;renderCalView(_calView);}
+  }catch(e){
+    console.error('Calendar cache-paint failed (non-fatal):',e);
+  }
+})();
+loadCal();setInterval(loadCal,300000);
+
+// ── Spotify ──
+function spotifySearch(){const q=document.getElementById('spotify-search').value.trim();if(q)spotifyLoad(q);}
+function spotifyLoad(query){document.getElementById('spotify-search').value=query;const enc=encodeURIComponent(query);const embedEl=document.getElementById('spotify-embed');if(embedEl)embedEl.style.display='block';
+  document.getElementById('spotify-embed').innerHTML='<div style="border-radius:8px;overflow:hidden;"><iframe src="https://open.spotify.com/embed/search/'+enc+'?utm_source=generator&theme=0" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy" style="border-radius:8px;display:block;"></iframe></div><p style="font-size:.65rem;color:#7BAFC4;margin-top:5px;">Requires Spotify · <a href="https://open.spotify.com/search/'+enc+'" target="_blank" rel="noopener" style="color:#1db954;">Open full player ↗</a></p>';}
+
+// (ticker code below)
+
+// ── Live Headlines (Google News RSS) ──
+// ── Local cache so Headlines never shows blank/error over already-good content ──
+function loadNewsCache(){
+  try{
+    const raw=localStorage.getItem('news_cache_v1');
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+function saveNewsCache(items){
+  try{localStorage.setItem('news_cache_v1',JSON.stringify(items));}catch(e){}
+}
+function renderNewsItems(container,items){
+  container.innerHTML='';
+  items.forEach(it=>{
+    const d=document.createElement('a');
+    d.className='news-item';
+    d.href=it.link;
+    d.rel='noopener';
+    d.style.cssText='display:block;text-decoration:none;cursor:pointer;';
+    d.innerHTML='<div class="news-hed">'+it.hed+'</div><div class="news-src">'+it.src+'</div>';
+    container.appendChild(d);
+  });
+}
+
+async function loadHeadlines(){
+  const container=document.getElementById('news-list');
+  // Google News top stories RSS
+  const feedUrl='https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en';
+  // Race every fallback proxy simultaneously rather than one at a time —
+  // bounds the wait to ~6s instead of stacking up multiple sequential timeouts.
+  const candidates=[
+    ()=>fetch('/api/proxy?url='+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(6000)}),
+    ()=>fetch('https://corsproxy.io/?'+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(6000)}),
+    ()=>fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(feedUrl),{signal:AbortSignal.timeout(6000)}),
+  ];
+  const attempts=candidates.map(async(fn)=>{
+    const r=await fn();
+    if(!r.ok)throw new Error('bad status');
+    const t=await r.text();
+    if(!t.includes('<item>'))throw new Error('no items');
+    return t;
+  });
+  let xmlText=null;
+  try{ xmlText=await Promise.any(attempts); }catch(e){ xmlText=null; }
+  if(!xmlText){
+    // All proxies failed on this refresh — keep showing whatever's already there
+    // rather than replacing good headlines with an error message.
+    if(!container.children.length){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Headlines offline — retry later</div></div>';}
+    return;
+  }
+  try{
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(xmlText,'text/xml');
+    const rawItems=Array.from(doc.querySelectorAll('item')).slice(0,6);
+    const parsed=rawItems.map(item=>{
+      const title=(item.querySelector('title')?.textContent||'').trim();
+      let link=(item.querySelector('link')?.textContent||'').trim();
+      const desc=(item.querySelector('description')?.textContent||'');
+      const realUrlMatch=desc.match(/<a[^>]+href=["']([^"']+)["']/i);
+      if(realUrlMatch&&realUrlMatch[1]&&!realUrlMatch[1].includes('news.google.com')){
+        link=realUrlMatch[1];
+      }
+      const dashIdx=title.lastIndexOf(' - ');
+      const hed=dashIdx>0?title.slice(0,dashIdx):title;
+      const src=dashIdx>0?title.slice(dashIdx+3):'';
+      return {hed,src,link};
+    }).filter(it=>it.hed);
+    // Require at least 3 usable items before trusting this fetch enough to replace
+    // what's already showing — a suspiciously sparse result (1-2 items) is more
+    // likely a truncated/partial response from a struggling proxy under a rough
+    // network moment than a genuine "only 1 headline today" situation. Keep the
+    // existing good content rather than overwrite it with something thin.
+    if(parsed.length>=3){
+      renderNewsItems(container,parsed);
+      saveNewsCache(parsed);
+    }
+  }catch(e){
+    // Keep showing existing headlines rather than replacing with an error
+    if(!container.children.length){container.innerHTML='<div class="news-item"><div class="news-hed" style="color:#7BAFC4;">Could not parse headlines</div></div>';}
+  }
+}
+// Paint instantly from cache so there's never a blank moment on page load
+(function(){
+  try{
+    const cached=loadNewsCache();
+    const container=document.getElementById('news-list');
+    if(cached&&cached.length&&container){renderNewsItems(container,cached);}
+  }catch(e){
+    console.error('Headlines cache-paint failed (non-fatal):',e);
+  }
+})();
+loadHeadlines();setInterval(loadHeadlines,900000);
+
+// ── Personalized Spotify (via /api/spotify/me) ──
+let _spData=null,_spTab='shows';
+async function loadSpotifyPersonal(){
+  try{
+    const r=await fetch('/api/spotify/me');
+    if(r.status===401){document.getElementById('sp-connect').style.display='block';document.getElementById('sp-status').textContent='not connected';return;}
+    if(!r.ok)throw new Error('fail');
+    _spData=await r.json();
+    document.getElementById('sp-personal').style.display='block';
+    document.getElementById('sp-connect').style.display='none';
+    document.getElementById('sp-status').textContent='\u2022 connected';
+    document.getElementById('sp-status').style.color='#1db954';
+    renderSpotifyTab();
+  }catch(e){document.getElementById('sp-status').textContent='offline';}
+}
+// Load a track/album/playlist/artist directly into the embedded player (stays on dashboard)
+// Delegated click handler for track/playlist tiles (avoids fragile inline-JS quoting)
+document.addEventListener('click',function(e){
+  const tile=e.target.closest('.sp-tile');
+  if(tile && tile.dataset && tile.dataset.uri!==undefined){
+    openInChrome(tile.dataset.uri);
+  }
+});
+
+// Open a track/playlist/album directly in the native Spotify app (full Premium
+// playback, reliable DRM). Falls back to the Spotify website if the app
+// isn't installed or the link can't be handled.
+function openInChrome(uri){
+  if(!uri)return;
+  const parts=uri.split(':');
+  if(parts.length<3)return;
+  const type=parts[1],id=parts[2];
+  const httpsUrl='https://open.spotify.com/'+type+'/'+id;
+  // Plain spotify: URI — Android hands this directly to the Spotify app if installed
+  const appUri='spotify:'+type+':'+id;
+  // Intent form as a fallback path some WebViews need, with website fallback if the app is missing
+  const intentUrl='intent://'+type+'/'+id+'#Intent;scheme=spotify;package=com.spotify.music;S.browser_fallback_url='+encodeURIComponent(httpsUrl)+';end';
+  try{
+    window.location.href=appUri;
+    // If the plain URI silently fails to hand off (some WebViews just no-op), try the intent form shortly after
+    setTimeout(function(){ try{ window.location.href=intentUrl; }catch(e){} }, 400);
+  }catch(e){
+    window.location.href=httpsUrl;
+  }
+}
+
+// SiriusXM has no public API and no confirmed custom URL scheme (unlike spotify:).
+// The android-app:// shorthand for a generic package launch was blocked by Fully
+// Kiosk ("failed to start another app"), so this uses the same standard
+// intent://...#Intent;...;end format that already works reliably for Spotify in
+// this environment, configured to launch SiriusXM by package name via the
+// standard Android MAIN/LAUNCHER intent rather than a specific link scheme.
+function openSiriusXM(){
+  const httpsUrl='https://www.siriusxm.com/player';
+  const intentUrl='intent://#Intent;action=android.intent.action.MAIN;category=android.intent.category.LAUNCHER;package=com.sirius;S.browser_fallback_url='+encodeURIComponent(httpsUrl)+';end';
+  try{
+    window.location.href=intentUrl;
+  }catch(e){
+    window.location.href=httpsUrl;
+  }
+}
+
+function playSpotifyEmbed(uri,label){
+  if(!uri)return;
+  // uri looks like "spotify:track:ID" or "spotify:playlist:ID" etc — convert to embed URL
+  const parts=uri.split(':'); // ['spotify','track','ID']
+  if(parts.length<3)return;
+  const type=parts[1],id=parts[2];
+  const embedUrl='https://open.spotify.com/embed/'+type+'/'+id+'?utm_source=generator&theme=0';
+  // Write into the PINNED now-playing bar at the top of the card (always visible)
+  const npBar=document.getElementById('np-bar');
+  if(npBar){
+    npBar.innerHTML='<iframe src="'+embedUrl+'" width="100%" height="80" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>';
+  }
+}
+
+function spTab(t){_spTab=t;document.querySelectorAll('.sp-tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));renderSpotifyTab();}
+function renderSpotifyTab(){
+  if(!_spData)return;
+  const el=document.getElementById('sp-personal-list');
+  let items=[];
+  if(_spTab==='recent')items=_spData.recent.slice();
+  else if(_spTab==='top')items=_spData.top.slice();
+  else if(_spTab==='shows')items=(_spData.shows||[]).slice();
+  else{
+    // Playlists: random shuffle each time this tab is viewed/refreshed
+    items=_spData.playlists.slice();
+    for(let i=items.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[items[i],items[j]]=[items[j],items[i]];}
+  }
+  function escAttr(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+  el.innerHTML=items.slice(0,16).map(function(it){
+    return '<div data-uri="'+escAttr(it.uri||'')+'" data-label="'+escAttr(it.name||'')+'" class="sp-tile" style="text-decoration:none;">'+(it.image?'<img src="'+it.image+'" alt="" loading="lazy"/>':'<div style="width:34px;height:34px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+'<div class="sp-tile-text"><div class="sp-tile-name">'+it.name+'</div><div class="sp-tile-sub">'+it.sub+'</div></div></div>';
+  }).join('');
+}
+loadSpotifyPersonal();setInterval(loadSpotifyPersonal,300000);
+
+// ── Real "Now Playing" — reflects whatever's playing on the account (Chrome, phone, Echo, anything) ──
+async function spotifyControl(action){
+  const bar=document.getElementById('np-bar');
+  try{
+    const r=await fetch('/api/spotify/control',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:action})});
+    const j=await r.json().catch(()=>({}));
+    if(!r.ok || j.ok===false){
+      const msg='Control error ('+r.status+'): '+(j.error||'unknown')+(j.detail?' — '+j.detail:'');
+      if(bar)bar.insertAdjacentHTML('afterbegin','<div style="font-size:.6rem;color:#f87171;background:rgba(239,68,68,0.12);padding:4px 8px;border-radius:5px;margin-bottom:4px;">'+msg+'</div>');
+      setTimeout(pollNowPlaying, 4000);
+      return;
+    }
+    setTimeout(pollNowPlaying, 500);
+  }catch(e){
+    if(bar)bar.insertAdjacentHTML('afterbegin','<div style="font-size:.6rem;color:#f87171;background:rgba(239,68,68,0.12);padding:4px 8px;border-radius:5px;margin-bottom:4px;">Network error: '+String(e)+'</div>');
+    setTimeout(pollNowPlaying, 4000);
+  }
+}
+
+async function pollNowPlaying(){
+  const bar=document.getElementById('np-bar');
+  const queueContainer=document.getElementById('np-queue-container');
+  if(!bar)return;
+  try{
+    const r=await fetch('/api/spotify/now-playing');
+    const j=await r.json();
+    if(!j.name){
+      bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
+      if(queueContainer)queueContainer.innerHTML='';
+      fitMusicBrowseHeight();
+      return;
+    }
+    const pct=j.duration_ms?Math.min(100,(j.progress_ms/j.duration_ms*100)):0;
+    const playPauseIcon = j.playing ? '<span class="icon-pause"><span></span><span></span></span>' : '<span class="icon-play"></span>';
+    bar.innerHTML='<div class="np-now-row">'+
+      (j.image?'<img class="np-now-img" src="'+j.image+'"/>':'<div class="np-now-img"></div>')+
+      '<div class="np-now-info"><div class="np-now-title">'+j.name+'</div><div class="np-now-artist">'+j.artist+'</div>'+
+      
+      '<div class="np-now-progress-wrap"><div class="np-now-progress" style="width:'+pct+'%"></div></div></div>'+
+      '<div class="np-controls">'+
+        '<button class="np-ctrl-btn" onclick="spotifyControl(\'previous\')" aria-label="Previous">⏮\uFE0E</button>'+
+        '<button class="np-ctrl-btn play-pause" onclick="spotifyControl(\''+(j.playing?'pause':'play')+'\')" aria-label="Play/Pause">'+playPauseIcon+'</button>'+
+        '<button class="np-ctrl-btn" onclick="spotifyControl(\'next\')" aria-label="Next">⏭\uFE0E</button>'+
+      '</div>'+
+    '</div>';
+
+    // "Up Next" — lives in the scrollable section below, not in the pinned bar
+    if(queueContainer){
+      if(!j.isAd){
+        try{
+          const qr=await fetch('/api/spotify/queue');
+          const qj=await qr.json();
+          const upcoming=(qj.queue||[]).slice(0,9);
+          queueContainer.innerHTML=upcoming.length?(
+            '<div class="np-queue"><div class="np-queue-title">Up next'+(j.shuffle?' <span class="np-shuffle-note">(shuffle on — order may vary)</span>':'')+'</div><div class="np-queue-list">'+
+              upcoming.map(function(it){
+                return '<div class="sp-tile np-queue-item" data-uri="'+(it.uri||'')+'" data-label="'+(it.name||'').replace(/"/g,'&quot;')+'">'+
+                  (it.image?'<img src="'+it.image+'"/>':'<div style="width:26px;height:26px;background:#222;border-radius:4px;flex-shrink:0;"></div>')+
+                  '<div class="np-queue-text"><div class="np-queue-name">'+it.name+'</div><div class="np-queue-sub">'+(it.sub||'')+'</div></div></div>';
+              }).join('')+
+            '</div></div>'
+          ):'';
+        }catch(e){ queueContainer.innerHTML=''; }
+      }else{
+        queueContainer.innerHTML='';
+      }
+    }
+
+    fitMusicBrowseHeight();
+  }catch(e){
+    bar.innerHTML='<div id="np-bar-empty">Nothing playing, tap track below</div>';
+    if(queueContainer)queueContainer.innerHTML='';
+    fitMusicBrowseHeight();
+  }
+}
+pollNowPlaying();setInterval(pollNowPlaying,5000);
+
+// ── Fit the scrollable browsing section to exactly whatever space is left after
+//    the pinned Now Playing bar, measured for real (same proven technique used
+//    for matching Today's Schedule to Weather) ──
+function fitMusicBrowseHeight(){
+  const musicCard=document.getElementById('music-card');
+  const npBar=document.getElementById('np-bar');
+  const browse=document.getElementById('music-browse-section');
+  if(!musicCard||!npBar||!browse)return;
+  const label=musicCard.querySelector('.card-label');
+  const cardStyle=getComputedStyle(musicCard);
+  const paddingTop=parseFloat(cardStyle.paddingTop)||0;
+  const paddingBottom=parseFloat(cardStyle.paddingBottom)||0;
+  const totalCardHeight=musicCard.clientHeight;
+  const labelHeight=label?label.offsetHeight:0;
+  const npBarHeight=npBar.offsetHeight;
+  const available=totalCardHeight-paddingTop-paddingBottom-labelHeight-npBarHeight-6;
+  if(available>40){
+    browse.style.height=available+'px';
+    browse.style.maxHeight=available+'px';
+  }
+}
+[300,800,1500,2500].forEach(function(delay){ setTimeout(fitMusicBrowseHeight, delay); });
+setInterval(fitMusicBrowseHeight, 60000);
+
+// ── Sports Ticker — logic now lives in shared /sports-ticker.js (see that
+// file for fetchESPN/parseESPNGames/buildTeamTicker/loadSports/etc.) ──
+loadSports();setInterval(loadSports,300000);
+
+
+
+
+
+</script>
+</body>
+</html>

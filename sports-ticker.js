@@ -88,6 +88,38 @@ function getMLBStandings(standingsData,teamId){
     return null;
   }catch(e){return null;}
 }
+function getNFLDivisionStandings(data,teamAbbr){
+  if(!data)return null;
+  try{
+    // Walk the tree; the smallest standings table containing the team is its division.
+    let best=null,bestName='',parentName='';
+    (function walk(node,parent){
+      if(!node||typeof node!=='object')return;
+      const entries=node.standings&&node.standings.entries;
+      if(Array.isArray(entries)&&entries.some(en=>en.team&&en.team.abbreviation===teamAbbr)){
+        if(!best||entries.length<best.length){best=entries;bestName=node.abbreviation||node.name||'';parentName=parent&&(parent.abbreviation||parent.name)||'';}
+      }
+      (node.children||[]).forEach(c=>walk(c,node));
+    })(data,null);
+    if(!best)return null;
+    const stat=(en,n)=>{const x=(en.stats||[]).find(s=>s.name===n);return x&&x.value!==undefined?Number(x.value):0;};
+    const rows=best.map((en,i)=>{const w=stat(en,'wins'),l=stat(en,'losses'),t=stat(en,'ties');const g=w+l+t;return{abbr:en.team.abbreviation,w,l,t,pct:g?(w+t/2)/g:0,i};});
+    rows.sort((a,b)=>b.pct-a.pct||a.i-b.i);
+    const idx=rows.findIndex(r=>r.abbr===teamAbbr);
+    if(idx<0)return null;
+    const me=rows[idx];
+    const half=r=>r.w+r.t/2, halfL=r=>r.l+r.t/2;
+    const rank=idx+1,suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
+    const leader=rows[0],second=rows[1];
+    const gb=rank===1?0:((half(leader)-half(me))+(halfL(me)-halfL(leader)))/2;
+    const gamesUp=rank===1&&second?((half(me)-half(second))+(halfL(second)-halfL(me)))/2:null;
+    // Division label: prefer "NFC North"; fall back to whatever the data calls it
+    let div=bestName;
+    if(!/^(AFC|NFC)/i.test(div)){div=(/(AFC|NFC)/i.test(parentName)?parentName.replace(/.*(AFC|NFC).*/i,'$1').toUpperCase()+' ':'')+div;}
+    if(!div.trim())div='NFC North';
+    return{rank,suffix,gb,gamesUp,wins:me.w,losses:me.l,record:me.w+'-'+me.l+(me.t?'-'+me.t:''),summary:rank+suffix+' in '+div.trim()};
+  }catch(e){console.error('nfl standings parse error',e);return null;}
+}
 function getTeamStandings(teamData){
   if(!teamData)return null;
   try{
@@ -119,7 +151,7 @@ async function loadSports(){
     const fmt=d=>d.toISOString().slice(0,10).replace(/-/g,'');
     const threeDaysAgo=new Date(now-3*24*60*60*1000);
     const year=now.getFullYear();
-    const [cubsSchedRaw,bearsSchedRaw,bearsLive,cubsTeam,bearsTeam]=await Promise.all([
+    const [cubsSchedRaw,bearsSchedRaw,bearsLive,cubsTeam,bearsTeam,nflStandingsRaw]=await Promise.all([
       fetchESPN('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=112&startDate='+threeDaysAgo.toISOString().slice(0,10)+'&endDate='+twoWeeks.toISOString().slice(0,10)),
       // Team schedule endpoint instead of scoreboard+dates= — structurally
       // similar to the teams/3 endpoint already proven reliable for standings,
@@ -130,6 +162,7 @@ async function loadSports(){
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'),
       fetchESPN('https://statsapi.mlb.com/api/v1/standings?leagueId=104&season='+year+'&standingsTypes=regularSeason&hydrate=team'),
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/3'),
+      fetchESPN('https://site.api.espn.com/apis/v2/sports/football/nfl/standings?level=3'),
     ]);
     function mergeGames(live,scores,schedule,abbr){
       const safe=(d)=>{try{return parseESPNGames(d,abbr);}catch(e){console.error('ticker parse error',e);return[];}};
@@ -153,7 +186,7 @@ async function loadSports(){
     const bearsGames=mergeWithCache(mergeGames(bearsLive,null,bearsSchedRaw,'CHI'),'sports_cache_bears_v1');
     let cubsStandings=null,bearsStandings=null;
     try{cubsStandings=getMLBStandings(cubsTeam,112);}catch(e){}
-    try{bearsStandings=getTeamStandings(bearsTeam);}catch(e){}
+    try{bearsStandings=getNFLDivisionStandings(nflStandingsRaw,'CHI')||getTeamStandings(bearsTeam);}catch(e){}
     function buildTeamTicker(name,logo,games,teamAbbr,standings){
       const hasRecent=games.some(g=>g.status==='closed');
       const hasLive=games.some(g=>g.status==='live');
@@ -207,7 +240,8 @@ async function loadSports(){
         let standingText=standings.summary||'';
         if(standings.rank===1){if(standings.gamesUp&&standings.gamesUp>0){standingText+=' · '+standings.gamesUp+' up';}else{standingText+=' 🔝';}}
         else if(standings.gb!==null&&parseFloat(standings.gb)>0)standingText+=' · '+standings.gb+' GB';
-        if(standings.wins!==null&&standings.losses!==null)standingText+=' ('+standings.wins+'-'+standings.losses+')';
+        else if(standings.gb!==null&&parseFloat(standings.gb)===0&&standings.rank>1)standingText+=' · tied';
+        if(standings.record)standingText+=' ('+standings.record+')';else if(standings.wins!==null&&standings.losses!==null)standingText+=' ('+standings.wins+'-'+standings.losses+')';
         parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#A8CCE0;">'+standingText+'</span>');
       }
       return parts.join('');

@@ -115,10 +115,14 @@ async function loadSports(){
     const fmt=d=>d.toISOString().slice(0,10).replace(/-/g,'');
     const threeDaysAgo=new Date(now-3*24*60*60*1000);
     const year=now.getFullYear();
-    const [cubsSchedRaw,bearsScores,bearsSchedule,bearsLive,cubsTeam,bearsTeam]=await Promise.all([
+    const [cubsSchedRaw,bearsSchedRaw,bearsLive,cubsTeam,bearsTeam]=await Promise.all([
       fetchESPN('https://statsapi.mlb.com/api/v1/schedule?sportId=1&teamId=112&startDate='+threeDaysAgo.toISOString().slice(0,10)+'&endDate='+twoWeeks.toISOString().slice(0,10)),
-      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+fmt(threeDaysAgo)+'-'+fmt(now)+'&limit=30'),
-      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates='+fmt(now)+'-'+fmt(twoWeeks)+'&limit=30'),
+      // Team schedule endpoint instead of scoreboard+dates= — structurally
+      // similar to the teams/3 endpoint already proven reliable for standings,
+      // and returns the whole season in one call with no dates= parameter,
+      // sidestepping whatever's been causing the dated scoreboard queries to
+      // intermittently fail.
+      fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/3/schedule'),
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard'),
       fetchESPN('https://statsapi.mlb.com/api/v1/standings?leagueId=104&season='+year+'&standingsTypes=regularSeason&hydrate=team'),
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/3'),
@@ -140,7 +144,7 @@ async function loadSports(){
       return merged;
     }
     const cubsGames=mergeWithCache(parseMLBStatsGames(cubsSchedRaw,'CHC'),'sports_cache_cubs_v1');
-    const bearsGames=mergeWithCache(mergeGames(bearsLive,bearsScores,bearsSchedule,'CHI'),'sports_cache_bears_v1');
+    const bearsGames=mergeWithCache(mergeGames(bearsLive,null,bearsSchedRaw,'CHI'),'sports_cache_bears_v1');
     const cubsStandings=getMLBStandings(cubsTeam,112);
     const bearsStandings=getTeamStandings(bearsTeam);
     function buildTeamTicker(name,logo,games,teamAbbr,standings){
@@ -182,13 +186,6 @@ async function loadSports(){
         const league=teamAbbr==='CHI'?'nfl':'mlb';
         parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:'+color+';font-weight:800;">'+(won?'W':'L')+' '+myScore+'-'+oppScore+'</span><span style="color:#B8D4E0;margin-left:4px;">'+loc+' '+teamLogo(oppAbbr,league)+oppAbbr+'</span><span style="color:#6A8A99;margin-left:3px;font-size:.62rem;">('+daysAgoStr+')</span>');
       }
-      if(standings&&(standings.rank||standings.wins!==null)){
-        let standingText=standings.summary||'';
-        if(standings.rank===1){if(standings.gamesUp&&standings.gamesUp>0){standingText+=' · '+standings.gamesUp+' up';}else{standingText+=' 🔝';}}
-        else if(standings.gb!==null&&parseFloat(standings.gb)>0)standingText+=' · '+standings.gb+' GB';
-        if(standings.wins!==null&&standings.losses!==null)standingText+=' ('+standings.wins+'-'+standings.losses+')';
-        parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#A8CCE0;">'+standingText+'</span>');
-      }
       const next=games.filter(g=>{if(g.status!=='scheduled')return false;const t=new Date(g.start_time);return t>=now&&t<=twoWeeks;}).sort((a,b)=>new Date(a.start_time)-new Date(b.start_time))[0];
       if(next){
         const oppAbbr=next.home===teamAbbr?next.away:next.home;
@@ -198,6 +195,13 @@ async function loadSports(){
         const dateStr=days[chicagoDate.getDay()]+' '+months[chicagoDate.getMonth()]+' '+chicagoDate.getDate();
         const timeStr=d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit',hour12:true,timeZone:'America/Chicago'});
         parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#D0E8F5;">📅 '+loc+' '+teamLogo(oppAbbr,teamAbbr==='CHI'?'nfl':'mlb')+oppAbbr+' · '+dateStr+', '+timeStr+'</span>');
+      }
+      if(standings&&(standings.rank||standings.wins!==null)){
+        let standingText=standings.summary||'';
+        if(standings.rank===1){if(standings.gamesUp&&standings.gamesUp>0){standingText+=' · '+standings.gamesUp+' up';}else{standingText+=' 🔝';}}
+        else if(standings.gb!==null&&parseFloat(standings.gb)>0)standingText+=' · '+standings.gb+' GB';
+        if(standings.wins!==null&&standings.losses!==null)standingText+=' ('+standings.wins+'-'+standings.losses+')';
+        parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#A8CCE0;">'+standingText+'</span>');
       }
       return parts.join('');
     }

@@ -1045,6 +1045,15 @@ function updateTodayHolidayBadge() {
 }
 // End Holiday Engine
 
+function fmtTimeRange(start, end) {
+  const f = d => { const h = d.getHours(), mn = String(d.getMinutes()).padStart(2,'0'); return { t: (h % 12 || 12) + ':' + mn, ap: h < 12 ? 'AM' : 'PM' }; };
+  const a = f(start);
+  if (!end || !(end > start)) return a.t + ' ' + a.ap;
+  const b = f(end);
+  // Same AM/PM on both sides: "12:30 - 2:00 PM"; otherwise "11:30 AM - 1:00 PM"
+  return a.ap === b.ap ? a.t + ' \u2013 ' + b.t + ' ' + b.ap : a.t + ' ' + a.ap + ' \u2013 ' + b.t + ' ' + b.ap;
+}
+
 function renderCol(evts, colorClass) {
   if (evts === null) return '<div class="err" style="font-size:.75rem">Could not load</div>';
   const today = new Date().toDateString();
@@ -1062,8 +1071,7 @@ function renderCol(evts, colorClass) {
     const current = !ev.allDay && ev.start <= now && ev.end && ev.end >= now;
     let ts = 'All day';
     if (!ev.allDay && ev.start) {
-      const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
-      ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
+      ts = fmtTimeRange(ev.start, ev.end);
     }
     return '<div class="event-item' + (past ? ' past' : '') + (next ? ' next' : '') + (current ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + (ev.isBirthday ? ' birthday' : '') + '">' +
       '<span class="event-time">' + ts + '</span>' +
@@ -1140,8 +1148,7 @@ function renderColMultiDay(evts, view) {
       const isCurrent = isToday && !ev.allDay && ev.start <= now && ev.end && ev.end >= now;
       let ts = 'All day';
       if (!ev.allDay && ev.start) {
-        const h = ev.start.getHours(), mn = String(ev.start.getMinutes()).padStart(2,'0');
-        ts = (h % 12 || 12) + ':' + mn + ' ' + (h < 12 ? 'AM' : 'PM');
+        ts = fmtTimeRange(ev.start, ev.end);
       }
       html += '<div class="event-item' + (isPast && isToday ? ' past' : '') + (isCurrent ? ' current' : '') + (ev.isHoliday ? ' holiday' : '') + (ev.isBirthday ? ' birthday' : '') + '">' +
         '<span class="event-time">' + ts + '</span>' +

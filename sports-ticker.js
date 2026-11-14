@@ -23,17 +23,21 @@ async function fetchESPN(url){
 }
 function parseESPNGames(data,teamAbbr){
   if(!data||!data.events)return[];
-  const events=data.events.filter(e=>{const comp=e.competitions&&e.competitions[0];if(!comp)return false;return comp.competitors.some(c=>c.team.abbreviation===teamAbbr);});
+  const events=data.events.filter(e=>{const comp=e.competitions&&e.competitions[0];if(!comp||!comp.competitors)return false;return comp.competitors.some(c=>c.team&&c.team.abbreviation===teamAbbr);});
+  const scoreOf=c=>{const v=c&&c.score;if(v&&typeof v==='object')return parseInt(v.value!==undefined?v.value:v.displayValue)||0;return parseInt(v)||0;};
   return events.map(e=>{
     const comp=e.competitions[0];
     const home=comp.competitors.find(c=>c.homeAway==='home');
     const away=comp.competitors.find(c=>c.homeAway==='away');
     const homeAbbr=home.team.abbreviation,awayAbbr=away.team.abbreviation;
-    const status=e.status.type.name;
+    // Team-schedule events keep status on the competition, scoreboard events on the event itself
+    const stObj=(e.status&&e.status.type)?e.status:(comp.status||{});
+    const stType=stObj.type||{};
+    const status=stType.name||'';
     const mappedStatus=status==='STATUS_FINAL'?'closed':status==='STATUS_SCHEDULED'?'scheduled':status==='STATUS_IN_PROGRESS'?'live':'other';
-    const game={start_time:e.date,home:homeAbbr,away:awayAbbr,status:mappedStatus,score:{},situation:e.status.type.shortDetail||'',pitchers:{}};
+    const game={start_time:e.date,home:homeAbbr,away:awayAbbr,status:mappedStatus,score:{},situation:stType.shortDetail||'',pitchers:{}};
     if(comp.probables){comp.probables.forEach(p=>{const side=p.homeAway;const name=p.athlete?p.athlete.shortName||p.athlete.displayName:'TBD';game.pitchers[side]=name;});}
-    if(status==='STATUS_FINAL'||status==='STATUS_IN_PROGRESS'){game.score[homeAbbr]=parseInt(home.score)||0;game.score[awayAbbr]=parseInt(away.score)||0;}
+    if(status==='STATUS_FINAL'||status==='STATUS_IN_PROGRESS'){game.score[homeAbbr]=scoreOf(home);game.score[awayAbbr]=scoreOf(away);}
     return game;
   });
 }
@@ -128,7 +132,8 @@ async function loadSports(){
       fetchESPN('https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/3'),
     ]);
     function mergeGames(live,scores,schedule,abbr){
-      const all=[...parseESPNGames(live,abbr),...parseESPNGames(scores,abbr),...parseESPNGames(schedule,abbr)];
+      const safe=(d)=>{try{return parseESPNGames(d,abbr);}catch(e){console.error('ticker parse error',e);return[];}};
+      const all=[...safe(live),...safe(scores),...safe(schedule)];
       const map=new Map();
       for(const g of all){const key=g.start_time;if(!map.has(key)){map.set(key,g);}else{const existing=map.get(key);const priority=s=>s==='live'?3:s==='closed'?2:1;if(priority(g.status)>priority(existing.status))map.set(key,g);}}
       return Array.from(map.values());
@@ -143,10 +148,12 @@ async function loadSports(){
       saveGamesCache(cacheKey,merged);
       return merged;
     }
-    const cubsGames=mergeWithCache(parseMLBStatsGames(cubsSchedRaw,'CHC'),'sports_cache_cubs_v1');
+    let cubsFresh=[];try{cubsFresh=parseMLBStatsGames(cubsSchedRaw,'CHC');}catch(e){console.error('ticker cubs parse error',e);}
+    const cubsGames=mergeWithCache(cubsFresh,'sports_cache_cubs_v1');
     const bearsGames=mergeWithCache(mergeGames(bearsLive,null,bearsSchedRaw,'CHI'),'sports_cache_bears_v1');
-    const cubsStandings=getMLBStandings(cubsTeam,112);
-    const bearsStandings=getTeamStandings(bearsTeam);
+    let cubsStandings=null,bearsStandings=null;
+    try{cubsStandings=getMLBStandings(cubsTeam,112);}catch(e){}
+    try{bearsStandings=getTeamStandings(bearsTeam);}catch(e){}
     function buildTeamTicker(name,logo,games,teamAbbr,standings){
       const hasRecent=games.some(g=>g.status==='closed');
       const hasLive=games.some(g=>g.status==='live');
@@ -205,9 +212,10 @@ async function loadSports(){
       }
       return parts.join('');
     }
+    const safeBuild=(...a)=>{try{return buildTeamTicker(...a);}catch(e){console.error('ticker build error',e);return null;}};
     const items=[
-      buildTeamTicker('Cubs','<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>',cubsGames,'CHC',cubsStandings),
-      buildTeamTicker('Bears','<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>',bearsGames,'CHI',bearsStandings),
+      safeBuild('Cubs','<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/mlb/500/chc.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>',cubsGames,'CHC',cubsStandings),
+      safeBuild('Bears','<span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.8);vertical-align:middle;flex-shrink:0;"><img src="https://a.espncdn.com/i/teamlogos/nfl/500/chi.png" style="width:18px;height:18px;display:block;object-fit:contain;"></span>',bearsGames,'CHI',bearsStandings),
     ];
     const populatedCount=items.filter(Boolean).length;
     if(window._lastGoodTickerCount!==undefined && populatedCount<window._lastGoodTickerCount){
@@ -227,6 +235,8 @@ async function loadSports(){
       window._tickerRAF=requestAnimationFrame(step);
     },300);
   } catch(err) {
-    inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">Sports data unavailable</span>';
+    console.error('ticker error',err);
+    if(window._lastGoodTickerCount)return; // keep the last good ticker on screen
+    inner.innerHTML='<span style="color:#9BB5C5;padding:0 20px;">Sports data unavailable <span style="font-size:.6rem;opacity:.6;">('+(err&&err.message?err.message:err)+')</span></span>';
   }
 }

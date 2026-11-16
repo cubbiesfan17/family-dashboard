@@ -1108,7 +1108,7 @@ async function loadWeather(){
     const evng=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=18&&x<24;}).map(h=>h.p));
     const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const fc=daily.time.slice(1,4).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),low:Math.round(daily.temperature_2m_min[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
-    const TRACK=26,LBL=11,hi3=Math.max(...fc.map(f=>f.high)),lo3=Math.min(...fc.map(f=>f.low)),span=Math.max(1,hi3-lo3);
+    const TRACK=40,LBL=11,hi3=Math.max(...fc.map(f=>f.high)),lo3=Math.min(...fc.map(f=>f.low)),span=Math.max(1,hi3-lo3);
     const rangeHTML=f=>{const top=Math.round((hi3-f.high)/span*TRACK);const h=Math.max(8,Math.round((f.high-f.low)/span*TRACK));return '<div class="fc-range" style="height:'+(TRACK+2*LBL+4)+'px"><div class="fc-t" style="top:'+top+'px">'+f.high+'°</div><div class="fc-pill" style="top:'+(LBL+top)+'px;height:'+h+'px"></div><div class="fc-t lo" style="top:'+(LBL+top+h+2)+'px">'+f.low+'°</div></div>';};
     const pbar=p=>'<div class="precip-bar-wrap"><div class="precip-bar" style="width:'+p+'%"></div></div>';
     // Determine when precip happens (morning/afternoon/evening) for the timing hint
@@ -1136,7 +1136,6 @@ async function loadWeather(){
     if(maxPrecip>=40){if(isSnowy)dressTip+=' ❄️ Snow gear!';else dressTip+=' ☂️ Raincoat!';}
     body.innerHTML=`<div class="weather-main"><span class="weather-icon">${cw.i}</span><span class="weather-temp">${temp}°F</span><span class="weather-desc">${cw.l.toLowerCase()}</span></div>
     <div class="weather-detail-line">H <span class="feels">${hi}°</span> · L <span class="feels">${lo}°</span> &nbsp;·&nbsp; 🌧 ${maxPrecip}% ${precipType}${precipTiming}</div>
-    <div class="weather-dress">${dressTip}</div>
     <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-top"><span class="fc-icon">${f.icon}</span><span class="fc-precip">${f.precip}%</span></div>${rangeHTML(f)}</div>`).join('')}</div>`;
     body.dataset.ok='1';
     if(typeof matchScheduleHeightToWeather==='function')matchScheduleHeightToWeather();

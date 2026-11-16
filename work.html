@@ -109,14 +109,17 @@ body {
   margin-top: 5px;
   display: inline-block;
 }
-.forecast-strip { display: flex; border-top: 1px solid rgba(255,255,255,.1); padding-top: 6px; margin-top: 6px; }
+.forecast-strip { display: flex; border-top: 1px solid rgba(255,255,255,.1); padding-top: 4px; margin-top: 6px; }
 .forecast-day { flex: 1; text-align: center; padding: 0 2px; border-right: 1px solid rgba(255,255,255,.08); }
 .forecast-day:last-child { border-right: none; }
-.fc-dow { font-size: .52rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 2px; }
-.fc-icon { font-size: .95rem; margin-bottom: 1px; }
-.fc-high { font-size: .7rem; font-weight: 600; color: #fff; }
-.fc-low { font-size: .62rem; font-weight: 600; color: #7BAFC4; }
+.fc-dow { font-size: .52rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 1px; }
+.fc-top { display: flex; align-items: center; justify-content: center; gap: 4px; line-height: 1; }
+.fc-icon { font-size: .95rem; }
 .fc-precip { font-size: .58rem; color: #4A9EBF; }
+.fc-range { position: relative; margin: 2px auto 0; width: 100%; }
+.fc-pill { position: absolute; left: 50%; width: 9px; margin-left: -4.5px; border-radius: 5px; background: linear-gradient(#f2f9fd, #4A9EBF); }
+.fc-t { position: absolute; left: 0; right: 0; height: 11px; line-height: 11px; font-size: .62rem; font-weight: 700; color: #fff; }
+.fc-t.lo { font-weight: 600; color: #7BAFC4; }
 
 /* Calendar */
 .view-toggle { display: flex; gap: 3px; }
@@ -1105,6 +1108,8 @@ async function loadWeather(){
     const evng=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=18&&x<24;}).map(h=>h.p));
     const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const fc=daily.time.slice(1,4).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),low:Math.round(daily.temperature_2m_min[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
+    const TRACK=26,LBL=11,hi3=Math.max(...fc.map(f=>f.high)),lo3=Math.min(...fc.map(f=>f.low)),span=Math.max(1,hi3-lo3);
+    const rangeHTML=f=>{const top=Math.round((hi3-f.high)/span*TRACK);const h=Math.max(8,Math.round((f.high-f.low)/span*TRACK));return '<div class="fc-range" style="height:'+(TRACK+2*LBL+4)+'px"><div class="fc-t" style="top:'+top+'px">'+f.high+'°</div><div class="fc-pill" style="top:'+(LBL+top)+'px;height:'+h+'px"></div><div class="fc-t lo" style="top:'+(LBL+top+h+2)+'px">'+f.low+'°</div></div>';};
     const pbar=p=>'<div class="precip-bar-wrap"><div class="precip-bar" style="width:'+p+'%"></div></div>';
     // Determine when precip happens (morning/afternoon/evening) for the timing hint
     const windows=[];
@@ -1132,7 +1137,7 @@ async function loadWeather(){
     body.innerHTML=`<div class="weather-main"><span class="weather-icon">${cw.i}</span><span class="weather-temp">${temp}°F</span><span class="weather-desc">${cw.l.toLowerCase()}</span></div>
     <div class="weather-detail-line">H <span class="feels">${hi}°</span> · L <span class="feels">${lo}°</span> &nbsp;·&nbsp; 🌧 ${maxPrecip}% ${precipType}${precipTiming}</div>
     <div class="weather-dress">${dressTip}</div>
-    <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-icon">${f.icon}</div><div class="fc-high">${f.high}°<span class="fc-low"> / ${f.low}°</span></div><div class="fc-precip">${f.precip}%</div></div>`).join('')}</div>`;
+    <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-top"><span class="fc-icon">${f.icon}</span><span class="fc-precip">${f.precip}%</span></div>${rangeHTML(f)}</div>`).join('')}</div>`;
     body.dataset.ok='1';
     if(typeof matchScheduleHeightToWeather==='function')matchScheduleHeightToWeather();
   }catch(e){if(!body.dataset.ok)body.innerHTML='<div class="err">Could not load weather. <button class="btn" onclick="loadWeather()">Retry</button></div>';}

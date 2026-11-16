@@ -109,15 +109,21 @@ function getNFLDivisionStandings(data,teamAbbr){
     if(idx<0)return null;
     const me=rows[idx];
     const half=r=>r.w+r.t/2, halfL=r=>r.l+r.t/2;
-    const rank=idx+1,suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
-    const leader=rows[0],second=rows[1];
+    // Tie-aware rank: teams with an identical record share a rank (a team tied
+    // for first is "Tied for 1st", not 2nd/3rd by list order).
+    const rank=1+rows.filter(r=>r.pct>me.pct+1e-9).length;
+    const tied=rows.some(r=>r!==me&&Math.abs(r.pct-me.pct)<1e-9);
+    const suffix=rank===1?'st':rank===2?'nd':rank===3?'rd':'th';
+    const leader=rows[0];
+    const others=rows.filter(r=>r!==me);
+    const runnerUp=others.reduce((a,b)=>b.pct>a.pct?b:a,others[0]);
     const gb=rank===1?0:((half(leader)-half(me))+(halfL(me)-halfL(leader)))/2;
-    const gamesUp=rank===1&&second?((half(me)-half(second))+(halfL(second)-halfL(me)))/2:null;
+    const gamesUp=rank===1&&!tied&&runnerUp?((half(me)-half(runnerUp))+(halfL(runnerUp)-halfL(me)))/2:null;
     // Division label: prefer "NFC North"; fall back to whatever the data calls it
     let div=bestName;
     if(!/^(AFC|NFC)/i.test(div)){div=(/(AFC|NFC)/i.test(parentName)?parentName.replace(/.*(AFC|NFC).*/i,'$1').toUpperCase()+' ':'')+div;}
     if(!div.trim())div='NFC North';
-    return{rank,suffix,gb,gamesUp,wins:me.w,losses:me.l,record:me.w+'-'+me.l+(me.t?'-'+me.t:''),summary:rank+suffix+' in '+div.trim()};
+    return{rank,suffix,tied,gb,gamesUp,wins:me.w,losses:me.l,record:me.w+'-'+me.l+(me.t?'-'+me.t:''),summary:(tied?'Tied for ':'')+rank+suffix+' in '+div.trim()};
   }catch(e){console.error('nfl standings parse error',e);return null;}
 }
 function getTeamStandings(teamData){
@@ -238,9 +244,10 @@ async function loadSports(){
       }
       if(standings&&(standings.rank||standings.wins!==null)){
         let standingText=standings.summary||'';
-        if(standings.rank===1){if(standings.gamesUp&&standings.gamesUp>0){standingText+=' · '+standings.gamesUp+' up';}else{standingText+=' 🔝';}}
+        if(standings.rank===1&&standings.tied){/* label already says tied for 1st */}
+        else if(standings.rank===1){if(standings.gamesUp&&standings.gamesUp>0){standingText+=' · '+standings.gamesUp+' up';}else{standingText+=' 🔝';}}
         else if(standings.gb!==null&&parseFloat(standings.gb)>0)standingText+=' · '+standings.gb+' GB';
-        else if(standings.gb!==null&&parseFloat(standings.gb)===0&&standings.rank>1)standingText+=' · tied';
+        
         if(standings.record)standingText+=' ('+standings.record+')';else if(standings.wins!==null&&standings.losses!==null)standingText+=' ('+standings.wins+'-'+standings.losses+')';
         parts.push('<span style="color:#3A7A9C;margin:0 6px;">|</span><span style="color:#A8CCE0;">'+standingText+'</span>');
       }

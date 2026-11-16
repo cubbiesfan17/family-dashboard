@@ -115,6 +115,7 @@ body {
 .fc-dow { font-size: .52rem; text-transform: uppercase; color: #7BAFC4; margin-bottom: 2px; }
 .fc-icon { font-size: .95rem; margin-bottom: 1px; }
 .fc-high { font-size: .7rem; font-weight: 600; color: #fff; }
+.fc-low { font-size: .62rem; font-weight: 600; color: #7BAFC4; }
 .fc-precip { font-size: .58rem; color: #4A9EBF; }
 
 /* Calendar */
@@ -1089,7 +1090,7 @@ loadGameday();setInterval(loadGameday,30000);
 // ── Weather (Open-Meteo) ──
 async function loadWeather(){
   const body=document.getElementById('weather-body');
-  body.innerHTML='<span class="sp"></span> Loading…';
+  if(!body.dataset.ok)body.innerHTML='<span class="sp"></span> Loading…';
   try{
     const res=await fetch('https://api.open-meteo.com/v1/forecast?latitude=42.1656&longitude=-88.2834&current=temperature_2m,weathercode&hourly=precipitation_probability&daily=temperature_2m_max,temperature_2m_min,weathercode,precipitation_probability_max&temperature_unit=fahrenheit&timezone=America%2FChicago&forecast_days=5');
     if(!res.ok)throw new Error('fail');
@@ -1103,7 +1104,7 @@ async function loadWeather(){
     const aftn=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=12&&x<18;}).map(h=>h.p));
     const evng=avg(hrs.filter(h=>{const x=parseInt(h.t.slice(11,13));return x>=18&&x<24;}).map(h=>h.p));
     const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    const fc=daily.time.slice(1,4).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
+    const fc=daily.time.slice(1,4).map((dt,i)=>{const fw=wmo(daily.weathercode[i+1]);return{dow:DAYS[new Date(dt+'T12:00:00').getDay()],icon:fw.i,high:Math.round(daily.temperature_2m_max[i+1]),low:Math.round(daily.temperature_2m_min[i+1]),precip:daily.precipitation_probability_max[i+1]||0};});
     const pbar=p=>'<div class="precip-bar-wrap"><div class="precip-bar" style="width:'+p+'%"></div></div>';
     // Determine when precip happens (morning/afternoon/evening) for the timing hint
     const windows=[];
@@ -1131,29 +1132,32 @@ async function loadWeather(){
     body.innerHTML=`<div class="weather-main"><span class="weather-icon">${cw.i}</span><span class="weather-temp">${temp}°F</span><span class="weather-desc">${cw.l.toLowerCase()}</span></div>
     <div class="weather-detail-line">H <span class="feels">${hi}°</span> · L <span class="feels">${lo}°</span> &nbsp;·&nbsp; 🌧 ${maxPrecip}% ${precipType}${precipTiming}</div>
     <div class="weather-dress">${dressTip}</div>
-    <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-icon">${f.icon}</div><div class="fc-high">${f.high}°</div><div class="fc-precip">${f.precip}%</div></div>`).join('')}</div>`;
-  }catch(e){body.innerHTML='<div class="err">Could not load weather. <button class="btn" onclick="loadWeather()">Retry</button></div>';}
+    <div class="forecast-strip">${fc.map(f=>`<div class="forecast-day"><div class="fc-dow">${f.dow}</div><div class="fc-icon">${f.icon}</div><div class="fc-high">${f.high}°<span class="fc-low"> / ${f.low}°</span></div><div class="fc-precip">${f.precip}%</div></div>`).join('')}</div>`;
+    body.dataset.ok='1';
+    if(typeof matchScheduleHeightToWeather==='function')matchScheduleHeightToWeather();
+  }catch(e){if(!body.dataset.ok)body.innerHTML='<div class="err">Could not load weather. <button class="btn" onclick="loadWeather()">Retry</button></div>';}
 }
 loadWeather();setInterval(loadWeather,600000);
 
 // ── Match Today's Schedule card height exactly to Weather's actual rendered height ──
+let _lockedRowH=0;
 function matchScheduleHeightToWeather(){
   const weatherCard=document.querySelector('.card-weather');
   const calCard=document.querySelector('.card-cal');
   const newsCard=document.querySelector('.card-news');
   if(!weatherCard)return;
+  // Height only ever grows (never shrinks) so a weather refresh can't make the
+  // Headlines / Schedule / Weather cards jump smaller.
+  weatherCard.style.height='auto';weatherCard.style.maxHeight='none';
   const h=weatherCard.offsetHeight;
-  if(h>20){
-    if(calCard){
-      calCard.style.height=h+'px';
-      calCard.style.maxHeight=h+'px';
-      calCard.style.overflow='hidden';
-    }
-    if(newsCard){
-      newsCard.style.height=h+'px';
-      newsCard.style.maxHeight=h+'px';
-      newsCard.style.overflow='hidden';
-    }
+  if(h>20&&h>_lockedRowH)_lockedRowH=h;
+  if(_lockedRowH>20){
+    [weatherCard,calCard,newsCard].forEach(function(c){
+      if(!c)return;
+      c.style.height=_lockedRowH+'px';
+      c.style.maxHeight=_lockedRowH+'px';
+      c.style.overflow='hidden';
+    });
   }
 }
 // Run repeatedly for the first few seconds while weather/calendar are still loading in,
